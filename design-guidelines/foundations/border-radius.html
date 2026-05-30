@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Border Radius — Design System</title>
+<link rel="stylesheet" href="../components/base.css"/>
+<style>
+.radius-grid { display:flex; gap:var(--space-6); flex-wrap:wrap; align-items:flex-end; }
+.radius-item { text-align:center; }
+.radius-box { background:var(--color-primary-100); border:2px solid var(--color-primary-300); display:flex; align-items:center; justify-content:center; color:var(--color-primary-700); font-size:var(--text-xs); font-family:var(--font-mono); font-weight:var(--fw-medium); }
+.radius-label { margin-top:var(--space-3); font-size:var(--text-xs); color:var(--color-text-muted); font-family:var(--font-mono); }
+.radius-label strong { display:block; color:var(--color-text-secondary); }
+</style>
+</head>
+<body>
+<header class="page-header">
+  <a class="page-header-brand" href="../index.html"><span>S</span> Design System</a>
+  <nav class="page-header-nav">
+    <a href="colors.html">Colors</a>
+    <a href="typography.html">Typography</a>
+    <a href="spacing.html">Spacing</a>
+    <a href="border-radius.html" class="active">Border Radius</a>
+    <a href="shadows.html">Shadows</a>
+    <a href="transitions.html">Transitions</a>
+    <a href="breakpoints.html">Breakpoints</a>
+    <a href="icons.html">Icons</a>
+  </nav>
+</header>
+
+<main class="page-content">
+  <h1 class="page-title">Border Radius</h1>
+  <p class="page-desc">Five radius levels from sharp (sm) to pill (full). Never mix arbitrary values — use the scale.</p>
+
+  <section class="section">
+    <h2 class="section-title">Radius Scale</h2>
+    <div class="canvas">
+      <div class="radius-grid">
+        <div class="radius-item">
+          <div class="radius-box" style="width:80px;height:80px;border-radius:4px;">4px</div>
+          <div class="radius-label"><strong>--radius-sm</strong>4px</div>
+        </div>
+        <div class="radius-item">
+          <div class="radius-box" style="width:80px;height:80px;border-radius:8px;">8px</div>
+          <div class="radius-label"><strong>--radius-md</strong>8px</div>
+        </div>
+        <div class="radius-item">
+          <div class="radius-box" style="width:96px;height:96px;border-radius:12px;">12px</div>
+          <div class="radius-label"><strong>--radius-lg</strong>12px</div>
+        </div>
+        <div class="radius-item">
+          <div class="radius-box" style="width:112px;height:112px;border-radius:16px;">16px</div>
+          <div class="radius-label"><strong>--radius-xl</strong>16px</div>
+        </div>
+        <div class="radius-item">
+          <div class="radius-box" style="width:80px;height:40px;border-radius:9999px;">pill</div>
+          <div class="radius-label"><strong>--radius-full</strong>9999px</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Applied to Components</h2>
+    <div class="canvas" style="display:flex;gap:var(--space-6);flex-wrap:wrap;align-items:center;">
+      <div style="text-align:center;">
+        <button class="btn btn-primary btn-sm">Button sm</button>
+        <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-2);">--radius-md (8px)</div>
+      </div>
+      <div style="text-align:center;">
+        <span class="badge badge-primary">Active</span>
+        <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-2);">--radius-full (pill)</div>
+      </div>
+      <div style="text-align:center;">
+        <div class="card" style="width:120px;padding:var(--space-4);text-align:left;">
+          <div style="font-size:var(--text-xs);font-weight:var(--fw-semibold);">Card</div>
+        </div>
+        <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-2);">--radius-lg (12px)</div>
+      </div>
+      <div style="text-align:center;">
+        <input class="form-control" style="width:140px;" placeholder="Input" readonly/>
+        <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-2);">--radius-md (8px)</div>
+      </div>
+      <div style="text-align:center;">
+        <div class="avatar avatar-md avatar-a">MK</div>
+        <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-2);">--radius-full (circle)</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="background:var(--color-primary);width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+          <svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+        </div>
+        <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-2);">--radius-md (8px)<br>Sidebar logo</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Usage Rules</h2>
+    <div class="canvas">
+      <table>
+        <thead><tr><th>Token</th><th>Value</th><th>Used for</th></tr></thead>
+        <tbody>
+          <tr><td><code>--radius-sm</code></td><td>4px</td><td>Input addons, table row highlight, kbd chips, small inline elements</td></tr>
+          <tr><td><code>--radius-md</code></td><td>8px</td><td>Buttons, inputs, selects, dropdowns, avatar logo marks, icon buttons</td></tr>
+          <tr><td><code>--radius-lg</code></td><td>12px</td><td>Cards, modals, toasts, offcanvas panels, demo wrappers</td></tr>
+          <tr><td><code>--radius-xl</code></td><td>16px</td><td>Large overlay panels, image containers (student photos)</td></tr>
+          <tr><td><code>--radius-full</code></td><td>9999px</td><td>Badges, pills, avatars, search bars, notification dots</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Transitions — Design System</title>
+<link rel="stylesheet" href="../components/base.css"/>
+<style>
+.demo-btn {
+  padding:10px 20px; border-radius:var(--radius-md); border:none; cursor:pointer;
+  font-size:var(--text-sm); font-weight:var(--fw-medium); font-family:var(--font-sans);
+}
+.t-150 { background:var(--color-primary); color:#fff; transition:background 150ms ease, transform 150ms ease; }
+.t-150:hover { background:var(--color-primary-hover); transform:translateY(-1px); }
+.t-300 { background:var(--color-surface); color:var(--color-text); border:1px solid var(--color-border); transition:background 300ms ease, box-shadow 300ms ease; }
+.t-300:hover { background:var(--color-bg); box-shadow:var(--shadow-md); }
+.t-none { background:var(--color-surface); color:var(--color-text); border:1px solid var(--color-border); }
+.t-none:hover { background:var(--color-danger-light); color:var(--color-danger); border-color:var(--color-danger); }
+.demo-row { display:flex; gap:var(--space-6); align-items:center; flex-wrap:wrap; }
+.motion-box {
+  width:60px; height:60px; border-radius:var(--radius-md);
+  background:var(--color-primary-100); border:2px solid var(--color-primary-300);
+  display:flex; align-items:center; justify-content:center;
+  font-size:var(--text-xs); color:var(--color-primary-700); font-family:var(--font-mono);
+  cursor:pointer;
+}
+.ease-demo:hover { transform:translateX(12px); transition:transform 150ms ease; }
+.ease-in-demo:hover { transform:translateX(12px); transition:transform 150ms ease-in; }
+.ease-out-demo:hover { transform:translateX(12px); transition:transform 150ms ease-out; }
+</style>
+</head>
+<body>
+<header class="page-header">
+  <a class="page-header-brand" href="../index.html"><span>S</span> Design System</a>
+  <nav class="page-header-nav">
+    <a href="colors.html">Colors</a>
+    <a href="typography.html">Typography</a>
+    <a href="spacing.html">Spacing</a>
+    <a href="border-radius.html">Border Radius</a>
+    <a href="shadows.html">Shadows</a>
+    <a href="transitions.html" class="active">Transitions</a>
+    <a href="breakpoints.html">Breakpoints</a>
+    <a href="icons.html">Icons</a>
+  </nav>
+</header>
+
+<main class="page-content">
+  <h1 class="page-title">Transitions</h1>
+  <p class="page-desc">One token for the default interaction speed: <code>--transition: 150ms ease</code>. Use it for all hover, focus, and active state changes. Only go slower for structural animations (panel slides).</p>
+
+  <section class="section">
+    <h2 class="section-title">Default Token</h2>
+    <div class="canvas">
+      <div style="background:#0F172A;color:#E2E8F0;padding:var(--space-5);border-radius:var(--radius-md);font-family:var(--font-mono);font-size:var(--text-sm);line-height:1.8;">
+        --transition: 150ms ease;
+      </div>
+      <p style="margin-top:var(--space-4);font-size:var(--text-sm);color:var(--color-text-secondary);">Apply as: <code>transition: background var(--transition), color var(--transition);</code></p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Live Demos — hover each button</h2>
+    <div class="canvas">
+      <div class="demo-row">
+        <div>
+          <button class="demo-btn t-150">150ms ease</button>
+          <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-2);text-align:center;">Default — all buttons</div>
+        </div>
+        <div>
+          <button class="demo-btn t-300">300ms ease</button>
+          <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-2);text-align:center;">Slower — avoid for clicks</div>
+        </div>
+        <div>
+          <button class="demo-btn t-none">No transition</button>
+          <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-2);text-align:center;">No transition — jarring</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Structural Animation — Panel &amp; Modal</h2>
+    <div class="canvas">
+      <p style="font-size:var(--text-sm);color:var(--color-text-secondary);margin-bottom:var(--space-4);">Offcanvas panels slide in, modals fade in. These use 200–250ms with ease-out — slightly slower because the user watches the panel enter, not just a colour flip.</p>
+      <div style="background:#0F172A;color:#E2E8F0;padding:var(--space-5);border-radius:var(--radius-md);font-family:var(--font-mono);font-size:var(--text-xs);line-height:1.8;">
+        /* Offcanvas slide */<br>
+        .offcanvas { transition: transform 220ms ease-out; }<br>
+        .offcanvas.open { transform: translateX(0); }<br>
+        .offcanvas.closed { transform: translateX(100%); }<br><br>
+        /* Modal fade */<br>
+        .modal-backdrop { transition: opacity 200ms ease; }<br>
+        .modal-dialog { transition: transform 220ms ease-out, opacity 220ms ease; }
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Easing Reference</h2>
+    <div class="canvas">
+      <table>
+        <thead><tr><th>Duration</th><th>Easing</th><th>Used for</th></tr></thead>
+        <tbody>
+          <tr><td><code>150ms ease</code></td><td>Symmetric, snappy</td><td>Button hover, nav item hover, badge, switch toggle, focus ring</td></tr>
+          <tr><td><code>200ms ease-out</code></td><td>Fast start, decelerate</td><td>Dropdown open, tooltip appear</td></tr>
+          <tr><td><code>220ms ease-out</code></td><td>Fast start, decelerate</td><td>Modal enter, offcanvas slide in</td></tr>
+          <tr><td><code>150ms ease-in</code></td><td>Slow start, fast exit</td><td>Modal/offcanvas dismiss</td></tr>
+          <tr><td><code>0ms</code></td><td>Instant</td><td>Disabled state change, error message appear (urgency)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Rules</h2>
+    <div class="canvas">
+      <ul style="list-style:disc;padding-left:var(--space-5);font-size:var(--text-sm);color:var(--color-text-secondary);display:flex;flex-direction:column;gap:var(--space-3);">
+        <li>Never animate <code>width</code>, <code>height</code>, or <code>top/left</code> — they trigger layout. Use <code>transform</code> and <code>opacity</code> instead.</li>
+        <li>Respect <code>prefers-reduced-motion</code>: wrap structural animations in a media query and fall back to instant.</li>
+        <li>Don't transition <code>all</code> — enumerate the properties to avoid animating unexpected things.</li>
+        <li>Keep UI animations under 300ms. Anything longer feels slow and blocks the user.</li>
+        <li>Loading spinners are the only continuous animation; everything else should end.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+</body>
+</html>

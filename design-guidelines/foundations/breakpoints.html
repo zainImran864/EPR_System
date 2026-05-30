@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Breakpoints — Design System</title>
+<link rel="stylesheet" href="../components/base.css"/>
+<style>
+.bp-bar { display:flex; align-items:stretch; border-radius:var(--radius-md); overflow:hidden; border:1px solid var(--color-border); margin-bottom:var(--space-3); height:48px; }
+.bp-seg { display:flex; align-items:center; justify-content:center; font-size:var(--text-xs); font-weight:var(--fw-medium); font-family:var(--font-mono); border-right:1px solid var(--color-border); }
+.bp-seg:last-child { border-right:none; }
+.layout-demo { border:1px solid var(--color-border); border-radius:var(--radius-lg); overflow:hidden; }
+.layout-demo-header { background:var(--color-surface); border-bottom:1px solid var(--color-border); height:40px; display:flex; align-items:center; padding:0 var(--space-4); font-size:var(--text-xs); color:var(--color-text-muted); font-family:var(--font-mono); }
+.layout-demo-body { display:flex; min-height:120px; }
+.layout-demo-sidebar { background:var(--color-sidebar-bg); color:var(--color-sidebar-text); font-size:var(--text-xs); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.layout-demo-content { background:var(--color-bg); flex:1; display:flex; align-items:center; justify-content:center; font-size:var(--text-xs); color:var(--color-text-muted); }
+</style>
+</head>
+<body>
+<header class="page-header">
+  <a class="page-header-brand" href="../index.html"><span>S</span> Design System</a>
+  <nav class="page-header-nav">
+    <a href="colors.html">Colors</a>
+    <a href="typography.html">Typography</a>
+    <a href="spacing.html">Spacing</a>
+    <a href="border-radius.html">Border Radius</a>
+    <a href="shadows.html">Shadows</a>
+    <a href="transitions.html">Transitions</a>
+    <a href="breakpoints.html" class="active">Breakpoints</a>
+    <a href="icons.html">Icons</a>
+  </nav>
+</header>
+
+<main class="page-content">
+  <h1 class="page-title">Breakpoints</h1>
+  <p class="page-desc">Mobile-first. School ERP is primarily a desktop dashboard — mobile/tablet views collapse the sidebar and stack content. Four breakpoints cover all target devices.</p>
+
+  <section class="section">
+    <h2 class="section-title">Breakpoint Scale</h2>
+    <div class="canvas">
+      <div class="bp-bar">
+        <div class="bp-seg" style="width:12%;background:#F0FDFA;color:var(--color-primary-700);">xs<br>&lt;480px</div>
+        <div class="bp-seg" style="width:18%;background:#CCFBF1;color:var(--color-primary-700);">sm<br>≥480px</div>
+        <div class="bp-seg" style="width:22%;background:#99F6E4;color:var(--color-primary-800);">md<br>≥768px</div>
+        <div class="bp-seg" style="width:24%;background:#5EEAD4;color:var(--color-primary-800);">lg<br>≥1024px</div>
+        <div class="bp-seg" style="flex:1;background:#14B8A6;color:#fff;">xl<br>≥1280px</div>
+      </div>
+      <table>
+        <thead><tr><th>Name</th><th>Min Width</th><th>Target Devices</th><th>Sidebar</th></tr></thead>
+        <tbody>
+          <tr><td><code>xs</code></td><td>0px</td><td>Phone portrait</td><td>Hidden — burger menu</td></tr>
+          <tr><td><code>sm</code></td><td>480px</td><td>Phone landscape, small tablet</td><td>Hidden — burger menu</td></tr>
+          <tr><td><code>md</code></td><td>768px</td><td>Tablet portrait</td><td>Icon-only (60px)</td></tr>
+          <tr><td><code>lg</code></td><td>1024px</td><td>Tablet landscape, small laptop</td><td>Expanded (240px)</td></tr>
+          <tr><td><code>xl</code></td><td>1280px</td><td>Desktop, large laptop</td><td>Expanded (240px)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">CSS Usage</h2>
+    <div class="canvas">
+      <div style="background:#0F172A;color:#E2E8F0;padding:var(--space-5);border-radius:var(--radius-md);font-family:var(--font-mono);font-size:var(--text-xs);line-height:1.8;overflow-x:auto;">
+        /* Tailwind / utility equivalents */<br>
+        @media (min-width: 480px) { /* sm */ }<br>
+        @media (min-width: 768px) { /* md */ }<br>
+        @media (min-width: 1024px) { /* lg */ }<br>
+        @media (min-width: 1280px) { /* xl */ }<br><br>
+        /* Example: stat card grid */<br>
+        .stat-grid {<br>
+        &nbsp;&nbsp;grid-template-columns: 1fr 1fr;       /* xs–sm: 2 col */<br>
+        }<br>
+        @media (min-width: 1024px) {<br>
+        &nbsp;&nbsp;.stat-grid { grid-template-columns: repeat(4, 1fr); } /* lg+: 4 col */<br>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Layout at each breakpoint</h2>
+
+    <h3 style="font-size:var(--text-sm);font-weight:var(--fw-semibold);color:var(--color-text-secondary);margin-bottom:var(--space-3);">Desktop (lg/xl) — full sidebar expanded</h3>
+    <div class="layout-demo" style="margin-bottom:var(--space-6);">
+      <div class="layout-demo-header">1280px wide</div>
+      <div class="layout-demo-body">
+        <div class="layout-demo-sidebar" style="width:240px;">Sidebar 240px</div>
+        <div class="layout-demo-content">Page content — full width</div>
+      </div>
+    </div>
+
+    <h3 style="font-size:var(--text-sm);font-weight:var(--fw-semibold);color:var(--color-text-secondary);margin-bottom:var(--space-3);">Tablet (md) — icon-only sidebar</h3>
+    <div class="layout-demo" style="margin-bottom:var(--space-6);">
+      <div class="layout-demo-header">768px wide</div>
+      <div class="layout-demo-body">
+        <div class="layout-demo-sidebar" style="width:60px;">60px</div>
+        <div class="layout-demo-content">Page content</div>
+      </div>
+    </div>
+
+    <h3 style="font-size:var(--text-sm);font-weight:var(--fw-semibold);color:var(--color-text-secondary);margin-bottom:var(--space-3);">Mobile (xs/sm) — sidebar hidden, topbar burger menu</h3>
+    <div class="layout-demo">
+      <div class="layout-demo-header">480px wide</div>
+      <div class="layout-demo-body">
+        <div class="layout-demo-content" style="flex-direction:column;gap:var(--space-3);">
+          <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:6px 12px;font-size:var(--text-xs);width:100%;max-width:300px;">☰ Topbar with burger menu</div>
+          <div>Full-width stacked content</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Grid columns per breakpoint</h2>
+    <div class="canvas">
+      <table>
+        <thead><tr><th>Component</th><th>xs/sm</th><th>md</th><th>lg</th><th>xl</th></tr></thead>
+        <tbody>
+          <tr><td>Stat cards</td><td>1 col</td><td>2 col</td><td>4 col</td><td>4 col</td></tr>
+          <tr><td>Content cards</td><td>1 col</td><td>2 col</td><td>3 col</td><td>3–4 col</td></tr>
+          <tr><td>Form grid (2-col)</td><td>1 col</td><td>2 col</td><td>2 col</td><td>2 col</td></tr>
+          <tr><td>Tables</td><td>Scroll X</td><td>Scroll X</td><td>Full</td><td>Full</td></tr>
+          <tr><td>Modal width</td><td>90vw</td><td>540px</td><td>540px</td><td>540px (lg: 720px)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+</body>
+</html>

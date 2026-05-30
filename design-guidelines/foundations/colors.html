@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Colors — Design System</title>
+<link rel="stylesheet" href="../components/base.css"/>
+<style>
+.swatch-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(80px,1fr)); gap:var(--space-2); }
+.swatch { border-radius:var(--radius-md); overflow:hidden; }
+.swatch-color { height:56px; }
+.swatch-label { padding:4px 6px; font-size:10px; color:var(--color-text-secondary); background:var(--color-surface); border:1px solid var(--color-border); border-top:none; }
+.swatch-label strong { display:block; font-weight:var(--fw-semibold); color:var(--color-text); }
+.semantic-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--space-4); }
+.semantic-card { border-radius:var(--radius-lg); overflow:hidden; border:1px solid var(--color-border); }
+.semantic-swatch { height:80px; display:flex; align-items:center; justify-content:center; font-size:var(--text-lg); }
+.semantic-body { padding:var(--space-3) var(--space-4); background:var(--color-surface); }
+.semantic-body strong { display:block; font-weight:var(--fw-semibold); font-size:var(--text-sm); }
+.semantic-body code { font-size:var(--text-xs); color:var(--color-text-muted); font-family:var(--font-mono); }
+.neutral-row { display:flex; gap:0; border-radius:var(--radius-md); overflow:hidden; border:1px solid var(--color-border); }
+.neutral-swatch { flex:1; height:60px; }
+</style>
+</head>
+<body>
+<header class="page-header">
+  <a class="page-header-brand" href="../index.html"><span>S</span> Design System</a>
+  <nav class="page-header-nav">
+    <a href="colors.html" class="active">Colors</a>
+    <a href="typography.html">Typography</a>
+    <a href="spacing.html">Spacing</a>
+    <a href="border-radius.html">Border Radius</a>
+    <a href="shadows.html">Shadows</a>
+    <a href="transitions.html">Transitions</a>
+    <a href="breakpoints.html">Breakpoints</a>
+    <a href="icons.html">Icons</a>
+  </nav>
+</header>
+
+<main class="page-content">
+  <h1 class="page-title">Colors</h1>
+  <p class="page-desc">All colors are defined as CSS custom properties in <code>:root</code>. Swap a theme by overriding the variables — never reference hex values directly in components.</p>
+
+  <section class="section">
+    <h2 class="section-title">Primary — Teal</h2>
+    <p style="font-size:var(--text-sm);color:var(--color-text-muted);margin-bottom:var(--space-4);">Brand colour. Used for primary actions, active states, links, and focus rings.</p>
+    <div class="swatch-grid">
+      <div class="swatch"><div class="swatch-color" style="background:#F0FDFA;"></div><div class="swatch-label"><strong>50</strong>#F0FDFA</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#CCFBF1;"></div><div class="swatch-label"><strong>100</strong>#CCFBF1</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#99F6E4;"></div><div class="swatch-label"><strong>200</strong>#99F6E4</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#5EEAD4;"></div><div class="swatch-label"><strong>300</strong>#5EEAD4</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#2DD4BF;"></div><div class="swatch-label"><strong>400</strong>#2DD4BF</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#14B8A6;"></div><div class="swatch-label"><strong>500</strong>#14B8A6</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#0D9488;"></div><div class="swatch-label"><strong>600 ★</strong>#0D9488</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#0F766E;"></div><div class="swatch-label"><strong>700</strong>#0F766E</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#115E59;"></div><div class="swatch-label"><strong>800</strong>#115E59</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#134E4A;"></div><div class="swatch-label"><strong>900</strong>#134E4A</div></div>
+    </div>
+    <p style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-3);">★ = <code>--color-primary</code> default (600). Hover uses 700.</p>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Semantic Colors</h2>
+    <div class="semantic-grid">
+      <div class="semantic-card">
+        <div class="semantic-swatch" style="background:#DCFCE7;">✅</div>
+        <div class="semantic-body">
+          <strong>Success</strong>
+          <code>--color-success: #16A34A</code><br>
+          <code>--color-success-light: #DCFCE7</code><br>
+          <code>--color-success-text: #15803D</code>
+        </div>
+      </div>
+      <div class="semantic-card">
+        <div class="semantic-swatch" style="background:#FEF3C7;">⚠️</div>
+        <div class="semantic-body">
+          <strong>Warning</strong>
+          <code>--color-warning: #D97706</code><br>
+          <code>--color-warning-light: #FEF3C7</code><br>
+          <code>--color-warning-text: #B45309</code>
+        </div>
+      </div>
+      <div class="semantic-card">
+        <div class="semantic-swatch" style="background:#FEE2E2;">🚨</div>
+        <div class="semantic-body">
+          <strong>Danger</strong>
+          <code>--color-danger: #DC2626</code><br>
+          <code>--color-danger-light: #FEE2E2</code><br>
+          <code>--color-danger-text: #B91C1C</code>
+        </div>
+      </div>
+      <div class="semantic-card">
+        <div class="semantic-swatch" style="background:#E0F2FE;">ℹ️</div>
+        <div class="semantic-body">
+          <strong>Info</strong>
+          <code>--color-info: #0284C7</code><br>
+          <code>--color-info-light: #E0F2FE</code><br>
+          <code>--color-info-text: #0369A1</code>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Neutral — Slate</h2>
+    <p style="font-size:var(--text-sm);color:var(--color-text-muted);margin-bottom:var(--space-4);">Used for text, borders, backgrounds. The full Slate scale.</p>
+    <div class="neutral-row" style="margin-bottom:var(--space-3);">
+      <div class="neutral-swatch" style="background:#F8FAFC;" title="Slate 50"></div>
+      <div class="neutral-swatch" style="background:#F1F5F9;" title="Slate 100"></div>
+      <div class="neutral-swatch" style="background:#E2E8F0;" title="Slate 200"></div>
+      <div class="neutral-swatch" style="background:#CBD5E1;" title="Slate 300"></div>
+      <div class="neutral-swatch" style="background:#94A3B8;" title="Slate 400"></div>
+      <div class="neutral-swatch" style="background:#64748B;" title="Slate 500"></div>
+      <div class="neutral-swatch" style="background:#475569;" title="Slate 600"></div>
+      <div class="neutral-swatch" style="background:#334155;" title="Slate 700"></div>
+      <div class="neutral-swatch" style="background:#1E293B;" title="Slate 800"></div>
+      <div class="neutral-swatch" style="background:#0F172A;" title="Slate 900"></div>
+    </div>
+    <div class="canvas">
+      <table>
+        <thead><tr><th>Token</th><th>Value</th><th>Usage</th></tr></thead>
+        <tbody>
+          <tr><td><code>--color-bg</code></td><td>#F8FAFC (Slate 50)</td><td>Page background</td></tr>
+          <tr><td><code>--color-surface</code></td><td>#FFFFFF</td><td>Cards, modals, sidebar, topbar</td></tr>
+          <tr><td><code>--color-border</code></td><td>#E2E8F0 (Slate 200)</td><td>Dividers, input borders, card borders</td></tr>
+          <tr><td><code>--color-border-strong</code></td><td>#CBD5E1 (Slate 300)</td><td>Focused inputs, prominent dividers</td></tr>
+          <tr><td><code>--color-text</code></td><td>#0F172A (Slate 900)</td><td>Headings, body copy</td></tr>
+          <tr><td><code>--color-text-secondary</code></td><td>#475569 (Slate 600)</td><td>Labels, captions</td></tr>
+          <tr><td><code>--color-text-muted</code></td><td>#94A3B8 (Slate 400)</td><td>Placeholders, helper text, timestamps</td></tr>
+          <tr><td><code>--color-text-disabled</code></td><td>#CBD5E1 (Slate 300)</td><td>Disabled inputs and buttons</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Sidebar Colors</h2>
+    <div class="canvas">
+      <table>
+        <thead><tr><th>Token</th><th>Value</th><th>Usage</th></tr></thead>
+        <tbody>
+          <tr><td><code>--color-sidebar-bg</code></td><td>#0F172A (Slate 900)</td><td>Sidebar background</td></tr>
+          <tr><td><code>--color-sidebar-text</code></td><td>#CBD5E1 (Slate 300)</td><td>Default nav item text</td></tr>
+          <tr><td><code>--color-sidebar-hover</code></td><td>#1E293B (Slate 800)</td><td>Nav item hover background</td></tr>
+          <tr><td><code>--color-sidebar-icon</code></td><td>#64748B (Slate 500)</td><td>Section label text and icon tint</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Theming</h2>
+    <div class="canvas">
+      <p style="font-size:var(--text-sm);color:var(--color-text-secondary);margin-bottom:var(--space-4);">School ERP supports per-school branding. To apply a custom theme, override the primary ramp and the semantic tokens in a school-specific <code>:root</code> block. All components pick up the change automatically.</p>
+      <pre style="background:#0F172A;color:#E2E8F0;padding:var(--space-5);border-radius:var(--radius-md);font-family:var(--font-mono);font-size:var(--text-xs);overflow-x:auto;line-height:1.8;"><code>/* Example: Blue theme override */
+:root {
+  --color-primary-50:  #EFF6FF;
+  --color-primary-100: #DBEAFE;
+  --color-primary-500: #3B82F6;
+  --color-primary-600: #2563EB;   /* --color-primary */
+  --color-primary-700: #1D4ED8;   /* --color-primary-hover */
+  --color-primary-100: #DBEAFE;   /* --color-primary-light */
+}</code></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">School ERP Color Usage</h2>
+    <div class="canvas">
+      <table>
+        <thead><tr><th>Context</th><th>Color</th><th>Token</th></tr></thead>
+        <tbody>
+          <tr><td>Present badge</td><td><span class="badge badge-success">Present</span></td><td><code>--color-success</code></td></tr>
+          <tr><td>Absent badge</td><td><span class="badge badge-danger">Absent</span></td><td><code>--color-danger</code></td></tr>
+          <tr><td>Late badge</td><td><span class="badge badge-warning">Late</span></td><td><code>--color-warning</code></td></tr>
+          <tr><td>Fee paid</td><td><span class="badge badge-success">Paid</span></td><td><code>--color-success</code></td></tr>
+          <tr><td>Fee overdue</td><td><span class="badge badge-danger">Overdue</span></td><td><code>--color-danger</code></td></tr>
+          <tr><td>Fee pending</td><td><span class="badge badge-warning">Pending</span></td><td><code>--color-warning</code></td></tr>
+          <tr><td>Active enrolment</td><td><span class="badge badge-primary">Active</span></td><td><code>--color-primary</code></td></tr>
+          <tr><td>Info alert</td><td><span class="badge badge-info">Info</span></td><td><code>--color-info</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+</body>
+</html>

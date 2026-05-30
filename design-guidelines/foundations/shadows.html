@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Shadows — Design System</title>
+<link rel="stylesheet" href="../components/base.css"/>
+<style>
+.shadow-grid { display:flex; gap:var(--space-8); flex-wrap:wrap; align-items:flex-end; }
+.shadow-item { text-align:center; }
+.shadow-box {
+  width:120px; height:100px; background:var(--color-surface);
+  border-radius:var(--radius-lg);
+  display:flex; align-items:center; justify-content:center;
+  font-size:var(--text-xs); color:var(--color-text-muted);
+}
+.shadow-label { margin-top:var(--space-4); font-size:var(--text-xs); color:var(--color-text-muted); font-family:var(--font-mono); }
+.shadow-label strong { display:block; color:var(--color-text-secondary); margin-bottom:2px; }
+</style>
+</head>
+<body>
+<header class="page-header">
+  <a class="page-header-brand" href="../index.html"><span>S</span> Design System</a>
+  <nav class="page-header-nav">
+    <a href="colors.html">Colors</a>
+    <a href="typography.html">Typography</a>
+    <a href="spacing.html">Spacing</a>
+    <a href="border-radius.html">Border Radius</a>
+    <a href="shadows.html" class="active">Shadows</a>
+    <a href="transitions.html">Transitions</a>
+    <a href="breakpoints.html">Breakpoints</a>
+    <a href="icons.html">Icons</a>
+  </nav>
+</header>
+
+<main class="page-content">
+  <h1 class="page-title">Shadows</h1>
+  <p class="page-desc">Four elevation levels. Use the lowest shadow that communicates the correct elevation — never stack shadows.</p>
+
+  <section class="section">
+    <h2 class="section-title">Shadow Scale</h2>
+    <div class="canvas" style="background:#F1F5F9;">
+      <div class="shadow-grid">
+        <div class="shadow-item">
+          <div class="shadow-box" style="box-shadow:0 1px 2px 0 rgb(0 0 0/.05);">sm</div>
+          <div class="shadow-label">
+            <strong>--shadow-sm</strong>
+            0 1px 2px 0<br>rgb(0 0 0 / 5%)
+          </div>
+        </div>
+        <div class="shadow-item">
+          <div class="shadow-box" style="box-shadow:0 4px 6px -1px rgb(0 0 0/.07), 0 2px 4px -2px rgb(0 0 0/.05);">md</div>
+          <div class="shadow-label">
+            <strong>--shadow-md</strong>
+            0 4px 6px -1px<br>+ 0 2px 4px -2px
+          </div>
+        </div>
+        <div class="shadow-item">
+          <div class="shadow-box" style="box-shadow:0 10px 15px -3px rgb(0 0 0/.08), 0 4px 6px -4px rgb(0 0 0/.05);">lg</div>
+          <div class="shadow-label">
+            <strong>--shadow-lg</strong>
+            0 10px 15px -3px<br>+ 0 4px 6px -4px
+          </div>
+        </div>
+        <div class="shadow-item">
+          <div class="shadow-box" style="box-shadow:0 20px 25px -5px rgb(0 0 0/.10), 0 8px 10px -6px rgb(0 0 0/.05);">xl</div>
+          <div class="shadow-label">
+            <strong>--shadow-xl</strong>
+            0 20px 25px -5px<br>+ 0 8px 10px -6px
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Applied to Components</h2>
+    <div class="canvas" style="background:#F1F5F9;display:flex;gap:var(--space-8);flex-wrap:wrap;align-items:flex-start;">
+      <div>
+        <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-3);">Card — shadow-sm</div>
+        <div class="card" style="width:180px;box-shadow:0 1px 2px 0 rgb(0 0 0/.05);">
+          <div style="font-size:var(--text-sm);font-weight:var(--fw-semibold);">Stat Card</div>
+          <div style="font-size:var(--text-2xl);font-weight:var(--fw-bold);color:var(--color-primary);margin-top:4px;">248</div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-3);">Dropdown — shadow-lg</div>
+        <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-2);width:160px;box-shadow:0 10px 15px -3px rgb(0 0 0/.08), 0 4px 6px -4px rgb(0 0 0/.05);">
+          <div style="padding:8px 12px;font-size:var(--text-sm);border-radius:var(--radius-sm);">Edit student</div>
+          <div style="padding:8px 12px;font-size:var(--text-sm);border-radius:var(--radius-sm);">View report</div>
+          <div style="padding:8px 12px;font-size:var(--text-sm);border-radius:var(--radius-sm);color:var(--color-danger);">Delete</div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-3);">Modal — shadow-xl</div>
+        <div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:var(--space-5);width:200px;box-shadow:0 20px 25px -5px rgb(0 0 0/.10), 0 8px 10px -6px rgb(0 0 0/.05);">
+          <div style="font-size:var(--text-sm);font-weight:var(--fw-semibold);margin-bottom:var(--space-2);">Add Student</div>
+          <div style="font-size:var(--text-xs);color:var(--color-text-muted);">Modal content…</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Usage Rules</h2>
+    <div class="canvas">
+      <table>
+        <thead><tr><th>Token</th><th>Value</th><th>Used for</th></tr></thead>
+        <tbody>
+          <tr><td><code>--shadow-sm</code></td><td>1px blur, 5% opacity</td><td>Stat cards, table rows on hover, inline elements</td></tr>
+          <tr><td><code>--shadow-md</code></td><td>6px blur, 7% opacity</td><td>Content cards, popovers, floating labels</td></tr>
+          <tr><td><code>--shadow-lg</code></td><td>15px blur, 8% opacity</td><td>Dropdowns, tooltips, notification panel</td></tr>
+          <tr><td><code>--shadow-xl</code></td><td>25px blur, 10% opacity</td><td>Modals, offcanvas panels, full-screen overlays</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:var(--space-4);font-size:var(--text-xs);color:var(--color-text-muted);">The sidebar has no shadow — it's a structural panel, not a floating element. The topbar uses only a bottom border, not a shadow.</p>
+    </div>
+  </section>
+</main>
+</body>
+</html>

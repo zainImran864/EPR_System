@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Spacing — Design System</title>
+<link rel="stylesheet" href="../components/base.css"/>
+<style>
+.space-row {
+  display:flex; align-items:center; gap:var(--space-5);
+  padding:var(--space-3) 0; border-bottom:1px solid var(--color-border);
+}
+.space-row:last-child { border-bottom:none; }
+.space-token { width:120px; font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-muted); flex-shrink:0; }
+.space-token strong { display:block; color:var(--color-text-secondary); }
+.space-bar-wrap { flex:1; }
+.space-bar { height:24px; background:var(--color-primary-100); border-radius:var(--radius-sm); border-left:3px solid var(--color-primary); }
+.space-val { width:60px; font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-secondary); flex-shrink:0; text-align:right; }
+.gap-demo { display:flex; align-items:center; }
+.gap-item { background:var(--color-primary-200); border-radius:var(--radius-sm); width:40px; height:40px; }
+.pad-demo { display:inline-block; background:var(--color-primary-100); border:2px dashed var(--color-primary-300); border-radius:var(--radius-md); }
+.pad-inner { background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-sm); font-size:var(--text-xs); color:var(--color-text-muted); white-space:nowrap; }
+</style>
+</head>
+<body>
+<header class="page-header">
+  <a class="page-header-brand" href="../index.html"><span>S</span> Design System</a>
+  <nav class="page-header-nav">
+    <a href="colors.html">Colors</a>
+    <a href="typography.html">Typography</a>
+    <a href="spacing.html" class="active">Spacing</a>
+    <a href="border-radius.html">Border Radius</a>
+    <a href="shadows.html">Shadows</a>
+    <a href="transitions.html">Transitions</a>
+    <a href="breakpoints.html">Breakpoints</a>
+    <a href="icons.html">Icons</a>
+  </nav>
+</header>
+
+<main class="page-content">
+  <h1 class="page-title">Spacing</h1>
+  <p class="page-desc">4px base unit. All spacing uses multiples of 4. Never use arbitrary pixel values — pick the nearest token.</p>
+
+  <section class="section">
+    <h2 class="section-title">Spacing Scale</h2>
+    <div class="canvas" style="padding:0;">
+      <div style="padding:var(--space-4) var(--space-6);">
+        <div class="space-row">
+          <div class="space-token"><strong>--space-1</strong>4px</div>
+          <div class="space-bar-wrap"><div class="space-bar" style="width:4px;"></div></div>
+          <div class="space-val">4px</div>
+        </div>
+        <div class="space-row">
+          <div class="space-token"><strong>--space-2</strong>8px</div>
+          <div class="space-bar-wrap"><div class="space-bar" style="width:8px;"></div></div>
+          <div class="space-val">8px</div>
+        </div>
+        <div class="space-row">
+          <div class="space-token"><strong>--space-3</strong>12px</div>
+          <div class="space-bar-wrap"><div class="space-bar" style="width:12px;"></div></div>
+          <div class="space-val">12px</div>
+        </div>
+        <div class="space-row">
+          <div class="space-token"><strong>--space-4</strong>16px</div>
+          <div class="space-bar-wrap"><div class="space-bar" style="width:16px;"></div></div>
+          <div class="space-val">16px</div>
+        </div>
+        <div class="space-row">
+          <div class="space-token"><strong>--space-5</strong>20px</div>
+          <div class="space-bar-wrap"><div class="space-bar" style="width:20px;"></div></div>
+          <div class="space-val">20px</div>
+        </div>
+        <div class="space-row">
+          <div class="space-token"><strong>--space-6</strong>24px</div>
+          <div class="space-bar-wrap"><div class="space-bar" style="width:24px;"></div></div>
+          <div class="space-val">24px</div>
+        </div>
+        <div class="space-row">
+          <div class="space-token"><strong>--space-8</strong>32px</div>
+          <div class="space-bar-wrap"><div class="space-bar" style="width:32px;"></div></div>
+          <div class="space-val">32px</div>
+        </div>
+        <div class="space-row">
+          <div class="space-token"><strong>--space-10</strong>40px</div>
+          <div class="space-bar-wrap"><div class="space-bar" style="width:40px;"></div></div>
+          <div class="space-val">40px</div>
+        </div>
+        <div class="space-row">
+          <div class="space-token"><strong>--space-12</strong>48px</div>
+          <div class="space-bar-wrap"><div class="space-bar" style="width:48px;"></div></div>
+          <div class="space-val">48px</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Gap — flex &amp; grid</h2>
+    <div class="canvas col" style="gap:var(--space-6);">
+      <div>
+        <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-2);">gap: --space-2 (8px) — icon + label, chip group</div>
+        <div class="gap-demo" style="gap:8px;"><div class="gap-item"></div><div class="gap-item"></div><div class="gap-item"></div><div class="gap-item"></div></div>
+      </div>
+      <div>
+        <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-2);">gap: --space-3 (12px) — sidebar items, form inline</div>
+        <div class="gap-demo" style="gap:12px;"><div class="gap-item"></div><div class="gap-item"></div><div class="gap-item"></div><div class="gap-item"></div></div>
+      </div>
+      <div>
+        <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-2);">gap: --space-4 (16px) — stat card grid, form row</div>
+        <div class="gap-demo" style="gap:16px;"><div class="gap-item"></div><div class="gap-item"></div><div class="gap-item"></div><div class="gap-item"></div></div>
+      </div>
+      <div>
+        <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-2);">gap: --space-6 (24px) — page section spacing</div>
+        <div class="gap-demo" style="gap:24px;"><div class="gap-item"></div><div class="gap-item"></div><div class="gap-item"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Padding — component internals</h2>
+    <div class="canvas" style="display:flex;gap:var(--space-6);flex-wrap:wrap;align-items:flex-start;">
+      <div>
+        <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-2);">Button sm — 7px 12px</div>
+        <div class="pad-demo" style="padding:7px 12px;"><div class="pad-inner" style="padding:2px 6px;">Label</div></div>
+      </div>
+      <div>
+        <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-2);">Button md — 9px 16px</div>
+        <div class="pad-demo" style="padding:9px 16px;"><div class="pad-inner" style="padding:2px 6px;">Label</div></div>
+      </div>
+      <div>
+        <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-2);">Card — 20px</div>
+        <div class="pad-demo" style="padding:20px;"><div class="pad-inner" style="padding:4px 8px;">Card body</div></div>
+      </div>
+      <div>
+        <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-2);">Page content — 24px</div>
+        <div class="pad-demo" style="padding:24px;"><div class="pad-inner" style="padding:4px 8px;">Page area</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Usage Rules</h2>
+    <div class="canvas">
+      <table>
+        <thead><tr><th>Context</th><th>Token</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Icon ↔ label gap</td><td><code>--space-2</code></td><td>8px</td></tr>
+          <tr><td>Inline form elements</td><td><code>--space-3</code></td><td>12px</td></tr>
+          <tr><td>Card internal padding</td><td><code>--space-5</code></td><td>20px</td></tr>
+          <tr><td>Page/panel padding (horizontal)</td><td><code>--space-6</code></td><td>24px</td></tr>
+          <tr><td>Sidebar horizontal padding</td><td><code>--space-5</code></td><td>20px</td></tr>
+          <tr><td>Topbar horizontal padding</td><td><code>--space-6</code></td><td>24px</td></tr>
+          <tr><td>Table cell padding</td><td><code>--space-3</code> / <code>--space-4</code></td><td>12px / 16px</td></tr>
+          <tr><td>Section margin-bottom</td><td><code>--space-8</code></td><td>32px</td></tr>
+          <tr><td>Modal padding</td><td><code>--space-6</code></td><td>24px</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+</body>
+</html>
