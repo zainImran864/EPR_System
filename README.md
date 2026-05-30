@@ -24,10 +24,18 @@ Multi-tenant School ERP platform for private schools, with per-school branding, 
   - Track student performance
   - Receive updates and notifications
 
+## Admin side
+
+- Separate admin dashboard for school management and configuration
+- Built with React + Vite
+- Talks to the same NestJS backend API
+
 ## Architecture and stack
 
-- Frontend: Next.js (apps/school-erp)
-- Backend: NestJS (apps/school-erp-backend)
+- Frontend (public portal): Next.js (apps/school-erp)
+- Admin dashboard: React + Vite (apps/erp_admin)
+- Backend (public): NestJS (apps/school-erp-backend)
+- Backend (admin): NestJS (apps/erp_admin_backend)
 - Database: PostgreSQL
 - ORM: Prisma
 - Deployment: Docker
@@ -38,7 +46,9 @@ Multi-tenant School ERP platform for private schools, with per-school branding, 
 ```
 apps/
   school-erp/            # Next.js frontend
-  school-erp-backend/    # NestJS backend
+  school-erp-backend/    # NestJS backend (public)
+  erp_admin/             # React + Vite admin dashboard
+  erp_admin_backend/     # NestJS backend (admin)
 deploy/
 ```
 
@@ -65,10 +75,23 @@ PORT=3001
 DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/school_erp"
 ```
 
+apps/erp_admin_backend/.env
+
+```
+PORT=3002
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/school_erp"
+```
+
 apps/school-erp/.env.local
 
 ```
 NEXT_PUBLIC_API_BASE_URL=http://localhost:3001
+```
+
+apps/erp_admin/.env
+
+```
+VITE_API_BASE_URL=http://localhost:3001
 ```
 
 ### 3) Prisma setup and usage
@@ -105,7 +128,17 @@ npm run start:dev
 ```
 
 ```bash
+cd apps/erp_admin_backend
+npm run start:dev
+```
+
+```bash
 cd apps/school-erp
+npm run dev
+```
+
+```bash
+cd apps/erp_admin
 npm run dev
 ```
 
