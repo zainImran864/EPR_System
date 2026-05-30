@@ -8,8 +8,8 @@ Multi-tenant School ERP SaaS platform. Each school gets isolated data, custom br
 
 | App | Path | Tech | Purpose |
 |-----|------|------|---------|
-| School portal | `apps/school-erp` | Next.js | Public-facing frontend for teachers, parents, students |
-| Admin dashboard | `apps/erp_admin` | React + Vite | Platform-level school management and configuration |
+| School portal | `apps/school-erp` | Next.js | School-facing product for admins/principals, teachers, parents, students |
+| Admin dashboard | `apps/erp_admin` | React + Vite | Internal platform app for tracking schools, subscriptions, and usage |
 | Public API | `apps/school-erp-backend` | NestJS | Serves the school portal; port 3001 |
 | Admin API | `apps/erp_admin_backend` | NestJS | Serves the admin dashboard; port 3002 |
 
@@ -18,6 +18,10 @@ Multi-tenant School ERP SaaS platform. Each school gets isolated data, custom br
 - **Database**: PostgreSQL (shared instance, tenant-isolated by school ID)
 - **ORM**: Prisma (schema lives in `apps/school-erp-backend`)
 - Both backends share the same database but the admin backend has elevated privileges for cross-tenant operations
+
+## Frontend data flow
+
+Backend responses are fetched in `api/` (feature helpers), mapped into shared `types/`, consumed by `hooks/`, and stored in `store/` using Zustand where app-wide state is required. UI components render from hooks/store state.
 
 ## Multi-tenancy
 

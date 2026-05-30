@@ -30,14 +30,20 @@ Multi-tenant School ERP platform for private schools, with per-school branding, 
 - Built with React + Vite
 - Talks to the same NestJS backend API
 
+## App responsibilities
+
+- `school-erp` is the school-facing product where each school admin/principal manages their own school data and operations.
+- `erp_admin` is the internal product for the platform team to track schools using the system, subscriptions, and overall usage.
+
 ## Architecture and stack
 
 - Frontend (public portal): Next.js (apps/school-erp)
-- Admin dashboard: React + Vite (apps/taht is being mage erp_admin)
+- Admin dashboard: React + Vite (apps/erp_admin)
 - Backend (public): NestJS (apps/school-erp-backend)
 - Backend (admin): NestJS (apps/erp_admin_backend)
 - Database: PostgreSQL
 - ORM: Prisma
+- State management: Zustand (apps/school-erp, apps/erp_admin)
 - Deployment: Docker
 - Reverse proxy: Nginx
 
@@ -51,6 +57,10 @@ apps/
   erp_admin_backend/     # NestJS backend (admin)
 deploy/
 ```
+
+## Frontend data flow
+
+Backend data is fetched in the `api/` folder (feature-wise helpers). Those responses are shaped into shared `types/`, wired into reusable `hooks/`, and stored in `store/` (Zustand) when state is needed across screens. Components consume hooks/store and render UI.
 
 ## Local development
 
