@@ -33,7 +33,7 @@ Multi-tenant School ERP platform for private schools, with per-school branding, 
 ## Architecture and stack
 
 - Frontend (public portal): Next.js (apps/school-erp)
-- Admin dashboard: React + Vite (apps/erp_admin)
+- Admin dashboard: React + Vite (apps/taht is being mage erp_admin)
 - Backend (public): NestJS (apps/school-erp-backend)
 - Backend (admin): NestJS (apps/erp_admin_backend)
 - Database: PostgreSQL
