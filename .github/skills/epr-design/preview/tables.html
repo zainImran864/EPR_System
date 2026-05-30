@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Tables — EPR Design</title>
+<link rel="stylesheet" href="../colors_and_type.css"/>
+<link rel="stylesheet" href="_preview.css"/>
+<style>
+  .table-wrap { background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-lg); overflow:hidden; }
+  table.t { width:100%; border-collapse:collapse; font-size:var(--text-sm); }
+  table.t th { text-align:left; padding:var(--space-3) var(--space-4); background:var(--color-bg); border-bottom:1px solid var(--color-border); font-size:var(--text-xs); font-weight:var(--fw-semibold); color:var(--color-text-muted); text-transform:uppercase; letter-spacing:.04em; }
+  table.t td { padding:var(--space-3) var(--space-4); border-bottom:1px solid var(--color-border); vertical-align:middle; }
+  table.t tr:last-child td { border-bottom:none; }
+  table.t tr:hover td { background:var(--color-bg); }
+  .avatar-sm { width:32px; height:32px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-weight:600; font-size:11px; }
+  .badge { display:inline-flex; align-items:center; gap:var(--space-1); padding:2px 8px; border-radius:var(--radius-full); font-size:var(--text-xs); font-weight:var(--fw-medium); }
+  .dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+  .toolbar { display:flex; justify-content:space-between; align-items:center; padding:var(--space-4); border-bottom:1px solid var(--color-border); gap:var(--space-3); }
+  .search { display:flex; align-items:center; gap:var(--space-2); background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:6px 12px; font-size:var(--text-sm); width:280px; color:var(--color-text-muted); }
+  .search input { border:none; background:transparent; outline:none; flex:1; font-size:var(--text-sm); color:var(--color-text); font-family:inherit; }
+  .footer { display:flex; justify-content:space-between; align-items:center; padding:var(--space-3) var(--space-4); border-top:1px solid var(--color-border); font-size:var(--text-xs); color:var(--color-text-muted); }
+  .btn-sm { padding:6px 12px; border-radius:var(--radius-md); font-size:var(--text-sm); border:1px solid var(--color-border-strong); background:var(--color-surface); cursor:pointer; }
+</style>
+</head>
+<body>
+<header class="preview-header">
+  <div>
+    <h1>Tables</h1>
+    <p class="lead">The canonical data table — toolbar, head, rows, footer.</p>
+  </div>
+  <a href="README.md">← All previews</a>
+</header>
+
+<section class="preview-section">
+  <h2>Standard student table</h2>
+  <div class="table-wrap">
+    <div class="toolbar">
+      <div class="search">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input placeholder="Search students…"/>
+      </div>
+      <div style="display:flex;gap:var(--space-2);">
+        <button class="btn-sm">Filters · 2</button>
+        <button class="btn-sm">Export</button>
+        <button class="btn-sm" style="background:var(--color-primary);color:#fff;border-color:var(--color-primary);">+ Add Student</button>
+      </div>
+    </div>
+    <table class="t">
+      <thead>
+        <tr>
+          <th style="width:32px;"><input type="checkbox"/></th>
+          <th>Student</th>
+          <th>Roll</th>
+          <th>Class</th>
+          <th>Attendance</th>
+          <th>Fee Status</th>
+          <th style="text-align:right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><input type="checkbox"/></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:var(--space-3);">
+              <span class="avatar-sm" style="background:#DBEAFE;color:#1D4ED8;">AK</span>
+              <div><div style="font-weight:var(--fw-medium);">Ahmed Khan</div><div style="font-size:var(--text-xs);color:var(--color-text-muted);">Mr. Imran Khan</div></div>
+            </div>
+          </td>
+          <td><code style="font-family:var(--font-mono);">042</code></td>
+          <td>Class 10-A</td>
+          <td>92%</td>
+          <td><span class="badge" style="background:var(--color-success-light);color:var(--color-success-text);"><span class="dot"></span>Paid</span></td>
+          <td style="text-align:right;"><button class="btn-sm" style="border:none;background:none;color:var(--color-primary);">View</button></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox"/></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:var(--space-3);">
+              <span class="avatar-sm" style="background:#DCFCE7;color:#15803D;">FN</span>
+              <div><div style="font-weight:var(--fw-medium);">Fatima Noor</div><div style="font-size:var(--text-xs);color:var(--color-text-muted);">Mrs. Asma Noor</div></div>
+            </div>
+          </td>
+          <td><code style="font-family:var(--font-mono);">043</code></td>
+          <td>Class 10-A</td>
+          <td>88%</td>
+          <td><span class="badge" style="background:var(--color-warning-light);color:var(--color-warning-text);"><span class="dot"></span>Pending</span></td>
+          <td style="text-align:right;"><button class="btn-sm" style="border:none;background:none;color:var(--color-primary);">View</button></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox"/></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:var(--space-3);">
+              <span class="avatar-sm" style="background:#FCE7F3;color:#9D174D;">ZA</span>
+              <div><div style="font-weight:var(--fw-medium);">Zain Ahmed</div><div style="font-size:var(--text-xs);color:var(--color-text-muted);">Mr. Bilal Ahmed</div></div>
+            </div>
+          </td>
+          <td><code style="font-family:var(--font-mono);">044</code></td>
+          <td>Class 10-A</td>
+          <td>74%</td>
+          <td><span class="badge" style="background:var(--color-danger-light);color:var(--color-danger-text);"><span class="dot"></span>Overdue</span></td>
+          <td style="text-align:right;"><button class="btn-sm" style="border:none;background:none;color:var(--color-primary);">View</button></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox"/></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:var(--space-3);">
+              <span class="avatar-sm" style="background:#FEF3C7;color:#B45309;">MT</span>
+              <div><div style="font-weight:var(--fw-medium);">Maryam Tariq</div><div style="font-size:var(--text-xs);color:var(--color-text-muted);">Mr. Tariq Mahmood</div></div>
+            </div>
+          </td>
+          <td><code style="font-family:var(--font-mono);">045</code></td>
+          <td>Class 10-B</td>
+          <td>96%</td>
+          <td><span class="badge" style="background:var(--color-success-light);color:var(--color-success-text);"><span class="dot"></span>Paid</span></td>
+          <td style="text-align:right;"><button class="btn-sm" style="border:none;background:none;color:var(--color-primary);">View</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="footer">
+      <div>Showing 1–4 of 248</div>
+      <div style="display:flex;gap:var(--space-2);">
+        <button class="btn-sm">‹ Prev</button>
+        <button class="btn-sm" style="background:var(--color-primary);color:#fff;border-color:var(--color-primary);">1</button>
+        <button class="btn-sm">2</button>
+        <button class="btn-sm">3</button>
+        <button class="btn-sm">…</button>
+        <button class="btn-sm">Next ›</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Rules</h2>
+  <table class="preview-table">
+    <tbody>
+      <tr><td>Right-align numeric / monetary columns; left-align text columns.</td></tr>
+      <tr><td>Use <code>font-mono</code> for IDs, roll numbers, and amounts so digits align.</td></tr>
+      <tr><td>Row click is reserved for "view detail." Inline actions (edit, delete) require an explicit button.</td></tr>
+      <tr><td>Empty / loading / error states are required — see <a href="../ui_kits/eprsystem_app/StudentFeed.jsx">StudentFeed.jsx</a>.</td></tr>
+    </tbody>
+  </table>
+</section>
+</body>
+</html>

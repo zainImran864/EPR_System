@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Buttons — EPR Design</title>
+<link rel="stylesheet" href="../colors_and_type.css"/>
+<link rel="stylesheet" href="_preview.css"/>
+<style>
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:var(--space-2); font-family:var(--font-sans); font-weight:var(--fw-medium); border-radius:var(--radius-md); border:1px solid transparent; cursor:pointer; transition:background var(--transition), border-color var(--transition), color var(--transition); white-space:nowrap; }
+  .btn-sm { padding:6px 12px; font-size:var(--text-sm); }
+  .btn-md { padding:9px 16px; font-size:var(--text-base); }
+  .btn-lg { padding:11px 20px; font-size:var(--text-md); }
+  .btn-primary   { background:var(--color-primary); color:#fff; }
+  .btn-primary:hover { background:var(--color-primary-hover); }
+  .btn-secondary { background:var(--color-surface); color:var(--color-text); border-color:var(--color-border-strong); }
+  .btn-secondary:hover { background:var(--color-bg); }
+  .btn-outline   { background:transparent; color:var(--color-primary); border-color:var(--color-primary); }
+  .btn-outline:hover { background:var(--color-primary-light); }
+  .btn-ghost     { background:transparent; color:var(--color-text-secondary); }
+  .btn-ghost:hover { background:var(--color-bg); }
+  .btn-danger    { background:var(--color-danger); color:#fff; }
+  .btn-link      { background:transparent; color:var(--color-primary); padding:0; border:none; }
+  .btn-link:hover { text-decoration:underline; }
+  .btn:disabled, .btn[disabled] { opacity:.5; cursor:not-allowed; }
+  .spin { animation:spin .8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+<header class="preview-header">
+  <div>
+    <h1>Buttons</h1>
+    <p class="lead">Six variants, three sizes, with disabled and loading states.</p>
+  </div>
+  <a href="README.md">← All previews</a>
+</header>
+
+<section class="preview-section">
+  <h2>Variants</h2>
+  <div class="canvas row">
+    <button class="btn btn-md btn-primary">Primary</button>
+    <button class="btn btn-md btn-secondary">Secondary</button>
+    <button class="btn btn-md btn-outline">Outline</button>
+    <button class="btn btn-md btn-ghost">Ghost</button>
+    <button class="btn btn-md btn-danger">Danger</button>
+    <button class="btn btn-link">Link button</button>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Sizes</h2>
+  <div class="canvas row">
+    <button class="btn btn-sm btn-primary">Small</button>
+    <button class="btn btn-md btn-primary">Medium · default</button>
+    <button class="btn btn-lg btn-primary">Large</button>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>States</h2>
+  <div class="canvas row">
+    <button class="btn btn-md btn-primary">Normal</button>
+    <button class="btn btn-md btn-primary" disabled>Disabled</button>
+    <button class="btn btn-md btn-primary">
+      <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-dasharray="40 60"/>
+      </svg>
+      Saving…
+    </button>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>With icons</h2>
+  <div class="canvas row">
+    <button class="btn btn-md btn-primary">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      Add Student
+    </button>
+    <button class="btn btn-md btn-secondary">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 002-2v-4M17 9l-5 5-5-5M12 12.8V2.5"/></svg>
+      Export CSV
+    </button>
+    <button class="btn btn-md btn-ghost" aria-label="Edit">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    </button>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Usage</h2>
+  <table class="preview-table">
+    <thead><tr><th>Variant</th><th>Used for</th></tr></thead>
+    <tbody>
+      <tr><td>Primary</td><td>The one main action per surface (Save, Submit, Add)</td></tr>
+      <tr><td>Secondary</td><td>Supporting action next to primary (Cancel, Back)</td></tr>
+      <tr><td>Outline</td><td>Tertiary action when secondary is too heavy</td></tr>
+      <tr><td>Ghost</td><td>Toolbar actions, row actions, low-weight contexts</td></tr>
+      <tr><td>Danger</td><td>Destructive actions (Delete, Remove) — confirm first</td></tr>
+      <tr><td>Link</td><td>Inline navigation inside body text</td></tr>
+    </tbody>
+  </table>
+</section>
+</body>
+</html>

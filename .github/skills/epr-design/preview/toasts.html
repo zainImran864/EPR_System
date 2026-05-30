@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Toasts — EPR Design</title>
+<link rel="stylesheet" href="../colors_and_type.css"/>
+<link rel="stylesheet" href="_preview.css"/>
+<style>
+  .toast { display:flex; align-items:flex-start; gap:var(--space-3); padding:var(--space-4); background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-lg); box-shadow:var(--shadow-lg); min-width:340px; max-width:420px; }
+  .toast-icon { width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .toast-body { flex:1; }
+  .toast-title { font-size:var(--text-sm); font-weight:var(--fw-semibold); color:var(--color-text); }
+  .toast-desc  { font-size:var(--text-xs); color:var(--color-text-muted); margin-top:2px; }
+  .toast-action { color:var(--color-primary); font-size:var(--text-sm); font-weight:var(--fw-medium); background:none; border:none; cursor:pointer; padding:0; }
+  .toast-close { background:none; border:none; color:var(--color-text-muted); cursor:pointer; padding:0; line-height:1; }
+  .toast.success .toast-icon { background:var(--color-success-light); color:var(--color-success-text); }
+  .toast.warning .toast-icon { background:var(--color-warning-light); color:var(--color-warning-text); }
+  .toast.danger  .toast-icon { background:var(--color-danger-light);  color:var(--color-danger-text); }
+  .toast.info    .toast-icon { background:var(--color-info-light);    color:var(--color-info-text); }
+  .stage { background:#F1F5F9; }
+</style>
+</head>
+<body>
+<header class="preview-header">
+  <div>
+    <h1>Toasts</h1>
+    <p class="lead">Transient feedback after an action. Bottom-right corner. Auto-dismiss except for danger.</p>
+  </div>
+  <a href="README.md">← All previews</a>
+</header>
+
+<section class="preview-section">
+  <h2>Four variants</h2>
+  <div class="canvas stage col">
+    <div class="toast success">
+      <span class="toast-icon">✓</span>
+      <div class="toast-body">
+        <div class="toast-title">Student added</div>
+        <div class="toast-desc">Ahmed Khan was enrolled in Class 10-A.</div>
+      </div>
+      <button class="toast-close" aria-label="Dismiss">×</button>
+    </div>
+
+    <div class="toast warning">
+      <span class="toast-icon">!</span>
+      <div class="toast-body">
+        <div class="toast-title">Low attendance warning</div>
+        <div class="toast-desc">3 students dropped below 75% this week.</div>
+      </div>
+      <button class="toast-action">Review</button>
+      <button class="toast-close" aria-label="Dismiss">×</button>
+    </div>
+
+    <div class="toast danger">
+      <span class="toast-icon">!</span>
+      <div class="toast-body">
+        <div class="toast-title">Save failed</div>
+        <div class="toast-desc">Couldn't update the attendance record. Check your connection.</div>
+      </div>
+      <button class="toast-action">Retry</button>
+      <button class="toast-close" aria-label="Dismiss">×</button>
+    </div>
+
+    <div class="toast info">
+      <span class="toast-icon">i</span>
+      <div class="toast-body">
+        <div class="toast-title">Reports being generated</div>
+        <div class="toast-desc">Term 1 reports for 248 students will be ready in ~2 minutes.</div>
+      </div>
+      <button class="toast-close" aria-label="Dismiss">×</button>
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Short form</h2>
+  <p>Without description — for confirmations that don't need context.</p>
+  <div class="canvas stage col">
+    <div class="toast success" style="min-width:240px;">
+      <span class="toast-icon">✓</span>
+      <div class="toast-body"><div class="toast-title">Saved</div></div>
+      <button class="toast-close" aria-label="Dismiss">×</button>
+    </div>
+    <div class="toast info" style="min-width:240px;">
+      <span class="toast-icon">i</span>
+      <div class="toast-body"><div class="toast-title">Copied to clipboard</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Timing</h2>
+  <table class="preview-table">
+    <thead><tr><th>Variant</th><th>Auto-dismiss</th><th>Reason</th></tr></thead>
+    <tbody>
+      <tr><td>Success</td><td>3 seconds</td><td>User already saw confirmation in the UI</td></tr>
+      <tr><td>Info</td><td>4 seconds</td><td>Slightly longer for reading time</td></tr>
+      <tr><td>Warning</td><td>5 seconds</td><td>User should notice and decide whether to act</td></tr>
+      <tr><td>Danger</td><td><strong>Never</strong> — user must dismiss</td><td>An error not acknowledged is an error not fixed</td></tr>
+    </tbody>
+  </table>
+</section>
+</body>
+</html>

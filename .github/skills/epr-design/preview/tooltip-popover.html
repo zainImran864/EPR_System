@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Tooltip &amp; Popover — EPR Design</title>
+<link rel="stylesheet" href="../colors_and_type.css"/>
+<link rel="stylesheet" href="_preview.css"/>
+<style>
+  .tip { position:relative; display:inline-block; padding:6px 10px; background:#0F172A; color:#fff; font-size:var(--text-xs); border-radius:var(--radius-sm); box-shadow:var(--shadow-md); white-space:nowrap; }
+  .tip::after { content:""; position:absolute; left:50%; transform:translateX(-50%); }
+  .tip.bottom::after { top:-5px; border-left:5px solid transparent; border-right:5px solid transparent; border-bottom:5px solid #0F172A; }
+  .tip.top::after    { bottom:-5px; border-left:5px solid transparent; border-right:5px solid transparent; border-top:5px solid #0F172A; }
+
+  .popover { background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-md); box-shadow:var(--shadow-lg); padding:var(--space-4); min-width:240px; max-width:320px; }
+  .popover-title { font-size:var(--text-sm); font-weight:var(--fw-semibold); margin-bottom:var(--space-2); }
+  .popover-body  { font-size:var(--text-xs); color:var(--color-text-secondary); line-height:var(--leading-relaxed); }
+  .popover-foot  { display:flex; justify-content:flex-end; gap:var(--space-2); margin-top:var(--space-3); padding-top:var(--space-3); border-top:1px solid var(--color-border); }
+  .btn-xs { padding:4px 10px; font-size:var(--text-xs); border-radius:var(--radius-sm); border:1px solid var(--color-border-strong); background:var(--color-surface); cursor:pointer; }
+  .btn-xs.primary { background:var(--color-primary); color:#fff; border-color:var(--color-primary); }
+</style>
+</head>
+<body>
+<header class="preview-header">
+  <div>
+    <h1>Tooltip &amp; Popover</h1>
+    <p class="lead">Tooltips for terse hints; popovers for richer content that may include actions.</p>
+  </div>
+  <a href="README.md">← All previews</a>
+</header>
+
+<section class="preview-section">
+  <h2>Tooltip — placements</h2>
+  <p>Dark surface with white text. 11–12px. Appears on hover (300ms delay) or keyboard focus.</p>
+  <div class="canvas row" style="gap:var(--space-12);justify-content:center;padding:var(--space-10);">
+    <div style="position:relative;">
+      <button style="padding:9px 16px;border-radius:var(--radius-md);background:var(--color-surface);border:1px solid var(--color-border-strong);cursor:pointer;">Hover me</button>
+      <div class="tip bottom" style="position:absolute;left:50%;transform:translateX(-50%);top:calc(100% + 8px);">Delete this student</div>
+    </div>
+    <div style="position:relative;">
+      <button style="padding:9px 16px;border-radius:var(--radius-md);background:var(--color-surface);border:1px solid var(--color-border-strong);cursor:pointer;">Above</button>
+      <div class="tip top" style="position:absolute;left:50%;transform:translateX(-50%);bottom:calc(100% + 8px);">Tooltip above</div>
+    </div>
+    <div style="position:relative;">
+      <span class="tip" style="position:static;">⌘K · Open search</span>
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Popover — informational</h2>
+  <p>Light surface, can contain headings, paragraphs, and links. Appears on click.</p>
+  <div class="canvas row" style="gap:var(--space-8);align-items:flex-start;padding:var(--space-10);">
+    <div class="popover">
+      <div class="popover-title">How attendance is calculated</div>
+      <div class="popover-body">
+        Daily attendance is averaged over the term, excluding declared holidays. A student is flagged "low attendance" below 75%.
+      </div>
+    </div>
+    <div class="popover">
+      <div class="popover-title">Mark as absent?</div>
+      <div class="popover-body">
+        Ahmed Khan will be marked absent for Wednesday, 27 May 2026. Parents will receive an SMS notification.
+      </div>
+      <div class="popover-foot">
+        <button class="btn-xs">Cancel</button>
+        <button class="btn-xs primary">Confirm</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>When to use what</h2>
+  <table class="preview-table">
+    <thead><tr><th>Pattern</th><th>Use</th><th>Don't use</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Tooltip</td>
+        <td>Identify an icon-only button, show a keyboard shortcut, expand a truncated label</td>
+        <td>Anything users need to read carefully — they won't read it</td>
+      </tr>
+      <tr>
+        <td>Popover</td>
+        <td>Brief explanation, inline confirm, small form (max 2 fields)</td>
+        <td>Multi-field forms, anything destructive — use a modal</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="preview-section">
+  <h2>Rules</h2>
+  <table class="preview-table">
+    <tbody>
+      <tr><td>Tooltips must not contain interactive elements. If you need a button, use a popover.</td></tr>
+      <tr><td>Tooltips appear with a 300ms delay to avoid noise on incidental hover; popovers appear immediately on click.</td></tr>
+      <tr><td>Both close on Esc and on click-outside. Both restore focus to the trigger on close.</td></tr>
+      <tr><td>On touch devices, tooltips fire on long-press; popovers fire on tap.</td></tr>
+    </tbody>
+  </table>
+</section>
+</body>
+</html>

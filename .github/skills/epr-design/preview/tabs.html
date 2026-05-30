@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Tabs — EPR Design</title>
+<link rel="stylesheet" href="../colors_and_type.css"/>
+<link rel="stylesheet" href="_preview.css"/>
+<style>
+  .tabs-underline { display:flex; gap:var(--space-2); border-bottom:1px solid var(--color-border); }
+  .tabs-underline button { background:none; border:none; padding:var(--space-3) var(--space-4); font-size:var(--text-sm); font-weight:var(--fw-medium); cursor:pointer; color:var(--color-text-secondary); border-bottom:2px solid transparent; margin-bottom:-1px; transition:color var(--transition), border-color var(--transition); font-family:inherit; }
+  .tabs-underline button[aria-selected="true"] { color:var(--color-primary); border-color:var(--color-primary); }
+  .tabs-underline button:hover:not([aria-selected="true"]) { color:var(--color-text); }
+  .tabs-pill { display:inline-flex; background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:3px; gap:2px; }
+  .tabs-pill button { background:none; border:none; padding:6px 14px; font-size:var(--text-sm); font-weight:var(--fw-medium); border-radius:var(--radius-sm); cursor:pointer; color:var(--color-text-secondary); transition:background var(--transition), color var(--transition); font-family:inherit; }
+  .tabs-pill button[aria-selected="true"] { background:var(--color-surface); color:var(--color-text); box-shadow:var(--shadow-sm); }
+  .panel { padding:var(--space-5); color:var(--color-text-secondary); font-size:var(--text-sm); }
+</style>
+</head>
+<body>
+<header class="preview-header">
+  <div>
+    <h1>Tabs</h1>
+    <p class="lead">Underline tabs for page sections; pill tabs for in-card view toggles.</p>
+  </div>
+  <a href="README.md">← All previews</a>
+</header>
+
+<section class="preview-section">
+  <h2>Underline — page sections</h2>
+  <div class="canvas" style="padding:0;">
+    <div class="tabs-underline" role="tablist" style="padding:0 var(--space-5);">
+      <button role="tab" aria-selected="true">Overview</button>
+      <button role="tab">Attendance</button>
+      <button role="tab">Marks</button>
+      <button role="tab">Fees</button>
+      <button role="tab">Documents</button>
+    </div>
+    <div class="panel">Overview content for Ahmed Khan. Use underline tabs at the top of a detail page to switch between sections of a single record.</div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Underline — second tab active</h2>
+  <div class="canvas" style="padding:0;">
+    <div class="tabs-underline" role="tablist" style="padding:0 var(--space-5);">
+      <button role="tab">Overview</button>
+      <button role="tab" aria-selected="true">Attendance</button>
+      <button role="tab">Marks</button>
+      <button role="tab">Fees</button>
+      <button role="tab">Documents</button>
+    </div>
+    <div class="panel">Attendance log appears here — daily records, weekly aggregates, and trend lines.</div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Pill — in-card toggle</h2>
+  <p>Use pill tabs for small switches inside a card: time range, grid/list view, sort order.</p>
+  <div class="canvas col">
+    <div>
+      <div class="token-label" style="margin-bottom:var(--space-2);">Time range</div>
+      <div class="tabs-pill" role="tablist">
+        <button role="tab" aria-selected="true">Today</button>
+        <button role="tab">Week</button>
+        <button role="tab">Month</button>
+        <button role="tab">Term</button>
+      </div>
+    </div>
+    <div>
+      <div class="token-label" style="margin-bottom:var(--space-2);">View mode</div>
+      <div class="tabs-pill" role="tablist">
+        <button role="tab" aria-selected="true" aria-label="Grid view">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </button>
+        <button role="tab" aria-label="List view">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+    <div>
+      <div class="token-label" style="margin-bottom:var(--space-2);">Report type</div>
+      <div class="tabs-pill" role="tablist">
+        <button role="tab">Daily</button>
+        <button role="tab" aria-selected="true">Weekly</button>
+        <button role="tab">Term</button>
+        <button role="tab">Annual</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>When to use which</h2>
+  <table class="preview-table">
+    <thead><tr><th>Pattern</th><th>Use</th></tr></thead>
+    <tbody>
+      <tr><td>Underline tabs</td><td>Sections of a single record (profile tabs). Top of the panel. 3–7 tabs.</td></tr>
+      <tr><td>Pill tabs</td><td>Quick toggles inside cards. Time range, view mode, sort. 2–5 options.</td></tr>
+      <tr><td>Don't use either</td><td>Single-binary state — that's a switch, not tabs.</td></tr>
+    </tbody>
+  </table>
+</section>
+</body>
+</html>

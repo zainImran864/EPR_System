@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Type — Body &amp; Mono — EPR Design</title>
+<link rel="stylesheet" href="../colors_and_type.css"/>
+<link rel="stylesheet" href="_preview.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+</head>
+<body>
+<header class="preview-header">
+  <div>
+    <h1>Type — Body &amp; Mono</h1>
+    <p class="lead">Body sizes, weights, and the mono scale for IDs, amounts, and code.</p>
+  </div>
+  <a href="README.md">← All previews</a>
+</header>
+
+<section class="preview-section">
+  <h2>Body scale — Inter</h2>
+  <div class="canvas col">
+    <div style="font-size:var(--text-md);line-height:var(--leading-normal);">
+      <strong>15 / md</strong> — Subheadings, topbar labels. The student has been enrolled since August 2022.
+    </div>
+    <div style="font-size:var(--text-base);line-height:var(--leading-relaxed);">
+      <strong>14 / base</strong> — Default body. Use for most copy. Marks records for Term 1 have been finalised and parents will be notified by email.
+    </div>
+    <div style="font-size:var(--text-sm);line-height:var(--leading-normal);">
+      <strong>13 / sm</strong> — Tables, form labels, secondary copy. Roll No. 042 · Joined 2022 · Status Active.
+    </div>
+    <div style="font-size:var(--text-xs);line-height:var(--leading-snug);color:var(--color-text-muted);">
+      <strong>11 / xs</strong> — Captions, timestamps, badge text. Last updated 2 minutes ago · Term 1 · 2025.
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Body weights</h2>
+  <div class="canvas grid-4">
+    <div style="font-weight:var(--fw-normal);font-size:var(--text-md);">Aa fw-normal · 400</div>
+    <div style="font-weight:var(--fw-medium);font-size:var(--text-md);">Aa fw-medium · 500</div>
+    <div style="font-weight:var(--fw-semibold);font-size:var(--text-md);">Aa fw-semibold · 600</div>
+    <div style="font-weight:var(--fw-bold);font-size:var(--text-md);">Aa fw-bold · 700</div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Mono — JetBrains Mono</h2>
+  <p>Use mono for IDs, amounts, dates with positional alignment, code, and tokens.</p>
+  <div class="canvas col">
+    <div style="font-family:var(--font-mono);font-size:var(--text-base);">STU-2025-024 · Roll 042 · PKR 27,500.00</div>
+    <pre style="margin:0;font-family:var(--font-mono);font-size:var(--text-sm);background:var(--color-bg);padding:var(--space-4);border-radius:var(--radius-md);overflow-x:auto;">{
+  "studentId": "STU-2025-024",
+  "schoolId": "school_abc",
+  "feeStatus": "paid",
+  "amount": 27500
+}</pre>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Inline elements</h2>
+  <div class="canvas">
+    <p style="margin:0;">
+      Mix a token like <code style="background:var(--color-bg);padding:2px 6px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:var(--text-xs);">--color-primary</code> into body copy.
+      Hit the <span style="display:inline-flex;align-items:center;padding:2px 7px;background:var(--color-bg);border:1px solid var(--color-border);border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-secondary);">⌘K</span> shortcut to open search. Amounts render as <span style="font-family:var(--font-mono);">PKR 12,500.00</span>.
+    </p>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Line height tokens</h2>
+  <table class="preview-table">
+    <thead><tr><th>Token</th><th>Value</th><th>Use</th></tr></thead>
+    <tbody>
+      <tr><td><code>--leading-tight</code></td><td>1.2</td><td>Headings, display numerals</td></tr>
+      <tr><td><code>--leading-snug</code></td><td>1.4</td><td>Sub-headings, dense labels</td></tr>
+      <tr><td><code>--leading-normal</code></td><td>1.5</td><td>Form labels, tables, secondary text</td></tr>
+      <tr><td><code>--leading-relaxed</code></td><td>1.6</td><td>Default body copy</td></tr>
+    </tbody>
+  </table>
+</section>
+</body>
+</html>

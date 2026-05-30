@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Inputs — EPR Design</title>
+<link rel="stylesheet" href="../colors_and_type.css"/>
+<link rel="stylesheet" href="_preview.css"/>
+<style>
+  .field { display:flex; flex-direction:column; gap:var(--space-2); max-width:360px; }
+  .field-label { font-size:var(--text-sm); font-weight:var(--fw-medium); color:var(--color-text); }
+  .field-hint  { font-size:var(--text-xs); color:var(--color-text-muted); }
+  .field-error { font-size:var(--text-xs); color:var(--color-danger-text); }
+  .input { width:100%; font-family:var(--font-sans); font-size:var(--text-base); color:var(--color-text); background:var(--color-surface); border:1px solid var(--color-border-strong); border-radius:var(--radius-md); padding:8px 12px; outline:none; transition:border-color var(--transition), box-shadow var(--transition); }
+  .input:hover { border-color:var(--color-text-muted); }
+  .input:focus { border-color:var(--color-primary); box-shadow:0 0 0 3px rgb(13 148 136 / 12%); }
+  .input.error { border-color:var(--color-danger); }
+  .input:disabled { background:var(--color-bg); color:var(--color-text-disabled); cursor:not-allowed; }
+  .input-group { display:flex; align-items:stretch; }
+  .input-group .addon { display:flex; align-items:center; padding:0 var(--space-3); background:var(--color-bg); border:1px solid var(--color-border-strong); color:var(--color-text-secondary); font-size:var(--text-sm); }
+  .input-group .addon:first-child { border-right:none; border-radius:var(--radius-md) 0 0 var(--radius-md); }
+  .input-group .addon:last-child  { border-left:none; border-radius:0 var(--radius-md) var(--radius-md) 0; }
+  .input-group .input:not(:first-child) { border-top-left-radius:0; border-bottom-left-radius:0; }
+  .input-group .input:not(:last-child)  { border-top-right-radius:0; border-bottom-right-radius:0; }
+</style>
+</head>
+<body>
+<header class="preview-header">
+  <div>
+    <h1>Inputs</h1>
+    <p class="lead">Text inputs, selects, textareas, and input groups.</p>
+  </div>
+  <a href="README.md">← All previews</a>
+</header>
+
+<section class="preview-section">
+  <h2>States</h2>
+  <div class="canvas grid-3" style="gap:var(--space-5);">
+    <div class="field">
+      <label class="field-label">Default</label>
+      <input class="input" placeholder="Enter student name"/>
+      <span class="field-hint">First name and surname</span>
+    </div>
+    <div class="field">
+      <label class="field-label">Focused (auto)</label>
+      <input class="input" value="Ahmed Khan" autofocus/>
+    </div>
+    <div class="field">
+      <label class="field-label">Error</label>
+      <input class="input error" value="ahmed@"/>
+      <span class="field-error">Enter a valid email address</span>
+    </div>
+    <div class="field">
+      <label class="field-label">Disabled</label>
+      <input class="input" value="STU-2025-024" disabled/>
+      <span class="field-hint">Generated automatically</span>
+    </div>
+    <div class="field">
+      <label class="field-label">With placeholder</label>
+      <input class="input" placeholder="Search by name or roll number…"/>
+    </div>
+    <div class="field">
+      <label class="field-label">Required</label>
+      <input class="input" placeholder="Roll number" required/>
+      <span class="field-hint">Required <span style="color:var(--color-danger);">*</span></span>
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Select &amp; textarea</h2>
+  <div class="canvas grid-3" style="gap:var(--space-5);">
+    <div class="field">
+      <label class="field-label">Class</label>
+      <select class="input">
+        <option>Select…</option>
+        <option>Class 9-A</option>
+        <option selected>Class 10-A</option>
+        <option>Class 11-A</option>
+      </select>
+    </div>
+    <div class="field" style="grid-column:span 2;">
+      <label class="field-label">Notes</label>
+      <textarea class="input" rows="4" placeholder="Any additional information about this student…"></textarea>
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Input groups</h2>
+  <div class="canvas col">
+    <div class="field">
+      <label class="field-label">Search</label>
+      <div class="input-group">
+        <span class="addon">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        </span>
+        <input class="input" placeholder="Search…"/>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">Fee amount</label>
+      <div class="input-group">
+        <span class="addon" style="font-family:var(--font-mono);">PKR</span>
+        <input class="input" placeholder="0.00" style="font-family:var(--font-mono);"/>
+        <span class="addon">.00</span>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">School subdomain</label>
+      <div class="input-group">
+        <input class="input" placeholder="my-school"/>
+        <span class="addon">.school-erp.app</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Rules</h2>
+  <table class="preview-table">
+    <tbody>
+      <tr><td>Always pair input with a <code>&lt;label&gt;</code> — placeholder alone is not accessible.</td></tr>
+      <tr><td>Use hint text for guidance, error text for validation failures. Never both at once.</td></tr>
+      <tr><td>Required fields show <span style="color:var(--color-danger);">*</span> next to the label, not after the input.</td></tr>
+      <tr><td>Disabled inputs are read-only display — never use disabled to communicate "not yet allowed."</td></tr>
+    </tbody>
+  </table>
+</section>
+</body>
+</html>

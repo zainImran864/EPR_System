@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Spacing Scale — EPR Design</title>
+<link rel="stylesheet" href="../colors_and_type.css"/>
+<link rel="stylesheet" href="_preview.css"/>
+<style>
+  .space-row { display:flex; align-items:center; gap:var(--space-5); padding:var(--space-3) 0; border-bottom:1px solid var(--color-border); }
+  .space-row:last-child { border-bottom:none; }
+  .space-token { width:140px; font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-muted); flex-shrink:0; }
+  .space-token strong { display:block; color:var(--color-text-secondary); }
+  .space-bar { height:24px; background:var(--color-primary-100); border-left:3px solid var(--color-primary); border-radius:var(--radius-sm); }
+  .space-val { width:60px; font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-secondary); text-align:right; }
+  .gap-item { width:36px; height:36px; background:var(--color-primary-200); border-radius:var(--radius-sm); }
+</style>
+</head>
+<body>
+<header class="preview-header">
+  <div>
+    <h1>Spacing Scale</h1>
+    <p class="lead">4px base unit. Use only the documented tokens — never arbitrary pixel values.</p>
+  </div>
+  <a href="README.md">← All previews</a>
+</header>
+
+<section class="preview-section">
+  <h2>The scale</h2>
+  <div class="canvas" style="padding:var(--space-3) var(--space-5);">
+    <div class="space-row"><div class="space-token"><strong>--space-1</strong>4px</div><div style="flex:1;"><div class="space-bar" style="width:4px;"></div></div><div class="space-val">4px</div></div>
+    <div class="space-row"><div class="space-token"><strong>--space-2</strong>8px</div><div style="flex:1;"><div class="space-bar" style="width:8px;"></div></div><div class="space-val">8px</div></div>
+    <div class="space-row"><div class="space-token"><strong>--space-3</strong>12px</div><div style="flex:1;"><div class="space-bar" style="width:12px;"></div></div><div class="space-val">12px</div></div>
+    <div class="space-row"><div class="space-token"><strong>--space-4</strong>16px</div><div style="flex:1;"><div class="space-bar" style="width:16px;"></div></div><div class="space-val">16px</div></div>
+    <div class="space-row"><div class="space-token"><strong>--space-5</strong>20px</div><div style="flex:1;"><div class="space-bar" style="width:20px;"></div></div><div class="space-val">20px</div></div>
+    <div class="space-row"><div class="space-token"><strong>--space-6</strong>24px</div><div style="flex:1;"><div class="space-bar" style="width:24px;"></div></div><div class="space-val">24px</div></div>
+    <div class="space-row"><div class="space-token"><strong>--space-8</strong>32px</div><div style="flex:1;"><div class="space-bar" style="width:32px;"></div></div><div class="space-val">32px</div></div>
+    <div class="space-row"><div class="space-token"><strong>--space-10</strong>40px</div><div style="flex:1;"><div class="space-bar" style="width:40px;"></div></div><div class="space-val">40px</div></div>
+    <div class="space-row"><div class="space-token"><strong>--space-12</strong>48px</div><div style="flex:1;"><div class="space-bar" style="width:48px;"></div></div><div class="space-val">48px</div></div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Gap demos</h2>
+  <div class="canvas col">
+    <div>
+      <div class="token-label" style="margin-bottom:var(--space-2);">gap: var(--space-2) · 8px — chip/icon group</div>
+      <div style="display:flex;gap:8px;"><div class="gap-item"></div><div class="gap-item"></div><div class="gap-item"></div><div class="gap-item"></div></div>
+    </div>
+    <div>
+      <div class="token-label" style="margin-bottom:var(--space-2);">gap: var(--space-4) · 16px — stat card grid</div>
+      <div style="display:flex;gap:16px;"><div class="gap-item"></div><div class="gap-item"></div><div class="gap-item"></div><div class="gap-item"></div></div>
+    </div>
+    <div>
+      <div class="token-label" style="margin-bottom:var(--space-2);">gap: var(--space-6) · 24px — page section spacing</div>
+      <div style="display:flex;gap:24px;"><div class="gap-item"></div><div class="gap-item"></div><div class="gap-item"></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Where to use what</h2>
+  <table class="preview-table">
+    <thead><tr><th>Context</th><th>Token</th></tr></thead>
+    <tbody>
+      <tr><td>Icon ↔ label</td><td><code>--space-2</code> (8)</td></tr>
+      <tr><td>Inline form fields</td><td><code>--space-3</code> (12)</td></tr>
+      <tr><td>Card internal padding</td><td><code>--space-5</code> (20)</td></tr>
+      <tr><td>Page horizontal padding</td><td><code>--space-6</code> (24)</td></tr>
+      <tr><td>Section margin-bottom</td><td><code>--space-8</code> (32)</td></tr>
+      <tr><td>Empty-state padding</td><td><code>--space-10</code> (40)</td></tr>
+    </tbody>
+  </table>
+</section>
+</body>
+</html>

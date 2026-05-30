@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Colors — Surfaces — EPR Design</title>
+<link rel="stylesheet" href="../colors_and_type.css"/>
+<link rel="stylesheet" href="_preview.css"/>
+</head>
+<body>
+<header class="preview-header">
+  <div>
+    <h1>Colors — Surfaces</h1>
+    <p class="lead">Backgrounds, surfaces, borders, and the sidebar palette.</p>
+  </div>
+  <a href="README.md">← All previews</a>
+</header>
+
+<section class="preview-section">
+  <h2>Light surfaces</h2>
+  <div class="canvas grid-4">
+    <div class="swatch"><div class="swatch-color" style="background:#FFFFFF;border-bottom:1px solid var(--color-border);"></div><div class="swatch-meta"><strong>--color-surface</strong>#FFFFFF</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#F8FAFC;"></div><div class="swatch-meta"><strong>--color-bg</strong>#F8FAFC</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#E2E8F0;"></div><div class="swatch-meta"><strong>--color-border</strong>#E2E8F0</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#CBD5E1;"></div><div class="swatch-meta"><strong>--color-border-strong</strong>#CBD5E1</div></div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Sidebar / dark surfaces</h2>
+  <div class="canvas grid-4">
+    <div class="swatch"><div class="swatch-color" style="background:#0F172A;"></div><div class="swatch-meta"><strong>--color-sidebar-bg</strong>#0F172A</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#1E293B;"></div><div class="swatch-meta"><strong>--color-sidebar-hover</strong>#1E293B</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#CBD5E1;"></div><div class="swatch-meta"><strong>--color-sidebar-text</strong>#CBD5E1</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#64748B;"></div><div class="swatch-meta"><strong>--color-sidebar-icon</strong>#64748B</div></div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Layered example</h2>
+  <p>How surfaces stack in a real layout: page bg → card surface → input nested surface.</p>
+  <div style="padding:var(--space-6);background:var(--color-bg);border-radius:var(--radius-lg);">
+    <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-5);">
+      <h3 style="margin:0 0 var(--space-3);">Card on bg</h3>
+      <div style="background:var(--color-bg);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-3);font-size:var(--text-sm);color:var(--color-text-muted);">
+        Nested surface (input, code block, secondary panel)
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Usage</h2>
+  <table class="preview-table">
+    <thead><tr><th>Token</th><th>Used for</th></tr></thead>
+    <tbody>
+      <tr><td><code>--color-surface</code></td><td>Cards, modals, sidebar header, table head — anything that sits on top</td></tr>
+      <tr><td><code>--color-bg</code></td><td>Page background, nested code blocks, table row hover</td></tr>
+      <tr><td><code>--color-border</code></td><td>Card outlines, table dividers, input borders (resting)</td></tr>
+      <tr><td><code>--color-border-strong</code></td><td>Input borders (resting/hover), prominent dividers</td></tr>
+      <tr><td><code>--color-sidebar-bg</code></td><td>Sidebar background and other dark structural surfaces</td></tr>
+      <tr><td><code>--color-sidebar-hover</code></td><td>Sidebar nav item hover background</td></tr>
+    </tbody>
+  </table>
+</section>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Colors — Severity — EPR Design</title>
+<link rel="stylesheet" href="../colors_and_type.css"/>
+<link rel="stylesheet" href="_preview.css"/>
+</head>
+<body>
+<header class="preview-header">
+  <div>
+    <h1>Colors — Severity</h1>
+    <p class="lead">Semantic colour tokens for status, validation, and alerts.</p>
+  </div>
+  <a href="README.md">← All previews</a>
+</header>
+
+<section class="preview-section">
+  <h2>Four severity scales</h2>
+  <div class="canvas grid-4">
+    <div class="swatch"><div class="swatch-color" style="background:#16A34A;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;">success</div><div class="swatch-meta"><strong>--color-success</strong>#16A34A</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#D97706;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;">warning</div><div class="swatch-meta"><strong>--color-warning</strong>#D97706</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#DC2626;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;">danger</div><div class="swatch-meta"><strong>--color-danger</strong>#DC2626</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#0284C7;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;">info</div><div class="swatch-meta"><strong>--color-info</strong>#0284C7</div></div>
+
+    <div class="swatch"><div class="swatch-color" style="background:#DCFCE7;"></div><div class="swatch-meta"><strong>--color-success-light</strong>#DCFCE7</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#FEF3C7;"></div><div class="swatch-meta"><strong>--color-warning-light</strong>#FEF3C7</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#FEE2E2;"></div><div class="swatch-meta"><strong>--color-danger-light</strong>#FEE2E2</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#E0F2FE;"></div><div class="swatch-meta"><strong>--color-info-light</strong>#E0F2FE</div></div>
+
+    <div class="swatch"><div class="swatch-color" style="background:#15803D;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;">text</div><div class="swatch-meta"><strong>--color-success-text</strong>#15803D</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#B45309;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;">text</div><div class="swatch-meta"><strong>--color-warning-text</strong>#B45309</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#B91C1C;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;">text</div><div class="swatch-meta"><strong>--color-danger-text</strong>#B91C1C</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#0369A1;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;">text</div><div class="swatch-meta"><strong>--color-info-text</strong>#0369A1</div></div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>In context</h2>
+  <table class="preview-table">
+    <thead><tr><th>Scale</th><th>School ERP use</th><th>Other use</th></tr></thead>
+    <tbody>
+      <tr><td><span style="background:#DCFCE7;color:#15803D;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:500;">● Success</span></td><td>Present, Paid, Active, Submitted</td><td>Validation success, status badge</td></tr>
+      <tr><td><span style="background:#FEF3C7;color:#B45309;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:500;">● Warning</span></td><td>Late attendance, Pending fee, Low grade</td><td>Cautionary alert, soft-blocking states</td></tr>
+      <tr><td><span style="background:#FEE2E2;color:#B91C1C;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:500;">● Danger</span></td><td>Absent, Overdue, Failing grade, Account disabled</td><td>Destructive actions, errors</td></tr>
+      <tr><td><span style="background:#E0F2FE;color:#0369A1;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:500;">● Info</span></td><td>Announcements, neutral notes, system messages</td><td>Tips, callouts</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="preview-section">
+  <h2>Rules</h2>
+  <table class="preview-table">
+    <tbody>
+      <tr><td>Never use colour alone — pair with an icon or text label so colour-blind users read the same status.</td></tr>
+      <tr><td>Use the <code>-light</code> variant for backgrounds, the base for solid surfaces, and <code>-text</code> for text-on-light pairings.</td></tr>
+      <tr><td>Never invent a fifth severity. If you need "neutral," use the slate neutral tokens.</td></tr>
+    </tbody>
+  </table>
+</section>
+</body>
+</html>

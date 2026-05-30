@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Cards — EPR Design</title>
+<link rel="stylesheet" href="../colors_and_type.css"/>
+<link rel="stylesheet" href="_preview.css"/>
+<style>
+  .card { background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-lg); padding:var(--space-5); }
+  .card.elevated { box-shadow:var(--shadow-sm); }
+  .card.accent { border-left:3px solid var(--color-primary); }
+  .stat-icon { width:36px; height:36px; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .badge { display:inline-flex; align-items:center; gap:var(--space-1); padding:1px 6px; border-radius:var(--radius-full); font-size:10px; font-weight:var(--fw-medium); }
+</style>
+</head>
+<body>
+<header class="preview-header">
+  <div>
+    <h1>Cards</h1>
+    <p class="lead">Stat cards, content cards, and accent cards. Always on the page background.</p>
+  </div>
+  <a href="README.md">← All previews</a>
+</header>
+
+<section class="preview-section">
+  <h2>Stat card row — dashboard</h2>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-4);">
+    <article class="card elevated">
+      <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-3);">
+        <span style="font-size:var(--text-sm);font-weight:var(--fw-medium);color:var(--color-text-secondary);">Students</span>
+        <span class="stat-icon" style="background:var(--color-primary-light);color:var(--color-primary-700);">👨‍🎓</span>
+      </header>
+      <div style="font-family:var(--font-mono);font-size:var(--text-3xl);font-weight:var(--fw-bold);">248</div>
+      <div style="display:flex;align-items:center;gap:var(--space-2);margin-top:var(--space-2);">
+        <span class="badge" style="background:var(--color-success-light);color:var(--color-success-text);">▲ +12</span>
+        <span style="font-size:var(--text-xs);color:var(--color-text-muted);">vs. last week</span>
+      </div>
+    </article>
+    <article class="card elevated">
+      <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-3);">
+        <span style="font-size:var(--text-sm);font-weight:var(--fw-medium);color:var(--color-text-secondary);">Attendance</span>
+        <span class="stat-icon" style="background:var(--color-success-light);color:var(--color-success-text);">✅</span>
+      </header>
+      <div style="font-family:var(--font-mono);font-size:var(--text-3xl);font-weight:var(--fw-bold);">94%</div>
+      <div style="display:flex;align-items:center;gap:var(--space-2);margin-top:var(--space-2);">
+        <span class="badge" style="background:var(--color-success-light);color:var(--color-success-text);">▲ +2%</span>
+        <span style="font-size:var(--text-xs);color:var(--color-text-muted);">vs. last week</span>
+      </div>
+    </article>
+    <article class="card elevated">
+      <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-3);">
+        <span style="font-size:var(--text-sm);font-weight:var(--fw-medium);color:var(--color-text-secondary);">Fees Due</span>
+        <span class="stat-icon" style="background:var(--color-warning-light);color:var(--color-warning-text);">💰</span>
+      </header>
+      <div style="font-family:var(--font-mono);font-size:var(--text-3xl);font-weight:var(--fw-bold);">PKR 142K</div>
+      <div style="display:flex;align-items:center;gap:var(--space-2);margin-top:var(--space-2);">
+        <span class="badge" style="background:var(--color-danger-light);color:var(--color-danger-text);">▼ -8%</span>
+        <span style="font-size:var(--text-xs);color:var(--color-text-muted);">vs. last week</span>
+      </div>
+    </article>
+    <article class="card elevated">
+      <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-3);">
+        <span style="font-size:var(--text-sm);font-weight:var(--fw-medium);color:var(--color-text-secondary);">Classes</span>
+        <span class="stat-icon" style="background:var(--color-info-light);color:var(--color-info-text);">🏫</span>
+      </header>
+      <div style="font-family:var(--font-mono);font-size:var(--text-3xl);font-weight:var(--fw-bold);">18</div>
+      <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-3);">All active</div>
+    </article>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Content card — student profile</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-5);">
+    <article class="card">
+      <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-4);">
+        <div style="width:48px;height:48px;border-radius:50%;background:#DBEAFE;color:#1D4ED8;display:flex;align-items:center;justify-content:center;font-weight:600;">AK</div>
+        <div>
+          <div style="font-weight:var(--fw-semibold);">Ahmed Khan</div>
+          <div style="font-size:var(--text-xs);color:var(--color-text-muted);">Class 10-A · Roll 042</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);font-size:var(--text-sm);">
+        <div><span style="color:var(--color-text-muted);">Attendance</span><br><strong>92%</strong></div>
+        <div><span style="color:var(--color-text-muted);">Avg. marks</span><br><strong>84%</strong></div>
+        <div><span style="color:var(--color-text-muted);">Fee status</span><br><span class="badge" style="background:var(--color-success-light);color:var(--color-success-text);">Paid</span></div>
+        <div><span style="color:var(--color-text-muted);">Joined</span><br><strong>Aug 2022</strong></div>
+      </div>
+    </article>
+    <article class="card accent">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div style="font-weight:var(--fw-semibold);font-size:var(--text-md);">Term 1 Reports Ready</div>
+          <div style="font-size:var(--text-sm);color:var(--color-text-secondary);margin-top:var(--space-1);">All 248 students have reports generated for Term 1 — 2025. Review and publish to parents.</div>
+        </div>
+        <span style="font-size:24px;">📋</span>
+      </div>
+      <div style="margin-top:var(--space-4);">
+        <button style="background:var(--color-primary);color:#fff;border:none;padding:6px 12px;border-radius:var(--radius-md);font-size:var(--text-sm);font-weight:var(--fw-medium);cursor:pointer;">Review reports</button>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Card variants</h2>
+  <table class="preview-table">
+    <thead><tr><th>Style</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td>Default (border only)</td><td>Content card on a card-heavy page</td></tr>
+      <tr><td>Elevated (<code>shadow-sm</code>)</td><td>Stat cards on the dashboard, isolated panels</td></tr>
+      <tr><td>Accent (<code>border-left</code>)</td><td>Highlight a single card in a row — alerts, prompts, "what's new"</td></tr>
+    </tbody>
+  </table>
+</section>
+</body>
+</html>
