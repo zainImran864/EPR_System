@@ -36,3 +36,6 @@ Thumbs.db
 # Prisma local databases
 prisma/dev.db
 prisma/dev.db-journal
+
+# Claude Code local overrides
+.claude/settings.local.json
