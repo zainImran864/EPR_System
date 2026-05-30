@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Buttons — Design System</title>
+<link rel="stylesheet" href="base.css" />
+</head>
+<body>
+<header class="page-header">
+  <a class="page-header-brand" href="../index.html"><span>S</span> Design System</a>
+  <nav class="page-header-nav">
+    <a href="buttons.html" class="active">Buttons</a>
+    <a href="badges.html">Badges</a>
+    <a href="forms.html">Forms</a>
+    <a href="switches.html">Switches</a>
+    <a href="cards.html">Cards</a>
+    <a href="tables.html">Tables</a>
+    <a href="alerts.html">Alerts</a>
+    <a href="toasts.html">Toasts</a>
+    <a href="modals.html">Modals</a>
+    <a href="offcanvas.html">Offcanvas</a>
+    <a href="dropdowns.html">Dropdowns</a>
+    <a href="tabs.html">Tabs</a>
+    <a href="pagination.html">Pagination</a>
+    <a href="progress.html">Progress</a>
+    <a href="spinners.html">Spinners</a>
+    <a href="avatars.html">Avatars</a>
+    <a href="breadcrumb.html">Breadcrumb</a>
+    <a href="steps.html">Steps</a>
+    <a href="empty-states.html">Empty States</a>
+    <a href="sidebar.html">Sidebar</a>
+    <a href="topbar.html">Topbar</a>
+  </nav>
+</header>
+
+<main class="page-content">
+  <h1 class="page-title">Buttons</h1>
+  <p class="page-desc">Base class <code>.btn</code> combined with a variant and size modifier. Supports icons, loading, and disabled states.</p>
+
+  <!-- VARIANTS -->
+  <section class="section">
+    <h2 class="section-title">Variants</h2>
+    <div class="canvas">
+      <div class="label">All variants — default (md) size</div>
+      <div class="row">
+        <button class="btn btn-primary btn-md">Primary</button>
+        <button class="btn btn-secondary btn-md">Secondary</button>
+        <button class="btn btn-outline-primary btn-md">Outline</button>
+        <button class="btn btn-ghost btn-md">Ghost</button>
+        <button class="btn btn-danger btn-md">Danger</button>
+        <button class="btn btn-link btn-md">Link</button>
+      </div>
+    </div>
+    <div class="canvas" style="background:#F1F5F9;">
+      <div class="label">On tinted background</div>
+      <div class="row">
+        <button class="btn btn-primary btn-md">Primary</button>
+        <button class="btn btn-secondary btn-md">Secondary</button>
+        <button class="btn btn-outline-primary btn-md">Outline</button>
+        <button class="btn btn-ghost btn-md">Ghost</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SIZES -->
+  <section class="section">
+    <h2 class="section-title">Sizes</h2>
+    <div class="canvas">
+      <div class="row" style="align-items:flex-end;">
+        <div style="text-align:center;">
+          <div class="label">xs</div>
+          <button class="btn btn-primary btn-xs">Extra Small</button>
+        </div>
+        <div style="text-align:center;">
+          <div class="label">sm</div>
+          <button class="btn btn-primary btn-sm">Small</button>
+        </div>
+        <div style="text-align:center;">
+          <div class="label">md (default)</div>
+          <button class="btn btn-primary btn-md">Medium</button>
+        </div>
+        <div style="text-align:center;">
+          <div class="label">lg</div>
+          <button class="btn btn-primary btn-lg">Large</button>
+        </div>
+      </div>
+    </div>
+    <div class="canvas">
+      <div class="label">Secondary — all sizes</div>
+      <div class="row" style="align-items:flex-end;">
+        <button class="btn btn-secondary btn-xs">XSmall</button>
+        <button class="btn btn-secondary btn-sm">Small</button>
+        <button class="btn btn-secondary btn-md">Medium</button>
+        <button class="btn btn-secondary btn-lg">Large</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATES -->
+  <section class="section">
+    <h2 class="section-title">States</h2>
+    <div class="canvas">
+      <div class="label">Normal / Disabled / Loading</div>
+      <div class="row">
+        <button class="btn btn-primary btn-md">Normal</button>
+        <button class="btn btn-primary btn-md disabled">Disabled</button>
+        <button class="btn btn-primary btn-md btn-loading">Loading</button>
+      </div>
+      <div class="row mt-4">
+        <button class="btn btn-secondary btn-md">Normal</button>
+        <button class="btn btn-secondary btn-md disabled">Disabled</button>
+        <button class="btn btn-danger btn-md">Danger</button>
+        <button class="btn btn-danger btn-md disabled">Disabled</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- WITH ICONS -->
+  <section class="section">
+    <h2 class="section-title">With Icons</h2>
+    <div class="canvas">
+      <div class="label">Leading icon</div>
+      <div class="row">
+        <button class="btn btn-primary btn-md">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Add Student
+        </button>
+        <button class="btn btn-secondary btn-md">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M16 12l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Export CSV
+        </button>
+        <button class="btn btn-outline-primary btn-md">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          Edit Record
+        </button>
+        <button class="btn btn-danger btn-md">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4h6v3M4 7h16"/></svg>
+          Delete
+        </button>
+      </div>
+      <div class="label mt-4">Trailing icon</div>
+      <div class="row">
+        <button class="btn btn-primary btn-md">
+          Next Step
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <button class="btn btn-secondary btn-md">
+          More Options
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="canvas">
+      <div class="label">Icon-only buttons</div>
+      <div class="row">
+        <button class="btn btn-primary btn-icon btn-md" title="Add">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <button class="btn btn-secondary btn-icon btn-md" title="Edit">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        </button>
+        <button class="btn btn-ghost btn-icon btn-md" title="More">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+        </button>
+        <button class="btn btn-danger btn-icon btn-md" title="Delete">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4h6v3M4 7h16"/></svg>
+        </button>
+        <button class="btn btn-secondary btn-icon btn-sm" title="Filter">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707l-6.414 6.414A1 1 0 0014 13.828V19a1 1 0 01-.553.894l-4 2A1 1 0 018 21v-7.172a1 1 0 00-.293-.707L1.293 6.707A1 1 0 011 6V4z"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- BUTTON WITH SPINNER -->
+  <section class="section">
+    <h2 class="section-title">With Inline Spinner</h2>
+    <div class="canvas">
+      <div class="row">
+        <button class="btn btn-primary btn-md" style="gap:var(--space-2);">
+          <div class="spinner spinner-sm" style="border-color:rgba(255,255,255,.3);border-top-color:#fff;"></div>
+          Saving…
+        </button>
+        <button class="btn btn-secondary btn-md" style="gap:var(--space-2);">
+          <div class="spinner spinner-sm"></div>
+          Loading…
+        </button>
+        <button class="btn btn-danger btn-md" style="gap:var(--space-2);">
+          <div class="spinner spinner-sm" style="border-color:rgba(255,255,255,.3);border-top-color:#fff;"></div>
+          Deleting…
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FULL WIDTH -->
+  <section class="section">
+    <h2 class="section-title">Full Width</h2>
+    <div class="canvas" style="max-width:400px;">
+      <div class="col">
+        <button class="btn btn-primary btn-md w-full">Save Changes</button>
+        <button class="btn btn-secondary btn-md w-full">Cancel</button>
+        <button class="btn btn-outline-primary btn-md w-full">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Add New Student
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- USAGE RULES -->
+  <section class="section">
+    <h2 class="section-title">Usage Rules</h2>
+    <div class="canvas">
+      <table>
+        <thead><tr><th>Variant</th><th>When to use</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge badge-primary">Primary</span></td><td>One per screen. Main call-to-action: Save, Submit, Add Student.</td></tr>
+          <tr><td><span class="badge badge-neutral">Secondary</span></td><td>Cancel, Go Back, alternative actions alongside primary.</td></tr>
+          <tr><td><span class="badge badge-outline-primary">Outline</span></td><td>Secondary importance but still branded — Export, View Details.</td></tr>
+          <tr><td><span class="badge badge-neutral">Ghost</span></td><td>Toolbar / table row actions where visual weight must stay low.</td></tr>
+          <tr><td><span class="badge badge-danger">Danger</span></td><td>Irreversible actions only: Delete, Remove, Suspend.</td></tr>
+          <tr><td><span class="badge badge-neutral">Link</span></td><td>Inline contextual actions within text or table cells.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+</body>
+</html>

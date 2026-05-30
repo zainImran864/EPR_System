@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Spinners — Design System</title>
+<link rel="stylesheet" href="base.css"/>
+</head>
+<body>
+<header class="page-header">
+  <a class="page-header-brand" href="../index.html"><span>S</span> Design System</a>
+  <nav class="page-header-nav">
+    <a href="buttons.html">Buttons</a><a href="badges.html">Badges</a>
+    <a href="forms.html">Forms</a><a href="switches.html">Switches</a>
+    <a href="cards.html">Cards</a><a href="tables.html">Tables</a>
+    <a href="alerts.html">Alerts</a><a href="toasts.html">Toasts</a>
+    <a href="modals.html">Modals</a><a href="offcanvas.html">Offcanvas</a>
+    <a href="dropdowns.html">Dropdowns</a><a href="tabs.html">Tabs</a>
+    <a href="pagination.html">Pagination</a><a href="progress.html">Progress</a>
+    <a href="spinners.html" class="active">Spinners</a><a href="avatars.html">Avatars</a>
+    <a href="breadcrumb.html">Breadcrumb</a><a href="steps.html">Steps</a>
+    <a href="empty-states.html">Empty States</a><a href="sidebar.html">Sidebar</a><a href="topbar.html">Topbar</a>
+  </nav>
+</header>
+
+<main class="page-content">
+  <h1 class="page-title">Spinners</h1>
+  <p class="page-desc">CSS-only border-spin loader. Use inline inside buttons, or centered on a panel/full-page for data loading.</p>
+
+  <section class="section">
+    <h2 class="section-title">Sizes</h2>
+    <div class="canvas">
+      <div class="row" style="align-items:flex-end;gap:var(--space-6);">
+        <div style="text-align:center;"><div class="label">sm — 16px</div><div class="spinner spinner-sm"></div></div>
+        <div style="text-align:center;"><div class="label">md — 24px</div><div class="spinner spinner-md"></div></div>
+        <div style="text-align:center;"><div class="label">lg — 36px</div><div class="spinner spinner-lg"></div></div>
+        <div style="text-align:center;"><div class="label">xl — 48px</div><div class="spinner spinner-xl"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Colors</h2>
+    <div class="canvas">
+      <div class="row" style="gap:var(--space-6);align-items:flex-end;">
+        <div style="text-align:center;"><div class="label">Primary</div><div class="spinner spinner-lg"></div></div>
+        <div style="text-align:center;"><div class="label">Success</div><div class="spinner spinner-lg spinner-success"></div></div>
+        <div style="text-align:center;"><div class="label">Warning</div><div class="spinner spinner-lg spinner-warning"></div></div>
+        <div style="text-align:center;"><div class="label">Danger</div><div class="spinner spinner-lg spinner-danger"></div></div>
+        <div style="text-align:center;background:var(--color-sidebar-bg);padding:var(--space-4);border-radius:var(--radius-lg);">
+          <div class="label" style="color:#fff;">On dark</div>
+          <div class="spinner spinner-lg" style="border-color:rgba(255,255,255,.2);border-top-color:#fff;"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">In Buttons</h2>
+    <div class="canvas">
+      <div class="row">
+        <button class="btn btn-primary btn-md" style="gap:var(--space-2);">
+          <div class="spinner spinner-sm" style="border-color:rgba(255,255,255,.3);border-top-color:#fff;"></div>
+          Saving…
+        </button>
+        <button class="btn btn-secondary btn-md" style="gap:var(--space-2);">
+          <div class="spinner spinner-sm"></div>
+          Loading…
+        </button>
+        <button class="btn btn-danger btn-md" style="gap:var(--space-2);">
+          <div class="spinner spinner-sm" style="border-color:rgba(255,255,255,.3);border-top-color:#fff;"></div>
+          Deleting…
+        </button>
+        <button class="btn btn-outline-primary btn-md" style="gap:var(--space-2);">
+          <div class="spinner spinner-sm"></div>
+          Generating…
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Full Panel Loading</h2>
+    <div class="canvas" style="position:relative;min-height:200px;display:flex;align-items:center;justify-content:center;">
+      <div style="position:absolute;inset:0;background:rgba(255,255,255,.8);border-radius:var(--radius-lg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-3);">
+        <div class="spinner spinner-xl"></div>
+        <span style="font-size:var(--text-sm);color:var(--color-text-secondary);">Loading student records…</span>
+      </div>
+      <div style="font-size:var(--text-sm);color:var(--color-text-muted);">Table content behind overlay</div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Inline with text</h2>
+    <div class="canvas col">
+      <div style="display:flex;align-items:center;gap:var(--space-3);font-size:var(--text-sm);color:var(--color-text-secondary);">
+        <div class="spinner spinner-sm"></div>
+        Fetching attendance records…
+      </div>
+      <div style="display:flex;align-items:center;gap:var(--space-3);font-size:var(--text-sm);color:var(--color-text-secondary);">
+        <div class="spinner spinner-sm spinner-success"></div>
+        Generating PDF report…
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

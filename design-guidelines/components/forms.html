@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Forms — Design System</title>
+<link rel="stylesheet" href="base.css"/>
+<style>
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4); }
+</style>
+</head>
+<body>
+<header class="page-header">
+  <a class="page-header-brand" href="../index.html"><span>S</span> Design System</a>
+  <nav class="page-header-nav">
+    <a href="buttons.html">Buttons</a><a href="badges.html">Badges</a>
+    <a href="forms.html" class="active">Forms</a><a href="switches.html">Switches</a>
+    <a href="cards.html">Cards</a><a href="tables.html">Tables</a>
+    <a href="alerts.html">Alerts</a><a href="toasts.html">Toasts</a>
+    <a href="modals.html">Modals</a><a href="offcanvas.html">Offcanvas</a>
+    <a href="dropdowns.html">Dropdowns</a><a href="tabs.html">Tabs</a>
+    <a href="pagination.html">Pagination</a><a href="progress.html">Progress</a>
+    <a href="spinners.html">Spinners</a><a href="avatars.html">Avatars</a>
+    <a href="breadcrumb.html">Breadcrumb</a><a href="steps.html">Steps</a>
+    <a href="empty-states.html">Empty States</a><a href="sidebar.html">Sidebar</a><a href="topbar.html">Topbar</a>
+  </nav>
+</header>
+
+<main class="page-content">
+  <h1 class="page-title">Form Controls</h1>
+  <p class="page-desc">All inputs share <code>.form-control</code>. Wrap in <code>.form-group</code> for label + hint + error layout.</p>
+
+  <!-- BASIC INPUTS -->
+  <section class="section">
+    <h2 class="section-title">Text Inputs</h2>
+    <div class="canvas">
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Default</label>
+          <input class="form-control" type="text" placeholder="Placeholder text" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">With hint</label>
+          <input class="form-control" type="text" placeholder="e.g. ahmed.khan" />
+          <span class="form-hint">Used for login and notifications.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Focused <span style="color:var(--color-text-muted);font-weight:400;">(simulate)</span></label>
+          <input class="form-control" type="text" value="Ahmed Khan" style="border-color:var(--color-primary);box-shadow:0 0 0 3px var(--color-primary-light);" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Error state</label>
+          <input class="form-control error" type="email" value="not-valid@" />
+          <span class="form-error">Enter a valid email address.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Disabled</label>
+          <input class="form-control" type="text" value="Read-only value" disabled />
+          <span class="form-hint">This field cannot be edited.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-control" type="password" value="secret123" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SELECT -->
+  <section class="section">
+    <h2 class="section-title">Select</h2>
+    <div class="canvas">
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Class</label>
+          <select class="form-control">
+            <option value="">Select class…</option>
+            <option>Class 9-A</option>
+            <option selected>Class 10-A</option>
+            <option>Class 10-B</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Academic Year</label>
+          <select class="form-control">
+            <option>2025 – 2026</option>
+            <option>2024 – 2025</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Error</label>
+          <select class="form-control error">
+            <option value="">Select subject…</option>
+          </select>
+          <span class="form-error">Please select a subject.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Disabled</label>
+          <select class="form-control" disabled>
+            <option>Class 9-A</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEXTAREA -->
+  <section class="section">
+    <h2 class="section-title">Textarea</h2>
+    <div class="canvas" style="max-width:560px;">
+      <div class="col">
+        <div class="form-group">
+          <label class="form-label">Remarks</label>
+          <textarea class="form-control" placeholder="Optional notes about the student…"></textarea>
+          <span class="form-hint">Max 500 characters.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Error</label>
+          <textarea class="form-control error" placeholder="…">bad</textarea>
+          <span class="form-error">Remarks must be at least 10 characters.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INPUT ADDONS -->
+  <section class="section">
+    <h2 class="section-title">Input Groups &amp; Addons</h2>
+    <div class="canvas" style="max-width:480px;">
+      <div class="col">
+        <div class="form-group">
+          <label class="form-label">Search</label>
+          <div class="input-group">
+            <input class="form-control" type="text" placeholder="Search students, classes…" />
+            <span class="input-addon">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            </span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fee Amount</label>
+          <div class="input-group">
+            <span class="input-addon">PKR</span>
+            <input class="form-control" type="number" placeholder="0" />
+            <span class="input-addon">.00</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <div class="input-group">
+            <span class="input-addon">@</span>
+            <input class="form-control" type="text" placeholder="username" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">With button</label>
+          <div class="input-group">
+            <input class="form-control" type="text" placeholder="Enter roll number" />
+            <button class="btn btn-primary btn-md" style="border-radius:0 var(--radius-md) var(--radius-md) 0;white-space:nowrap;">Look up</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FULL FORM EXAMPLE -->
+  <section class="section">
+    <h2 class="section-title">Full Form — Add Student</h2>
+    <div class="canvas" style="max-width:600px;">
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">First Name <span style="color:var(--color-danger)">*</span></label>
+          <input class="form-control" type="text" placeholder="Ahmed" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name <span style="color:var(--color-danger)">*</span></label>
+          <input class="form-control" type="text" placeholder="Khan" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date of Birth</label>
+          <input class="form-control" type="date" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Gender</label>
+          <select class="form-control">
+            <option value="">Select…</option>
+            <option>Male</option>
+            <option>Female</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Class <span style="color:var(--color-danger)">*</span></label>
+          <select class="form-control">
+            <option value="">Select class…</option>
+            <option>Class 9-A</option>
+            <option>Class 10-A</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Roll Number</label>
+          <input class="form-control" type="text" placeholder="Auto-generated" disabled />
+          <span class="form-hint">Assigned on save.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Parent Phone</label>
+          <div class="input-group">
+            <span class="input-addon">+92</span>
+            <input class="form-control" type="tel" placeholder="3001234567" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Parent Email</label>
+          <input class="form-control" type="email" placeholder="parent@example.com" />
+        </div>
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">Remarks</label>
+          <textarea class="form-control" placeholder="Optional notes…"></textarea>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:var(--space-3);margin-top:var(--space-6);">
+        <button class="btn btn-secondary btn-md">Cancel</button>
+        <button class="btn btn-primary btn-md">Save Student</button>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

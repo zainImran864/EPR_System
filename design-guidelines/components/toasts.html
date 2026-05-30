@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Toasts — Design System</title>
+<link rel="stylesheet" href="base.css"/>
+</head>
+<body>
+<header class="page-header">
+  <a class="page-header-brand" href="../index.html"><span>S</span> Design System</a>
+  <nav class="page-header-nav">
+    <a href="buttons.html">Buttons</a><a href="badges.html">Badges</a>
+    <a href="forms.html">Forms</a><a href="switches.html">Switches</a>
+    <a href="cards.html">Cards</a><a href="tables.html">Tables</a>
+    <a href="alerts.html">Alerts</a><a href="toasts.html" class="active">Toasts</a>
+    <a href="modals.html">Modals</a><a href="offcanvas.html">Offcanvas</a>
+    <a href="dropdowns.html">Dropdowns</a><a href="tabs.html">Tabs</a>
+    <a href="pagination.html">Pagination</a><a href="progress.html">Progress</a>
+    <a href="spinners.html">Spinners</a><a href="avatars.html">Avatars</a>
+    <a href="breadcrumb.html">Breadcrumb</a><a href="steps.html">Steps</a>
+    <a href="empty-states.html">Empty States</a><a href="sidebar.html">Sidebar</a><a href="topbar.html">Topbar</a>
+  </nav>
+</header>
+
+<main class="page-content">
+  <h1 class="page-title">Toasts / Notifications</h1>
+  <p class="page-desc">Auto-dismissing notifications that appear in the bottom-right corner. Left border accent = type. Max one toast visible at a time.</p>
+
+  <section class="section">
+    <h2 class="section-title">All Variants</h2>
+    <div class="canvas col" style="align-items:flex-start;">
+      <div class="toast success">
+        <span class="toast-icon">✅</span>
+        <div class="toast-body"><div class="toast-title">Student added</div><div class="toast-desc">Ahmed Khan has been enrolled in Class 10-A.</div></div>
+        <button class="toast-close">×</button>
+      </div>
+      <div class="toast warning">
+        <span class="toast-icon">⚠️</span>
+        <div class="toast-body"><div class="toast-title">Low attendance alert</div><div class="toast-desc">Zain Mirza's attendance has dropped below 75%.</div></div>
+        <button class="toast-close">×</button>
+      </div>
+      <div class="toast danger">
+        <span class="toast-icon">❌</span>
+        <div class="toast-body"><div class="toast-title">Delete failed</div><div class="toast-desc">Could not remove record. Please try again.</div></div>
+        <button class="toast-close">×</button>
+      </div>
+      <div class="toast info">
+        <span class="toast-icon">ℹ️</span>
+        <div class="toast-body"><div class="toast-title">Report ready</div><div class="toast-desc">Term 1 report PDF is ready to download.</div></div>
+        <button class="toast-close">×</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Without description (short)</h2>
+    <div class="canvas col" style="align-items:flex-start;">
+      <div class="toast success"><span class="toast-icon">✅</span><div class="toast-body"><div class="toast-title">Changes saved</div></div><button class="toast-close">×</button></div>
+      <div class="toast danger"><span class="toast-icon">❌</span><div class="toast-body"><div class="toast-title">Something went wrong</div></div><button class="toast-close">×</button></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">With action link</h2>
+    <div class="canvas col" style="align-items:flex-start;">
+      <div class="toast success">
+        <span class="toast-icon">✅</span>
+        <div class="toast-body">
+          <div class="toast-title">Student deleted</div>
+          <div class="toast-desc">Ahmed Khan was removed. <a href="#" style="color:var(--color-primary);font-weight:var(--fw-medium);">Undo</a></div>
+        </div>
+        <button class="toast-close">×</button>
+      </div>
+      <div class="toast info">
+        <span class="toast-icon">ℹ️</span>
+        <div class="toast-body">
+          <div class="toast-title">Export ready</div>
+          <div class="toast-desc">Your CSV is ready. <a href="#" style="color:var(--color-primary);font-weight:var(--fw-medium);">Download now</a></div>
+        </div>
+        <button class="toast-close">×</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Position &amp; Stack</h2>
+    <div class="canvas" style="background:var(--color-bg);padding:var(--space-6);position:relative;min-height:220px;">
+      <div style="position:absolute;bottom:var(--space-4);right:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3);align-items:flex-end;">
+        <div class="toast success" style="box-shadow:var(--shadow-lg);">
+          <span class="toast-icon">✅</span>
+          <div class="toast-body"><div class="toast-title">Attendance saved</div><div class="toast-desc">Class 10-A — 28 present, 4 absent.</div></div>
+          <button class="toast-close">×</button>
+        </div>
+        <div class="toast info" style="box-shadow:var(--shadow-lg);opacity:.8;transform:scale(.97);">
+          <span class="toast-icon">ℹ️</span>
+          <div class="toast-body"><div class="toast-title">Report generating…</div></div>
+          <button class="toast-close">×</button>
+        </div>
+      </div>
+      <span style="font-size:var(--text-xs);color:var(--color-text-muted);">Bottom-right corner — most recent on top</span>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Timing &amp; Usage Rules</h2>
+    <div class="canvas">
+      <table>
+        <thead><tr><th>Rule</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Auto-dismiss (success/info)</td><td>4 seconds</td></tr>
+          <tr><td>Auto-dismiss (warning)</td><td>6 seconds</td></tr>
+          <tr><td>Auto-dismiss (danger)</td><td>Never — must be dismissed manually</td></tr>
+          <tr><td>Max visible at once</td><td>3 (oldest disappears first)</td></tr>
+          <tr><td>Position</td><td>Bottom-right, 16px from edges</td></tr>
+          <tr><td>z-index</td><td>9000 (above modals)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+</body>
+</html>

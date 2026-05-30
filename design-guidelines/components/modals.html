@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Modals — Design System</title>
+<link rel="stylesheet" href="base.css"/>
+<style>
+.grid-2 { display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4); }
+.modal-demo-wrap { background:var(--color-bg);border-radius:var(--radius-lg);padding:var(--space-6); }
+</style>
+</head>
+<body>
+<header class="page-header">
+  <a class="page-header-brand" href="../index.html"><span>S</span> Design System</a>
+  <nav class="page-header-nav">
+    <a href="buttons.html">Buttons</a><a href="badges.html">Badges</a>
+    <a href="forms.html">Forms</a><a href="switches.html">Switches</a>
+    <a href="cards.html">Cards</a><a href="tables.html">Tables</a>
+    <a href="alerts.html">Alerts</a><a href="toasts.html">Toasts</a>
+    <a href="modals.html" class="active">Modals</a><a href="offcanvas.html">Offcanvas</a>
+    <a href="dropdowns.html">Dropdowns</a><a href="tabs.html">Tabs</a>
+    <a href="pagination.html">Pagination</a><a href="progress.html">Progress</a>
+    <a href="spinners.html">Spinners</a><a href="avatars.html">Avatars</a>
+    <a href="breadcrumb.html">Breadcrumb</a><a href="steps.html">Steps</a>
+    <a href="empty-states.html">Empty States</a><a href="sidebar.html">Sidebar</a><a href="topbar.html">Topbar</a>
+  </nav>
+</header>
+
+<main class="page-content">
+  <h1 class="page-title">Modals</h1>
+  <p class="page-desc">Centered overlays with backdrop. Default max-width 520px. Wide variant 720px. Always trap focus inside while open.</p>
+
+  <!-- STANDARD MODAL -->
+  <section class="section">
+    <h2 class="section-title">Standard Modal — Add Student</h2>
+    <div class="modal-demo-wrap">
+      <div class="modal-static" style="max-width:520px;margin:0 auto;">
+        <div class="modal-header">
+          <span class="modal-title">Add New Student</span>
+          <button class="modal-close">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">First Name <span style="color:var(--color-danger)">*</span></label>
+              <input class="form-control" type="text" placeholder="Ahmed" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name <span style="color:var(--color-danger)">*</span></label>
+              <input class="form-control" type="text" placeholder="Khan" />
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+              <label class="form-label">Class <span style="color:var(--color-danger)">*</span></label>
+              <select class="form-control"><option value="">Select class…</option><option>Class 10-A</option><option>Class 9-B</option></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Parent Email</label>
+              <input class="form-control" type="email" placeholder="parent@example.com" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Parent Phone</label>
+              <input class="form-control" type="tel" placeholder="03001234567" />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary btn-md">Cancel</button>
+          <button class="btn btn-primary btn-md">Save Student</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONFIRM DELETE -->
+  <section class="section">
+    <h2 class="section-title">Destructive Confirmation Modal</h2>
+    <div class="modal-demo-wrap">
+      <div class="modal-static" style="max-width:420px;margin:0 auto;">
+        <div class="modal-header">
+          <span class="modal-title" style="color:var(--color-danger-text);">Delete Student Record</span>
+          <button class="modal-close">×</button>
+        </div>
+        <div class="modal-body">
+          <div style="font-size:var(--text-sm);color:var(--color-text-secondary);line-height:1.7;">
+            Are you sure you want to delete <strong style="color:var(--color-text);">Ahmed Khan</strong>?<br/>
+            This will permanently remove all associated <strong>marks</strong>, <strong>attendance records</strong>, and <strong>fee history</strong>. This action cannot be undone.
+          </div>
+          <div class="alert alert-danger" style="margin-top:var(--space-4);">
+            <span class="alert-icon">⚠️</span>
+            <div class="alert-body">This student has 2 years of academic records that will be deleted.</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary btn-md">Cancel</button>
+          <button class="btn btn-danger btn-md">Delete Permanently</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INFORMATIONAL MODAL -->
+  <section class="section">
+    <h2 class="section-title">Info / View Modal</h2>
+    <div class="modal-demo-wrap">
+      <div class="modal-static" style="max-width:480px;margin:0 auto;">
+        <div class="modal-header">
+          <span class="modal-title">Student Details</span>
+          <button class="modal-close">×</button>
+        </div>
+        <div class="modal-body">
+          <div style="display:flex;gap:var(--space-4);margin-bottom:var(--space-5);">
+            <div class="avatar avatar-xl avatar-a" style="flex-shrink:0;">AK</div>
+            <div>
+              <div style="font-size:var(--text-xl);font-weight:var(--fw-bold);">Ahmed Khan</div>
+              <div style="font-size:var(--text-sm);color:var(--color-text-secondary);">Roll #2024-0012</div>
+              <span class="badge badge-primary" style="margin-top:6px;">Class 10-A</span>
+              <span class="badge badge-success" style="margin-top:6px;margin-left:4px;"><span class="badge-dot"></span>Active</span>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);font-size:var(--text-sm);">
+            <div><div style="color:var(--color-text-muted);font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Attendance</div><strong>96%</strong></div>
+            <div><div style="color:var(--color-text-muted);font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Last Exam</div><strong>88 / 100</strong></div>
+            <div><div style="color:var(--color-text-muted);font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Fee Status</div><span class="badge badge-success badge-sm">Paid</span></div>
+            <div><div style="color:var(--color-text-muted);font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Parent</div><strong>Mr. Arif Khan</strong></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary btn-md">Close</button>
+          <button class="btn btn-outline-primary btn-md">Edit Profile</button>
+          <button class="btn btn-primary btn-md">Full Report</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SIZE VARIANTS -->
+  <section class="section">
+    <h2 class="section-title">Sizes</h2>
+    <div class="canvas">
+      <table>
+        <thead><tr><th>Name</th><th>Max Width</th><th>Use for</th></tr></thead>
+        <tbody>
+          <tr><td>sm</td><td>380px</td><td>Simple confirmations, single-field prompts</td></tr>
+          <tr><td>md (default)</td><td>520px</td><td>Add/edit forms, detail views</td></tr>
+          <tr><td>lg</td><td>720px</td><td>Multi-step forms, import previews</td></tr>
+          <tr><td>xl</td><td>960px</td><td>Data previews, report viewers</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Usage Rules</h2>
+    <div class="canvas">
+      <table>
+        <thead><tr><th>Rule</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Backdrop</td><td><code>rgba(15,23,42,.5)</code> + <code>backdrop-filter:blur(2px)</code></td></tr>
+          <tr><td>Close triggers</td><td>× button, Escape key, clicking backdrop</td></tr>
+          <tr><td>Focus trap</td><td>Tab must stay inside modal while open</td></tr>
+          <tr><td>Primary action</td><td>Always rightmost button in footer</td></tr>
+          <tr><td>Destructive modal</td><td>Red title + warning alert inside body + Danger primary button</td></tr>
+          <tr><td>Scroll</td><td>Modal body scrolls; header and footer stay fixed</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+</body>
+</html>

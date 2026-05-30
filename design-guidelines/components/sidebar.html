@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Sidebar — Design System</title>
+<link rel="stylesheet" href="base.css"/>
+<style>
+.sidebar {
+  background:var(--color-sidebar-bg); color:var(--color-sidebar-text);
+  width:240px; height:100%; padding:var(--space-5) 0;
+  display:flex; flex-direction:column;
+  font-size:var(--text-sm); flex-shrink:0;
+}
+.sidebar-logo {
+  padding:0 var(--space-5) var(--space-5);
+  border-bottom:1px solid #1E293B;
+  margin-bottom:var(--space-3);
+  display:flex; align-items:center; gap:var(--space-3);
+  font-weight:var(--fw-bold); color:#fff; font-size:var(--text-base);
+}
+.sidebar-logo-mark {
+  width:32px; height:32px; background:var(--color-primary);
+  border-radius:var(--radius-md); display:flex; align-items:center;
+  justify-content:center; color:#fff; font-weight:var(--fw-bold); font-size:var(--text-md);
+  flex-shrink:0;
+}
+.sidebar-section {
+  padding:var(--space-4) var(--space-5) var(--space-1);
+  font-size:10px; font-weight:var(--fw-semibold);
+  text-transform:uppercase; letter-spacing:.08em;
+  color:var(--color-sidebar-icon);
+}
+.sidebar-item {
+  display:flex; align-items:center; gap:var(--space-3);
+  padding:9px var(--space-5);
+  cursor:pointer;
+  transition:background var(--transition), color var(--transition);
+  color:var(--color-sidebar-text);
+}
+.sidebar-item:hover { background:var(--color-sidebar-hover); color:#fff; }
+.sidebar-item.active { background:var(--color-primary); color:#fff; }
+.sidebar-icon { font-size:16px; width:18px; text-align:center; flex-shrink:0; }
+.sidebar-label { flex:1; }
+.sidebar-count {
+  background:rgba(255,255,255,.15); color:#fff;
+  font-size:10px; font-weight:var(--fw-bold);
+  padding:2px 7px; border-radius:var(--radius-full);
+}
+.sidebar-item:not(.active) .sidebar-count {
+  background:var(--color-primary-light); color:var(--color-primary-700);
+}
+.sidebar-footer {
+  margin-top:auto;
+  padding:var(--space-4) var(--space-5);
+  border-top:1px solid #1E293B;
+  display:flex; align-items:center; gap:var(--space-3);
+}
+.sidebar-user-name  { font-size:var(--text-sm); font-weight:var(--fw-medium); color:#fff; }
+.sidebar-user-role  { font-size:var(--text-xs); color:var(--color-sidebar-icon); }
+.demo-layout { display:flex; height:520px; border:1px solid var(--color-border); border-radius:var(--radius-lg); overflow:hidden; }
+.demo-content { flex:1; background:var(--color-bg); padding:var(--space-6); font-size:var(--text-sm); color:var(--color-text-muted); }
+</style>
+</head>
+<body>
+<header class="page-header">
+  <a class="page-header-brand" href="../index.html"><span>S</span> Design System</a>
+  <nav class="page-header-nav">
+    <a href="buttons.html">Buttons</a><a href="badges.html">Badges</a>
+    <a href="forms.html">Forms</a><a href="switches.html">Switches</a>
+    <a href="cards.html">Cards</a><a href="tables.html">Tables</a>
+    <a href="alerts.html">Alerts</a><a href="toasts.html">Toasts</a>
+    <a href="modals.html">Modals</a><a href="offcanvas.html">Offcanvas</a>
+    <a href="dropdowns.html">Dropdowns</a><a href="tabs.html">Tabs</a>
+    <a href="pagination.html">Pagination</a><a href="progress.html">Progress</a>
+    <a href="spinners.html">Spinners</a><a href="avatars.html">Avatars</a>
+    <a href="breadcrumb.html">Breadcrumb</a><a href="steps.html">Steps</a>
+    <a href="empty-states.html">Empty States</a><a href="sidebar.html" class="active">Sidebar</a><a href="topbar.html">Topbar</a>
+  </nav>
+</header>
+
+<main class="page-content">
+  <h1 class="page-title">Sidebar Navigation</h1>
+  <p class="page-desc">Dark sidebar (<code>#0F172A</code>) with teal active state. Fixed on the left; 240px wide. Collapsible to icon-only (60px) on small screens.</p>
+
+  <section class="section">
+    <h2 class="section-title">Full sidebar — School portal</h2>
+    <div class="demo-layout">
+      <nav class="sidebar">
+        <div class="sidebar-logo">
+          <div class="sidebar-logo-mark">S</div>
+          School ERP
+        </div>
+
+        <div class="sidebar-section">Main</div>
+        <div class="sidebar-item active">
+          <span class="sidebar-icon">🏠</span>
+          <span class="sidebar-label">Dashboard</span>
+        </div>
+        <div class="sidebar-item">
+          <span class="sidebar-icon">👨‍🎓</span>
+          <span class="sidebar-label">Students</span>
+          <span class="sidebar-count">248</span>
+        </div>
+        <div class="sidebar-item">
+          <span class="sidebar-icon">🏫</span>
+          <span class="sidebar-label">Classes</span>
+        </div>
+        <div class="sidebar-item">
+          <span class="sidebar-icon">✅</span>
+          <span class="sidebar-label">Attendance</span>
+        </div>
+        <div class="sidebar-item">
+          <span class="sidebar-icon">📝</span>
+          <span class="sidebar-label">Marks</span>
+        </div>
+
+        <div class="sidebar-section">Finance</div>
+        <div class="sidebar-item">
+          <span class="sidebar-icon">💰</span>
+          <span class="sidebar-label">Fees</span>
+          <span class="sidebar-count">12</span>
+        </div>
+        <div class="sidebar-item">
+          <span class="sidebar-icon">📊</span>
+          <span class="sidebar-label">Reports</span>
+        </div>
+
+        <div class="sidebar-section">Settings</div>
+        <div class="sidebar-item">
+          <span class="sidebar-icon">⚙️</span>
+          <span class="sidebar-label">School Settings</span>
+        </div>
+        <div class="sidebar-item">
+          <span class="sidebar-icon">🎨</span>
+          <span class="sidebar-label">Branding &amp; Theme</span>
+        </div>
+
+        <div class="sidebar-footer">
+          <div class="avatar avatar-sm avatar-a" style="flex-shrink:0;">MT</div>
+          <div>
+            <div class="sidebar-user-name">Mr. Tariq</div>
+            <div class="sidebar-user-role">Admin</div>
+          </div>
+        </div>
+      </nav>
+      <div class="demo-content">Page content area</div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Admin dashboard sidebar</h2>
+    <div class="demo-layout">
+      <nav class="sidebar">
+        <div class="sidebar-logo">
+          <div class="sidebar-logo-mark">A</div>
+          ERP Admin
+        </div>
+
+        <div class="sidebar-section">Platform</div>
+        <div class="sidebar-item active">
+          <span class="sidebar-icon">🏠</span>
+          <span class="sidebar-label">Dashboard</span>
+        </div>
+        <div class="sidebar-item">
+          <span class="sidebar-icon">🏫</span>
+          <span class="sidebar-label">Schools</span>
+          <span class="sidebar-count">14</span>
+        </div>
+        <div class="sidebar-item">
+          <span class="sidebar-icon">👥</span>
+          <span class="sidebar-label">Users</span>
+        </div>
+
+        <div class="sidebar-section">Billing</div>
+        <div class="sidebar-item">
+          <span class="sidebar-icon">💳</span>
+          <span class="sidebar-label">Subscriptions</span>
+        </div>
+        <div class="sidebar-item">
+          <span class="sidebar-icon">📄</span>
+          <span class="sidebar-label">Invoices</span>
+        </div>
+
+        <div class="sidebar-section">System</div>
+        <div class="sidebar-item">
+          <span class="sidebar-icon">⚙️</span>
+          <span class="sidebar-label">Platform Settings</span>
+        </div>
+        <div class="sidebar-item">
+          <span class="sidebar-icon">🔒</span>
+          <span class="sidebar-label">Domains &amp; SSL</span>
+        </div>
+
+        <div class="sidebar-footer">
+          <div class="avatar avatar-sm" style="background:#E0E7FF;color:#4338CA;flex-shrink:0;">SA</div>
+          <div>
+            <div class="sidebar-user-name">Super Admin</div>
+            <div class="sidebar-user-role">Platform</div>
+          </div>
+        </div>
+      </nav>
+      <div class="demo-content">Admin content area</div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Sidebar tokens</h2>
+    <div class="canvas">
+      <table>
+        <thead><tr><th>Token</th><th>Value</th><th>Used for</th></tr></thead>
+        <tbody>
+          <tr><td><code>--color-sidebar-bg</code></td><td>#0F172A</td><td>Sidebar background</td></tr>
+          <tr><td><code>--color-sidebar-text</code></td><td>#CBD5E1</td><td>Default item text</td></tr>
+          <tr><td><code>--color-sidebar-hover</code></td><td>#1E293B</td><td>Item hover background</td></tr>
+          <tr><td><code>--color-sidebar-active</code></td><td>var(--color-primary)</td><td>Active item background</td></tr>
+          <tr><td><code>--color-sidebar-icon</code></td><td>#64748B</td><td>Section labels and icons</td></tr>
+          <tr><td>Width</td><td>240px</td><td>Expanded state</td></tr>
+          <tr><td>Width (collapsed)</td><td>60px</td><td>Icon-only on mobile/tablet</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+</body>
+</html>

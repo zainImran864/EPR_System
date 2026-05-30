@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Cards — Design System</title>
+<link rel="stylesheet" href="base.css"/>
+<style>
+.stat-card { background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-5) var(--space-6);box-shadow:var(--shadow-sm); }
+.stat-icon { width:40px;height:40px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:var(--space-4); }
+.stat-value { font-size:var(--text-3xl);font-weight:var(--fw-bold);line-height:1.1; }
+.stat-label { font-size:var(--text-sm);color:var(--color-text-secondary);margin-top:var(--space-1); }
+.stat-trend { display:flex;align-items:center;gap:4px;font-size:var(--text-xs);font-weight:var(--fw-medium);margin-top:var(--space-3); }
+.trend-up   { color:var(--color-success-text); }
+.trend-down { color:var(--color-danger-text); }
+.grid-4 { display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-4); }
+.grid-3 { display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-4); }
+.grid-2 { display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4); }
+</style>
+</head>
+<body>
+<header class="page-header">
+  <a class="page-header-brand" href="../index.html"><span>S</span> Design System</a>
+  <nav class="page-header-nav">
+    <a href="buttons.html">Buttons</a><a href="badges.html">Badges</a>
+    <a href="forms.html">Forms</a><a href="switches.html">Switches</a>
+    <a href="cards.html" class="active">Cards</a><a href="tables.html">Tables</a>
+    <a href="alerts.html">Alerts</a><a href="toasts.html">Toasts</a>
+    <a href="modals.html">Modals</a><a href="offcanvas.html">Offcanvas</a>
+    <a href="dropdowns.html">Dropdowns</a><a href="tabs.html">Tabs</a>
+    <a href="pagination.html">Pagination</a><a href="progress.html">Progress</a>
+    <a href="spinners.html">Spinners</a><a href="avatars.html">Avatars</a>
+    <a href="breadcrumb.html">Breadcrumb</a><a href="steps.html">Steps</a>
+    <a href="empty-states.html">Empty States</a><a href="sidebar.html">Sidebar</a><a href="topbar.html">Topbar</a>
+  </nav>
+</header>
+
+<main class="page-content">
+  <h1 class="page-title">Cards &amp; Stat Cards</h1>
+  <p class="page-desc">Cards group related content. Stat cards surface key metrics on the dashboard.</p>
+
+  <!-- STAT CARDS -->
+  <section class="section">
+    <h2 class="section-title">Stat Cards — Dashboard Row</h2>
+    <div class="canvas">
+      <div class="grid-4">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--color-primary-light);color:var(--color-primary);">👨‍🎓</div>
+          <div class="stat-value">1,248</div>
+          <div class="stat-label">Total Students</div>
+          <div class="stat-trend trend-up">▲ 4.2% this month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--color-success-light);color:var(--color-success-text);">✅</div>
+          <div class="stat-value">94.6%</div>
+          <div class="stat-label">Attendance Rate</div>
+          <div class="stat-trend trend-up">▲ 1.1% vs last week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--color-warning-light);color:var(--color-warning-text);">💰</div>
+          <div class="stat-value">PKR 2.1M</div>
+          <div class="stat-label">Fees Collected</div>
+          <div class="stat-trend trend-down">▼ 3% pending</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--color-info-light);color:var(--color-info-text);">📋</div>
+          <div class="stat-value">38</div>
+          <div class="stat-label">Active Classes</div>
+          <div class="stat-trend trend-up">▲ 2 new this term</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTENT CARD -->
+  <section class="section">
+    <h2 class="section-title">Content Card</h2>
+    <div class="canvas">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Class 10-A</span>
+            <span class="badge badge-success"><span class="badge-dot"></span>Active</span>
+          </div>
+          <div class="card-body">
+            <div class="col" style="gap:var(--space-3);font-size:var(--text-sm);">
+              <div style="display:flex;justify-content:space-between;"><span style="color:var(--color-text-secondary);">Class Teacher</span><span style="font-weight:var(--fw-medium);">Mr. Tariq</span></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:var(--color-text-secondary);">Total Students</span><span style="font-weight:var(--fw-medium);">32</span></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:var(--color-text-secondary);">Avg. Attendance</span><span style="font-weight:var(--fw-medium);">96.2%</span></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:var(--color-text-secondary);">Avg. Score</span><span style="font-weight:var(--fw-medium);">81.4 / 100</span></div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <button class="btn btn-secondary btn-sm">View Details</button>
+            <button class="btn btn-outline-primary btn-sm">Take Attendance</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Student Profile</span>
+            <button class="btn btn-ghost btn-icon btn-sm">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+            </button>
+          </div>
+          <div class="card-body">
+            <div style="display:flex;gap:var(--space-4);margin-bottom:var(--space-4);">
+              <div class="avatar avatar-lg avatar-a" style="flex-shrink:0;">AK</div>
+              <div>
+                <div style="font-weight:var(--fw-semibold);font-size:var(--text-md);">Ahmed Khan</div>
+                <div style="font-size:var(--text-sm);color:var(--color-text-secondary);">Roll #2024-0012</div>
+                <span class="badge badge-primary" style="margin-top:4px;">Class 10-A</span>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);font-size:var(--text-sm);">
+              <div><div style="color:var(--color-text-muted);font-size:var(--text-xs);">ATTENDANCE</div><div style="font-weight:var(--fw-semibold);">96%</div></div>
+              <div><div style="color:var(--color-text-muted);font-size:var(--text-xs);">LAST EXAM</div><div style="font-weight:var(--fw-semibold);">88 / 100</div></div>
+              <div><div style="color:var(--color-text-muted);font-size:var(--text-xs);">FEE STATUS</div><span class="badge badge-success badge-sm">Paid</span></div>
+              <div><div style="color:var(--color-text-muted);font-size:var(--text-xs);">GRADE</div><span class="badge badge-success badge-sm">A</span></div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <button class="btn btn-secondary btn-sm">Edit Profile</button>
+            <button class="btn btn-primary btn-sm">Full Report</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CARD WITHOUT HEADER/FOOTER -->
+  <section class="section">
+    <h2 class="section-title">Minimal Card (body only)</h2>
+    <div class="canvas">
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-body" style="text-align:center;">
+            <div style="font-size:32px;margin-bottom:var(--space-3);">📝</div>
+            <div style="font-weight:var(--fw-semibold);margin-bottom:var(--space-1);">Marks Entry</div>
+            <div style="font-size:var(--text-sm);color:var(--color-text-secondary);">Enter exam results for your class</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body" style="text-align:center;">
+            <div style="font-size:32px;margin-bottom:var(--space-3);">✅</div>
+            <div style="font-weight:var(--fw-semibold);margin-bottom:var(--space-1);">Attendance</div>
+            <div style="font-size:var(--text-sm);color:var(--color-text-secondary);">Mark today's attendance quickly</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body" style="text-align:center;">
+            <div style="font-size:32px;margin-bottom:var(--space-3);">📊</div>
+            <div style="font-weight:var(--fw-semibold);margin-bottom:var(--space-1);">Reports</div>
+            <div style="font-size:var(--text-sm);color:var(--color-text-secondary);">Generate and download term reports</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HIGHLIGHTED CARD -->
+  <section class="section">
+    <h2 class="section-title">Highlighted / Accent Cards</h2>
+    <div class="canvas">
+      <div class="grid-3">
+        <div class="card" style="border-left:4px solid var(--color-primary);">
+          <div class="card-body">
+            <div style="font-size:var(--text-xs);color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">New Enrolments</div>
+            <div style="font-size:var(--text-2xl);font-weight:var(--fw-bold);">14</div>
+            <div style="font-size:var(--text-xs);color:var(--color-text-secondary);margin-top:4px;">This month</div>
+          </div>
+        </div>
+        <div class="card" style="border-left:4px solid var(--color-warning);">
+          <div class="card-body">
+            <div style="font-size:var(--text-xs);color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Fees Overdue</div>
+            <div style="font-size:var(--text-2xl);font-weight:var(--fw-bold);">12</div>
+            <div style="font-size:var(--text-xs);color:var(--color-text-secondary);margin-top:4px;">Students</div>
+          </div>
+        </div>
+        <div class="card" style="border-left:4px solid var(--color-danger);">
+          <div class="card-body">
+            <div style="font-size:var(--text-xs);color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Low Attendance</div>
+            <div style="font-size:var(--text-2xl);font-weight:var(--fw-bold);">7</div>
+            <div style="font-size:var(--text-xs);color:var(--color-text-secondary);margin-top:4px;">Below 75%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

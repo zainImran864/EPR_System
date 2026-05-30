@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Switches — Design System</title>
+<link rel="stylesheet" href="base.css"/>
+</head>
+<body>
+<header class="page-header">
+  <a class="page-header-brand" href="../index.html"><span>S</span> Design System</a>
+  <nav class="page-header-nav">
+    <a href="buttons.html">Buttons</a><a href="badges.html">Badges</a>
+    <a href="forms.html">Forms</a><a href="switches.html" class="active">Switches</a>
+    <a href="cards.html">Cards</a><a href="tables.html">Tables</a>
+    <a href="alerts.html">Alerts</a><a href="toasts.html">Toasts</a>
+    <a href="modals.html">Modals</a><a href="offcanvas.html">Offcanvas</a>
+    <a href="dropdowns.html">Dropdowns</a><a href="tabs.html">Tabs</a>
+    <a href="pagination.html">Pagination</a><a href="progress.html">Progress</a>
+    <a href="spinners.html">Spinners</a><a href="avatars.html">Avatars</a>
+    <a href="breadcrumb.html">Breadcrumb</a><a href="steps.html">Steps</a>
+    <a href="empty-states.html">Empty States</a><a href="sidebar.html">Sidebar</a><a href="topbar.html">Topbar</a>
+  </nav>
+</header>
+
+<main class="page-content">
+  <h1 class="page-title">Switches, Checkboxes &amp; Radio</h1>
+  <p class="page-desc">Selection controls for binary choices, multi-select, and single-select within a group.</p>
+
+  <!-- SWITCHES -->
+  <section class="section">
+    <h2 class="section-title">Toggle Switches</h2>
+    <div class="canvas">
+      <div class="label">Default (md)</div>
+      <div class="col" style="margin-bottom:var(--space-5);">
+        <label class="switch-wrap">
+          <input type="checkbox" checked />
+          <div class="switch-track"><div class="switch-thumb"></div></div>
+          <span class="switch-label">Email notifications — ON</span>
+        </label>
+        <label class="switch-wrap">
+          <input type="checkbox" />
+          <div class="switch-track"><div class="switch-thumb"></div></div>
+          <span class="switch-label">SMS alerts — OFF</span>
+        </label>
+        <label class="switch-wrap">
+          <input type="checkbox" checked />
+          <div class="switch-track"><div class="switch-thumb"></div></div>
+          <span class="switch-label">WhatsApp updates — ON</span>
+        </label>
+      </div>
+      <div class="label">Small (sm)</div>
+      <div class="col">
+        <label class="switch-wrap sm">
+          <input type="checkbox" checked />
+          <div class="switch-track"><div class="switch-thumb"></div></div>
+          <span class="switch-label" style="font-size:var(--text-xs);">Auto-promote student — ON</span>
+        </label>
+        <label class="switch-wrap sm">
+          <input type="checkbox" />
+          <div class="switch-track"><div class="switch-thumb"></div></div>
+          <span class="switch-label" style="font-size:var(--text-xs);">Lock fee record — OFF</span>
+        </label>
+      </div>
+    </div>
+    <div class="canvas" style="max-width:480px;">
+      <div class="label">Switch in a settings list</div>
+      <div class="col" style="gap:0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-4) 0;border-bottom:1px solid var(--color-border);">
+          <div>
+            <div style="font-size:var(--text-sm);font-weight:var(--fw-medium);">Email Notifications</div>
+            <div style="font-size:var(--text-xs);color:var(--color-text-muted);">Send alerts on fee due dates</div>
+          </div>
+          <label class="switch-wrap" style="gap:0;">
+            <input type="checkbox" checked />
+            <div class="switch-track"><div class="switch-thumb"></div></div>
+          </label>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-4) 0;border-bottom:1px solid var(--color-border);">
+          <div>
+            <div style="font-size:var(--text-sm);font-weight:var(--fw-medium);">SMS Alerts</div>
+            <div style="font-size:var(--text-xs);color:var(--color-text-muted);">Send text messages to parents</div>
+          </div>
+          <label class="switch-wrap" style="gap:0;">
+            <input type="checkbox" />
+            <div class="switch-track"><div class="switch-thumb"></div></div>
+          </label>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-4) 0;">
+          <div>
+            <div style="font-size:var(--text-sm);font-weight:var(--fw-medium);">Custom Domain</div>
+            <div style="font-size:var(--text-xs);color:var(--color-text-muted);">Enable school's own domain</div>
+          </div>
+          <label class="switch-wrap" style="gap:0;">
+            <input type="checkbox" checked />
+            <div class="switch-track"><div class="switch-thumb"></div></div>
+          </label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHECKBOXES -->
+  <section class="section">
+    <h2 class="section-title">Checkboxes</h2>
+    <div class="canvas">
+      <div class="label">Standalone</div>
+      <div class="col" style="margin-bottom:var(--space-5);">
+        <label class="check-group">
+          <input type="checkbox" checked />
+          <div class="check-box"></div>
+          <span class="check-label">Mark attendance</span>
+        </label>
+        <label class="check-group">
+          <input type="checkbox" />
+          <div class="check-box"></div>
+          <span class="check-label">Send parent notification</span>
+        </label>
+        <label class="check-group">
+          <input type="checkbox" checked />
+          <div class="check-box"></div>
+          <span class="check-label">Include in monthly report</span>
+        </label>
+      </div>
+      <div class="label">With sub-description</div>
+      <div class="col">
+        <label class="check-group">
+          <input type="checkbox" checked />
+          <div class="check-box"></div>
+          <span class="check-label">Notify via email<small>Sends an email to the parent immediately</small></span>
+        </label>
+        <label class="check-group">
+          <input type="checkbox" />
+          <div class="check-box"></div>
+          <span class="check-label">Notify via SMS<small>Charges apply per message</small></span>
+        </label>
+      </div>
+    </div>
+    <div class="canvas" style="max-width:400px;">
+      <div class="label">Select-all pattern</div>
+      <div class="col" style="gap:0;">
+        <div style="padding:var(--space-3);background:var(--color-bg);border-radius:var(--radius-md) var(--radius-md) 0 0;border:1px solid var(--color-border);">
+          <label class="check-group">
+            <input type="checkbox" checked />
+            <div class="check-box"></div>
+            <span class="check-label" style="font-weight:var(--fw-semibold);">Select all students</span>
+          </label>
+        </div>
+        <div style="padding:var(--space-3) var(--space-3) 0;border:1px solid var(--color-border);border-top:none;border-radius:0;background:var(--color-surface);">
+          <label class="check-group" style="margin-bottom:var(--space-2);">
+            <input type="checkbox" checked />
+            <div class="check-box"></div>
+            <span class="check-label">Ahmed Khan — 10-A</span>
+          </label>
+          <label class="check-group" style="margin-bottom:var(--space-2);">
+            <input type="checkbox" checked />
+            <div class="check-box"></div>
+            <span class="check-label">Sara Baig — 10-A</span>
+          </label>
+          <label class="check-group" style="padding-bottom:var(--space-3);">
+            <input type="checkbox" />
+            <div class="check-box"></div>
+            <span class="check-label">Zain Mirza — 9-B</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RADIO BUTTONS -->
+  <section class="section">
+    <h2 class="section-title">Radio Buttons</h2>
+    <div class="canvas">
+      <div class="canvas-grid-2" style="gap:var(--space-6);">
+        <div>
+          <div class="label">Attendance status</div>
+          <div class="col">
+            <label class="check-group">
+              <input type="radio" name="att" checked />
+              <div class="radio-box"></div>
+              <span class="check-label">Present</span>
+            </label>
+            <label class="check-group">
+              <input type="radio" name="att" />
+              <div class="radio-box"></div>
+              <span class="check-label">Absent</span>
+            </label>
+            <label class="check-group">
+              <input type="radio" name="att" />
+              <div class="radio-box"></div>
+              <span class="check-label">Late</span>
+            </label>
+            <label class="check-group">
+              <input type="radio" name="att" />
+              <div class="radio-box"></div>
+              <span class="check-label">Leave</span>
+            </label>
+          </div>
+        </div>
+        <div>
+          <div class="label">Report type</div>
+          <div class="col">
+            <label class="check-group">
+              <input type="radio" name="rpt" checked />
+              <div class="radio-box"></div>
+              <span class="check-label">PDF<small>Download as PDF file</small></span>
+            </label>
+            <label class="check-group">
+              <input type="radio" name="rpt" />
+              <div class="radio-box"></div>
+              <span class="check-label">Excel<small>Download as .xlsx spreadsheet</small></span>
+            </label>
+            <label class="check-group">
+              <input type="radio" name="rpt" />
+              <div class="radio-box"></div>
+              <span class="check-label">CSV<small>Comma-separated values</small></span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Avatars — Design System</title>
+<link rel="stylesheet" href="base.css"/>
+<style>
+.avatar-group { display:flex; }
+.avatar-group .avatar { border:2px solid var(--color-surface); margin-left:-10px; }
+.avatar-group .avatar:first-child { margin-left:0; }
+</style>
+</head>
+<body>
+<header class="page-header">
+  <a class="page-header-brand" href="../index.html"><span>S</span> Design System</a>
+  <nav class="page-header-nav">
+    <a href="buttons.html">Buttons</a><a href="badges.html">Badges</a>
+    <a href="forms.html">Forms</a><a href="switches.html">Switches</a>
+    <a href="cards.html">Cards</a><a href="tables.html">Tables</a>
+    <a href="alerts.html">Alerts</a><a href="toasts.html">Toasts</a>
+    <a href="modals.html">Modals</a><a href="offcanvas.html">Offcanvas</a>
+    <a href="dropdowns.html">Dropdowns</a><a href="tabs.html">Tabs</a>
+    <a href="pagination.html">Pagination</a><a href="progress.html">Progress</a>
+    <a href="spinners.html">Spinners</a><a href="avatars.html" class="active">Avatars</a>
+    <a href="breadcrumb.html">Breadcrumb</a><a href="steps.html">Steps</a>
+    <a href="empty-states.html">Empty States</a><a href="sidebar.html">Sidebar</a><a href="topbar.html">Topbar</a>
+  </nav>
+</header>
+
+<main class="page-content">
+  <h1 class="page-title">Avatars</h1>
+  <p class="page-desc">Initials-based avatars for students, teachers, and parents. Use the color variants to differentiate users in lists.</p>
+
+  <section class="section">
+    <h2 class="section-title">Sizes</h2>
+    <div class="canvas">
+      <div class="row" style="align-items:flex-end;gap:var(--space-6);">
+        <div style="text-align:center;"><div class="label">xs — 24px</div><div class="avatar avatar-xs avatar-a">A</div></div>
+        <div style="text-align:center;"><div class="label">sm — 32px</div><div class="avatar avatar-sm avatar-b">SB</div></div>
+        <div style="text-align:center;"><div class="label">md — 40px</div><div class="avatar avatar-md avatar-c">ZM</div></div>
+        <div style="text-align:center;"><div class="label">lg — 48px</div><div class="avatar avatar-lg avatar-d">FS</div></div>
+        <div style="text-align:center;"><div class="label">xl — 64px</div><div class="avatar avatar-xl avatar-a">AK</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Color Variants</h2>
+    <div class="canvas">
+      <div class="row">
+        <div class="avatar avatar-md avatar-a">AK</div>
+        <div class="avatar avatar-md avatar-b">SB</div>
+        <div class="avatar avatar-md avatar-c">ZM</div>
+        <div class="avatar avatar-md avatar-d">FS</div>
+        <div class="avatar avatar-md" style="background:#EDE9FE;color:#5B21B6;">NQ</div>
+        <div class="avatar avatar-md" style="background:#FEE2E2;color:#991B1B;">RA</div>
+        <div class="avatar avatar-md" style="background:#D1FAE5;color:#065F46;">MA</div>
+        <div class="avatar avatar-md" style="background:#FEF9C3;color:#713F12;">HK</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Avatar Group</h2>
+    <div class="canvas col">
+      <div>
+        <div class="label">Class teachers</div>
+        <div class="avatar-group" style="margin-top:var(--space-2);">
+          <div class="avatar avatar-md avatar-a">MT</div>
+          <div class="avatar avatar-md avatar-b">SR</div>
+          <div class="avatar avatar-md avatar-c">FA</div>
+          <div class="avatar avatar-md avatar-d">NK</div>
+          <div class="avatar avatar-md" style="background:var(--color-bg);border:2px solid var(--color-border);color:var(--color-text-secondary);font-size:var(--text-xs);">+4</div>
+        </div>
+      </div>
+      <div>
+        <div class="label">Class 10-A students (truncated)</div>
+        <div class="avatar-group" style="margin-top:var(--space-2);">
+          <div class="avatar avatar-sm avatar-a">AK</div>
+          <div class="avatar avatar-sm avatar-b">SB</div>
+          <div class="avatar avatar-sm avatar-c">ZM</div>
+          <div class="avatar avatar-sm avatar-d">FS</div>
+          <div class="avatar avatar-sm" style="background:#EDE9FE;color:#5B21B6;">NQ</div>
+          <div class="avatar avatar-sm" style="background:var(--color-bg);border:2px solid var(--color-border);color:var(--color-text-secondary);font-size:10px;">+27</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Avatar with label (list item)</h2>
+    <div class="canvas col" style="max-width:360px;gap:var(--space-1);">
+      <div style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3);border-radius:var(--radius-md);transition:background 150ms ease;" onmouseover="this.style.background='var(--color-bg)'" onmouseout="this.style.background='transparent'">
+        <div class="avatar avatar-md avatar-a">AK</div>
+        <div style="flex:1;">
+          <div style="font-size:var(--text-sm);font-weight:var(--fw-medium);">Ahmed Khan</div>
+          <div style="font-size:var(--text-xs);color:var(--color-text-muted);">Class 10-A · Roll #2024-0012</div>
+        </div>
+        <span class="badge badge-success badge-sm">Active</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3);border-radius:var(--radius-md);" onmouseover="this.style.background='var(--color-bg)'" onmouseout="this.style.background='transparent'">
+        <div class="avatar avatar-md avatar-b">SB</div>
+        <div style="flex:1;">
+          <div style="font-size:var(--text-sm);font-weight:var(--fw-medium);">Sara Baig</div>
+          <div style="font-size:var(--text-xs);color:var(--color-text-muted);">Class 10-A · Roll #2024-0013</div>
+        </div>
+        <span class="badge badge-warning badge-sm">Late</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3);border-radius:var(--radius-md);" onmouseover="this.style.background='var(--color-bg)'" onmouseout="this.style.background='transparent'">
+        <div class="avatar avatar-md avatar-c">ZM</div>
+        <div style="flex:1;">
+          <div style="font-size:var(--text-sm);font-weight:var(--fw-medium);">Zain Mirza</div>
+          <div style="font-size:var(--text-xs);color:var(--color-text-muted);">Class 9-B · Roll #2024-0014</div>
+        </div>
+        <span class="badge badge-danger badge-sm">Absent</span>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

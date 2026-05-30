@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Alerts — Design System</title>
+<link rel="stylesheet" href="base.css"/>
+</head>
+<body>
+<header class="page-header">
+  <a class="page-header-brand" href="../index.html"><span>S</span> Design System</a>
+  <nav class="page-header-nav">
+    <a href="buttons.html">Buttons</a><a href="badges.html">Badges</a>
+    <a href="forms.html">Forms</a><a href="switches.html">Switches</a>
+    <a href="cards.html">Cards</a><a href="tables.html">Tables</a>
+    <a href="alerts.html" class="active">Alerts</a><a href="toasts.html">Toasts</a>
+    <a href="modals.html">Modals</a><a href="offcanvas.html">Offcanvas</a>
+    <a href="dropdowns.html">Dropdowns</a><a href="tabs.html">Tabs</a>
+    <a href="pagination.html">Pagination</a><a href="progress.html">Progress</a>
+    <a href="spinners.html">Spinners</a><a href="avatars.html">Avatars</a>
+    <a href="breadcrumb.html">Breadcrumb</a><a href="steps.html">Steps</a>
+    <a href="empty-states.html">Empty States</a><a href="sidebar.html">Sidebar</a><a href="topbar.html">Topbar</a>
+  </nav>
+</header>
+
+<main class="page-content">
+  <h1 class="page-title">Alerts</h1>
+  <p class="page-desc">Inline banners for page-level feedback. Always placed above the relevant content section, not inside modals.</p>
+
+  <section class="section">
+    <h2 class="section-title">Variants — with title</h2>
+    <div class="canvas col">
+      <div class="alert alert-success">
+        <span class="alert-icon">✅</span>
+        <div class="alert-body"><div class="alert-title">Attendance saved</div>Today's attendance for Class 10-A has been recorded successfully.</div>
+      </div>
+      <div class="alert alert-warning">
+        <span class="alert-icon">⚠️</span>
+        <div class="alert-body"><div class="alert-title">Fee deadline approaching</div>3 students have unpaid fees due by June 5, 2026.</div>
+      </div>
+      <div class="alert alert-danger">
+        <span class="alert-icon">❌</span>
+        <div class="alert-body"><div class="alert-title">Failed to save marks</div>An error occurred while submitting exam results. Please try again.</div>
+      </div>
+      <div class="alert alert-info">
+        <span class="alert-icon">ℹ️</span>
+        <div class="alert-body"><div class="alert-title">New term starting</div>Summer term begins July 1, 2026. Class assignments are open for review.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Without title (text only)</h2>
+    <div class="canvas col">
+      <div class="alert alert-success"><span class="alert-icon">✅</span><div class="alert-body">Student record has been updated.</div></div>
+      <div class="alert alert-warning"><span class="alert-icon">⚠️</span><div class="alert-body">You have unsaved changes. Save before leaving this page.</div></div>
+      <div class="alert alert-danger"><span class="alert-icon">❌</span><div class="alert-body">Email address is already in use.</div></div>
+      <div class="alert alert-info"><span class="alert-icon">ℹ️</span><div class="alert-body">Reports for Term 1 are now available for download.</div></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">With action button</h2>
+    <div class="canvas col">
+      <div class="alert alert-warning" style="align-items:center;">
+        <span class="alert-icon">⚠️</span>
+        <div class="alert-body"><div class="alert-title">12 students have overdue fees</div>Review and send reminders to parents.</div>
+        <button class="btn btn-warning btn-sm" style="flex-shrink:0;background:var(--color-warning);color:#fff;border-color:var(--color-warning);margin-left:var(--space-4);">View Students</button>
+      </div>
+      <div class="alert alert-info" style="align-items:center;">
+        <span class="alert-icon">ℹ️</span>
+        <div class="alert-body"><div class="alert-title">Update available</div>A new version of the portal is ready.</div>
+        <button class="btn btn-secondary btn-sm" style="flex-shrink:0;margin-left:var(--space-4);">Refresh</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Dismissible</h2>
+    <div class="canvas col">
+      <div class="alert alert-success" style="align-items:flex-start;">
+        <span class="alert-icon">✅</span>
+        <div class="alert-body"><div class="alert-title">Import complete</div>248 student records imported successfully from Excel.</div>
+        <button style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--color-success-text);font-size:18px;line-height:1;flex-shrink:0;">×</button>
+      </div>
+      <div class="alert alert-danger" style="align-items:flex-start;">
+        <span class="alert-icon">❌</span>
+        <div class="alert-body"><div class="alert-title">Import failed</div>Could not read the uploaded file. Check format and try again.</div>
+        <button style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--color-danger-text);font-size:18px;line-height:1;flex-shrink:0;">×</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Usage Rules</h2>
+    <div class="canvas">
+      <table>
+        <thead><tr><th>Variant</th><th>Use when</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge badge-success">Success</span></td><td>An action completed: saved, submitted, imported, exported.</td></tr>
+          <tr><td><span class="badge badge-warning">Warning</span></td><td>Something needs attention but is not a blocker: pending fees, low attendance.</td></tr>
+          <tr><td><span class="badge badge-danger">Danger</span></td><td>An error occurred that blocked the action. Always explain what to do next.</td></tr>
+          <tr><td><span class="badge badge-info">Info</span></td><td>Neutral context: new feature, upcoming event, available download.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+</body>
+</html>

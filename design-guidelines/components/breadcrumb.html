@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Breadcrumb — Design System</title>
+<link rel="stylesheet" href="base.css"/>
+</head>
+<body>
+<header class="page-header">
+  <a class="page-header-brand" href="../index.html"><span>S</span> Design System</a>
+  <nav class="page-header-nav">
+    <a href="buttons.html">Buttons</a><a href="badges.html">Badges</a>
+    <a href="forms.html">Forms</a><a href="switches.html">Switches</a>
+    <a href="cards.html">Cards</a><a href="tables.html">Tables</a>
+    <a href="alerts.html">Alerts</a><a href="toasts.html">Toasts</a>
+    <a href="modals.html">Modals</a><a href="offcanvas.html">Offcanvas</a>
+    <a href="dropdowns.html">Dropdowns</a><a href="tabs.html">Tabs</a>
+    <a href="pagination.html">Pagination</a><a href="progress.html">Progress</a>
+    <a href="spinners.html">Spinners</a><a href="avatars.html">Avatars</a>
+    <a href="breadcrumb.html" class="active">Breadcrumb</a><a href="steps.html">Steps</a>
+    <a href="empty-states.html">Empty States</a><a href="sidebar.html">Sidebar</a><a href="topbar.html">Topbar</a>
+  </nav>
+</header>
+
+<main class="page-content">
+  <h1 class="page-title">Breadcrumb</h1>
+  <p class="page-desc">Shows the current page's location in the navigation hierarchy. Always placed directly below the topbar, above the page title.</p>
+
+  <section class="section">
+    <h2 class="section-title">Slash separator</h2>
+    <div class="canvas col" style="gap:var(--space-5);">
+      <nav class="breadcrumb">
+        <div class="breadcrumb-item"><a href="#">Dashboard</a></div>
+        <span class="breadcrumb-sep">/</span>
+        <div class="breadcrumb-item active">Students</div>
+      </nav>
+      <nav class="breadcrumb">
+        <div class="breadcrumb-item"><a href="#">Dashboard</a></div>
+        <span class="breadcrumb-sep">/</span>
+        <div class="breadcrumb-item"><a href="#">Students</a></div>
+        <span class="breadcrumb-sep">/</span>
+        <div class="breadcrumb-item active">Ahmed Khan</div>
+      </nav>
+      <nav class="breadcrumb">
+        <div class="breadcrumb-item"><a href="#">Dashboard</a></div>
+        <span class="breadcrumb-sep">/</span>
+        <div class="breadcrumb-item"><a href="#">Classes</a></div>
+        <span class="breadcrumb-sep">/</span>
+        <div class="breadcrumb-item"><a href="#">Class 10-A</a></div>
+        <span class="breadcrumb-sep">/</span>
+        <div class="breadcrumb-item active">Attendance</div>
+      </nav>
+      <nav class="breadcrumb">
+        <div class="breadcrumb-item"><a href="#">Dashboard</a></div>
+        <span class="breadcrumb-sep">/</span>
+        <div class="breadcrumb-item"><a href="#">Finance</a></div>
+        <span class="breadcrumb-sep">/</span>
+        <div class="breadcrumb-item"><a href="#">Fees</a></div>
+        <span class="breadcrumb-sep">/</span>
+        <div class="breadcrumb-item active">Term 1 – 2025</div>
+      </nav>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Chevron separator</h2>
+    <div class="canvas col" style="gap:var(--space-4);">
+      <nav class="breadcrumb">
+        <div class="breadcrumb-item"><a href="#">Dashboard</a></div>
+        <span class="breadcrumb-sep">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        </span>
+        <div class="breadcrumb-item"><a href="#">Students</a></div>
+        <span class="breadcrumb-sep">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        </span>
+        <div class="breadcrumb-item active">Ahmed Khan</div>
+      </nav>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">With home icon</h2>
+    <div class="canvas col">
+      <nav class="breadcrumb">
+        <div class="breadcrumb-item">
+          <a href="#" style="display:flex;align-items:center;">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </a>
+        </div>
+        <span class="breadcrumb-sep">/</span>
+        <div class="breadcrumb-item"><a href="#">Students</a></div>
+        <span class="breadcrumb-sep">/</span>
+        <div class="breadcrumb-item active">Ahmed Khan</div>
+      </nav>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">In page layout context</h2>
+    <div class="canvas" style="padding:0;overflow:hidden;">
+      <div style="background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:var(--space-3) var(--space-6);">
+        <nav class="breadcrumb">
+          <div class="breadcrumb-item"><a href="#">Dashboard</a></div>
+          <span class="breadcrumb-sep">/</span>
+          <div class="breadcrumb-item"><a href="#">Students</a></div>
+          <span class="breadcrumb-sep">/</span>
+          <div class="breadcrumb-item active">Ahmed Khan</div>
+        </nav>
+      </div>
+      <div style="padding:var(--space-6);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-6);">
+          <h1 style="font-size:var(--text-2xl);font-weight:var(--fw-bold);">Ahmed Khan</h1>
+          <div style="display:flex;gap:var(--space-2);">
+            <button class="btn btn-secondary btn-sm">Edit</button>
+            <button class="btn btn-primary btn-sm">Full Report</button>
+          </div>
+        </div>
+        <div style="font-size:var(--text-sm);color:var(--color-text-muted);">Page content…</div>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

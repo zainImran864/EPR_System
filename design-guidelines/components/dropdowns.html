@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Dropdowns — Design System</title>
+<link rel="stylesheet" href="base.css"/>
+</head>
+<body>
+<header class="page-header">
+  <a class="page-header-brand" href="../index.html"><span>S</span> Design System</a>
+  <nav class="page-header-nav">
+    <a href="buttons.html">Buttons</a><a href="badges.html">Badges</a>
+    <a href="forms.html">Forms</a><a href="switches.html">Switches</a>
+    <a href="cards.html">Cards</a><a href="tables.html">Tables</a>
+    <a href="alerts.html">Alerts</a><a href="toasts.html">Toasts</a>
+    <a href="modals.html">Modals</a><a href="offcanvas.html">Offcanvas</a>
+    <a href="dropdowns.html" class="active">Dropdowns</a><a href="tabs.html">Tabs</a>
+    <a href="pagination.html">Pagination</a><a href="progress.html">Progress</a>
+    <a href="spinners.html">Spinners</a><a href="avatars.html">Avatars</a>
+    <a href="breadcrumb.html">Breadcrumb</a><a href="steps.html">Steps</a>
+    <a href="empty-states.html">Empty States</a><a href="sidebar.html">Sidebar</a><a href="topbar.html">Topbar</a>
+  </nav>
+</header>
+
+<main class="page-content">
+  <h1 class="page-title">Dropdowns</h1>
+  <p class="page-desc">Context menus triggered by a button. Always positioned below (or above if no space) with <code>shadow-lg</code>.</p>
+
+  <section class="section">
+    <h2 class="section-title">Actions Menu</h2>
+    <div class="canvas row" style="align-items:flex-start;gap:var(--space-8);">
+      <div>
+        <div class="label">Row actions</div>
+        <div class="dropdown-menu">
+          <div class="dropdown-header">Actions</div>
+          <div class="dropdown-item">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            Edit student
+          </div>
+          <div class="dropdown-item">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            View profile
+          </div>
+          <div class="dropdown-item">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M16 12l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export record
+          </div>
+          <div class="dropdown-divider"></div>
+          <div class="dropdown-item danger">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4h6v3M4 7h16"/></svg>
+            Delete record
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="label">Filter menu</div>
+        <div class="dropdown-menu">
+          <div class="dropdown-header">Filter by class</div>
+          <div class="dropdown-item">All classes</div>
+          <div class="dropdown-item" style="background:var(--color-primary-light);color:var(--color-primary);font-weight:var(--fw-semibold);">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+            Class 9-A
+          </div>
+          <div class="dropdown-item">Class 9-B</div>
+          <div class="dropdown-item">Class 10-A</div>
+          <div class="dropdown-item">Class 10-B</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="label">User menu</div>
+        <div class="dropdown-menu" style="min-width:200px;">
+          <div style="padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--color-border);">
+            <div style="font-size:var(--text-sm);font-weight:var(--fw-semibold);">Mr. Tariq Ahmed</div>
+            <div style="font-size:var(--text-xs);color:var(--color-text-muted);">tariq@schooldemo.com</div>
+          </div>
+          <div class="dropdown-item">⚙️ &nbsp;Settings</div>
+          <div class="dropdown-item">🎨 &nbsp;Branding</div>
+          <div class="dropdown-item">❓ &nbsp;Help</div>
+          <div class="dropdown-divider"></div>
+          <div class="dropdown-item danger">🚪 &nbsp;Sign out</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Dropdown Trigger Patterns</h2>
+    <div class="canvas row" style="align-items:center;gap:var(--space-4);">
+      <div>
+        <div class="label">Icon button trigger</div>
+        <button class="btn btn-ghost btn-icon btn-md">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+        </button>
+      </div>
+      <div>
+        <div class="label">Button with chevron</div>
+        <button class="btn btn-secondary btn-md">
+          Actions
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+        </button>
+      </div>
+      <div>
+        <div class="label">Primary + chevron</div>
+        <button class="btn btn-primary btn-md">
+          Export
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Spec</h2>
+    <div class="canvas">
+      <table>
+        <thead><tr><th>Property</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Background</td><td><code>--color-surface</code></td></tr>
+          <tr><td>Border</td><td><code>1px solid --color-border</code></td></tr>
+          <tr><td>Border radius</td><td><code>--radius-lg (12px)</code></td></tr>
+          <tr><td>Shadow</td><td><code>--shadow-lg</code></td></tr>
+          <tr><td>Item padding</td><td><code>8px 16px</code></td></tr>
+          <tr><td>Item hover</td><td><code>--color-bg</code></td></tr>
+          <tr><td>Danger item hover</td><td><code>--color-danger-light</code></td></tr>
+          <tr><td>z-index</td><td>200</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+</body>
+</html>

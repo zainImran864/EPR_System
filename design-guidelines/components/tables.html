@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Tables — Design System</title>
+<link rel="stylesheet" href="base.css"/>
+<style>
+.t-avatar { display:flex;align-items:center;gap:var(--space-3); }
+.t-avatar-img { width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:var(--fw-semibold);font-size:var(--text-sm);flex-shrink:0; }
+.t-avatar-name { font-weight:var(--fw-medium); }
+.t-avatar-meta { font-size:var(--text-xs);color:var(--color-text-muted); }
+.t-actions { display:flex;align-items:center;gap:var(--space-2);justify-content:flex-end; }
+.table-striped tbody tr:nth-child(even) { background:var(--color-bg); }
+.col-check  { width:40px; }
+.col-action { width:88px;text-align:right; }
+.table-empty-row td { text-align:center;padding:var(--space-12) var(--space-6);color:var(--color-text-muted); }
+.empty-icon { font-size:40px;display:block;margin-bottom:var(--space-3); }
+</style>
+</head>
+<body>
+<header class="page-header">
+  <a class="page-header-brand" href="../index.html"><span>S</span> Design System</a>
+  <nav class="page-header-nav">
+    <a href="buttons.html">Buttons</a><a href="badges.html">Badges</a>
+    <a href="forms.html">Forms</a><a href="switches.html">Switches</a>
+    <a href="cards.html">Cards</a><a href="tables.html" class="active">Tables</a>
+    <a href="alerts.html">Alerts</a><a href="toasts.html">Toasts</a>
+    <a href="modals.html">Modals</a><a href="offcanvas.html">Offcanvas</a>
+    <a href="dropdowns.html">Dropdowns</a><a href="tabs.html">Tabs</a>
+    <a href="pagination.html">Pagination</a><a href="progress.html">Progress</a>
+    <a href="spinners.html">Spinners</a><a href="avatars.html">Avatars</a>
+    <a href="breadcrumb.html">Breadcrumb</a><a href="steps.html">Steps</a>
+    <a href="empty-states.html">Empty States</a><a href="sidebar.html">Sidebar</a><a href="topbar.html">Topbar</a>
+  </nav>
+</header>
+
+<main class="page-content">
+  <h1 class="page-title">Tables</h1>
+  <p class="page-desc">Used for students, attendance, marks, and fee records. Always inside <code>.table-wrap</code> for horizontal scroll and border-radius.</p>
+
+  <!-- STANDARD TABLE -->
+  <section class="section">
+    <h2 class="section-title">Standard Table</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-check">
+              <label class="check-group" style="justify-content:center;"><input type="checkbox"/><div class="check-box" style="margin-top:0;"></div></label>
+            </th>
+            <th>Student</th>
+            <th>Class</th>
+            <th>Attendance</th>
+            <th>Last Exam</th>
+            <th>Fee</th>
+            <th>Status</th>
+            <th class="col-action">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="col-check"><label class="check-group" style="justify-content:center;"><input type="checkbox" checked/><div class="check-box" style="margin-top:0;"></div></label></td>
+            <td><div class="t-avatar"><div class="t-avatar-img" style="background:var(--color-primary-light);color:var(--color-primary);">AK</div><div><div class="t-avatar-name">Ahmed Khan</div><div class="t-avatar-meta">Roll #2024-0012</div></div></div></td>
+            <td>10-A</td><td>96%</td><td>88 / 100</td>
+            <td><span class="badge badge-success badge-sm">Paid</span></td>
+            <td><span class="badge badge-success"><span class="badge-dot"></span>Active</span></td>
+            <td class="col-action"><div class="t-actions"><button class="btn btn-ghost btn-icon btn-sm" title="Edit"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button><button class="btn btn-ghost btn-icon btn-sm" title="Delete"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4h6v3M4 7h16"/></svg></button></div></td>
+          </tr>
+          <tr>
+            <td class="col-check"><label class="check-group" style="justify-content:center;"><input type="checkbox"/><div class="check-box" style="margin-top:0;"></div></label></td>
+            <td><div class="t-avatar"><div class="t-avatar-img" style="background:#FEF3C7;color:#B45309;">SB</div><div><div class="t-avatar-name">Sara Baig</div><div class="t-avatar-meta">Roll #2024-0013</div></div></div></td>
+            <td>10-A</td><td>88%</td><td>74 / 100</td>
+            <td><span class="badge badge-warning badge-sm">Partial</span></td>
+            <td><span class="badge badge-warning"><span class="badge-dot"></span>Late</span></td>
+            <td class="col-action"><div class="t-actions"><button class="btn btn-ghost btn-icon btn-sm"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button><button class="btn btn-ghost btn-icon btn-sm"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4h6v3M4 7h16"/></svg></button></div></td>
+          </tr>
+          <tr>
+            <td class="col-check"><label class="check-group" style="justify-content:center;"><input type="checkbox"/><div class="check-box" style="margin-top:0;"></div></label></td>
+            <td><div class="t-avatar"><div class="t-avatar-img" style="background:#E0E7FF;color:#4338CA;">ZM</div><div><div class="t-avatar-name">Zain Mirza</div><div class="t-avatar-meta">Roll #2024-0014</div></div></div></td>
+            <td>9-B</td><td>72%</td><td>61 / 100</td>
+            <td><span class="badge badge-danger badge-sm">Overdue</span></td>
+            <td><span class="badge badge-danger"><span class="badge-dot"></span>Absent</span></td>
+            <td class="col-action"><div class="t-actions"><button class="btn btn-ghost btn-icon btn-sm"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button><button class="btn btn-ghost btn-icon btn-sm"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4h6v3M4 7h16"/></svg></button></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ATTENDANCE TABLE -->
+  <section class="section">
+    <h2 class="section-title">Attendance Table</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Mon 26</th><th>Tue 27</th><th>Wed 28</th><th>Thu 29</th><th>Fri 30</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="t-avatar"><div class="t-avatar-img" style="background:var(--color-primary-light);color:var(--color-primary);">AK</div><div>Ahmed Khan</div></div></td>
+            <td><span class="badge badge-success badge-sm">P</span></td>
+            <td><span class="badge badge-success badge-sm">P</span></td>
+            <td><span class="badge badge-danger badge-sm">A</span></td>
+            <td><span class="badge badge-success badge-sm">P</span></td>
+            <td><span class="badge badge-warning badge-sm">L</span></td>
+            <td><strong>3/5</strong></td>
+          </tr>
+          <tr>
+            <td><div class="t-avatar"><div class="t-avatar-img" style="background:#FEF3C7;color:#B45309;">SB</div><div>Sara Baig</div></div></td>
+            <td><span class="badge badge-success badge-sm">P</span></td>
+            <td><span class="badge badge-success badge-sm">P</span></td>
+            <td><span class="badge badge-success badge-sm">P</span></td>
+            <td><span class="badge badge-success badge-sm">P</span></td>
+            <td><span class="badge badge-success badge-sm">P</span></td>
+            <td><strong>5/5</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- MARKS TABLE -->
+  <section class="section">
+    <h2 class="section-title">Marks / Results Table</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Maths</th><th>English</th><th>Science</th><th>Urdu</th>
+            <th>Total</th><th>Grade</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Ahmed Khan</td>
+            <td>92</td><td>85</td><td>88</td><td>79</td>
+            <td><strong>344 / 400</strong></td>
+            <td><span class="badge badge-success">A</span></td>
+          </tr>
+          <tr>
+            <td>Sara Baig</td>
+            <td>74</td><td>81</td><td>70</td><td>78</td>
+            <td><strong>303 / 400</strong></td>
+            <td><span class="badge badge-primary">B+</span></td>
+          </tr>
+          <tr>
+            <td>Zain Mirza</td>
+            <td>45</td><td>60</td><td>50</td><td>55</td>
+            <td><strong>210 / 400</strong></td>
+            <td><span class="badge badge-danger">F</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- EMPTY STATE -->
+  <section class="section">
+    <h2 class="section-title">Empty Table State</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Student</th><th>Class</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          <tr class="table-empty-row">
+            <td colspan="4">
+              <span class="empty-icon">📭</span>
+              No students match your filters.<br/>
+              <button class="btn btn-secondary btn-sm" style="margin-top:var(--space-4);">Clear Filters</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- TABLE TOOLBAR -->
+  <section class="section">
+    <h2 class="section-title">Table with Toolbar</h2>
+    <div class="card">
+      <div class="card-header">
+        <div style="display:flex;align-items:center;gap:var(--space-3);">
+          <span class="card-title">Students</span>
+          <span class="badge badge-neutral">248</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:var(--space-2);">
+          <div class="input-group" style="width:220px;">
+            <input class="form-control" style="height:34px;padding:0 12px;font-size:var(--text-sm);" type="text" placeholder="Search…" />
+            <span class="input-addon" style="height:34px;">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            </span>
+          </div>
+          <button class="btn btn-secondary btn-sm">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707l-6.414 6.414A1 1 0 0014 13.828V19a1 1 0 01-.553.894l-4 2A1 1 0 018 21v-7.172a1 1 0 00-.293-.707L1.293 6.707A1 1 0 011 6V4z"/></svg>
+            Filters
+          </button>
+          <button class="btn btn-primary btn-sm">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            Add Student
+          </button>
+        </div>
+      </div>
+      <div class="table-wrap" style="border:none;border-radius:0;box-shadow:none;">
+        <table>
+          <thead><tr><th class="col-check"><label class="check-group" style="justify-content:center;"><input type="checkbox"/><div class="check-box" style="margin-top:0;"></div></label></th><th>Student</th><th>Class</th><th>Status</th><th class="col-action">Actions</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="col-check"><label class="check-group" style="justify-content:center;"><input type="checkbox"/><div class="check-box" style="margin-top:0;"></div></label></td>
+              <td><div class="t-avatar"><div class="t-avatar-img" style="background:var(--color-primary-light);color:var(--color-primary);">AK</div><div><div class="t-avatar-name">Ahmed Khan</div><div class="t-avatar-meta">Roll #2024-0012</div></div></div></td>
+              <td>Class 10-A</td>
+              <td><span class="badge badge-success"><span class="badge-dot"></span>Active</span></td>
+              <td class="col-action"><div class="t-actions"><button class="btn btn-ghost btn-icon btn-sm"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer" style="justify-content:space-between;">
+        <span style="font-size:var(--text-sm);color:var(--color-text-secondary);">Showing 1–10 of 248</span>
+        <div class="pagination">
+          <div class="page-item disabled wide">← Prev</div>
+          <div class="page-item active">1</div>
+          <div class="page-item">2</div>
+          <div class="page-item">3</div>
+          <div class="page-item wide">Next →</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>
