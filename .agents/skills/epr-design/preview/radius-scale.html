@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Radius Scale — EPR Design</title>
+<link rel="stylesheet" href="../colors_and_type.css"/>
+<link rel="stylesheet" href="_preview.css"/>
+<style>
+  .radius-box { background:var(--color-primary-100); border:2px solid var(--color-primary-300); display:flex; align-items:center; justify-content:center; color:var(--color-primary-700); font-family:var(--font-mono); font-size:var(--text-xs); }
+</style>
+</head>
+<body>
+<header class="preview-header">
+  <div>
+    <h1>Radius Scale</h1>
+    <p class="lead">Five radii — from sharp (sm) to pill (full).</p>
+  </div>
+  <a href="README.md">← All previews</a>
+</header>
+
+<section class="preview-section">
+  <h2>The scale</h2>
+  <div class="canvas row" style="gap:var(--space-8);align-items:flex-end;">
+    <div style="text-align:center;">
+      <div class="radius-box" style="width:80px;height:80px;border-radius:4px;">4</div>
+      <div class="token-label" style="margin-top:var(--space-3);"><strong>--radius-sm</strong>4px</div>
+    </div>
+    <div style="text-align:center;">
+      <div class="radius-box" style="width:80px;height:80px;border-radius:8px;">8</div>
+      <div class="token-label" style="margin-top:var(--space-3);"><strong>--radius-md</strong>8px</div>
+    </div>
+    <div style="text-align:center;">
+      <div class="radius-box" style="width:96px;height:96px;border-radius:12px;">12</div>
+      <div class="token-label" style="margin-top:var(--space-3);"><strong>--radius-lg</strong>12px</div>
+    </div>
+    <div style="text-align:center;">
+      <div class="radius-box" style="width:112px;height:112px;border-radius:16px;">16</div>
+      <div class="token-label" style="margin-top:var(--space-3);"><strong>--radius-xl</strong>16px</div>
+    </div>
+    <div style="text-align:center;">
+      <div class="radius-box" style="width:80px;height:40px;border-radius:9999px;">pill</div>
+      <div class="token-label" style="margin-top:var(--space-3);"><strong>--radius-full</strong>9999px</div>
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Applied to components</h2>
+  <div class="canvas row" style="gap:var(--space-6);">
+    <div style="text-align:center;">
+      <button style="background:var(--color-primary);color:#fff;border:none;padding:9px 16px;border-radius:var(--radius-md);font-family:var(--font-sans);font-size:var(--text-sm);font-weight:var(--fw-medium);">Button</button>
+      <div class="token-label" style="margin-top:var(--space-2);">--radius-md</div>
+    </div>
+    <div style="text-align:center;">
+      <span style="background:var(--color-primary-light);color:var(--color-primary-700);padding:2px 10px;border-radius:var(--radius-full);font-size:var(--text-xs);font-weight:var(--fw-medium);">Active</span>
+      <div class="token-label" style="margin-top:var(--space-2);">--radius-full</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-4);font-size:var(--text-xs);">Card</div>
+      <div class="token-label" style="margin-top:var(--space-2);">--radius-lg</div>
+    </div>
+    <div style="text-align:center;">
+      <input style="border:1px solid var(--color-border-strong);border-radius:var(--radius-md);padding:8px 12px;font-family:var(--font-sans);width:120px;" placeholder="Input"/>
+      <div class="token-label" style="margin-top:var(--space-2);">--radius-md</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:40px;height:40px;border-radius:var(--radius-full);background:#FEE2E2;color:#B91C1C;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:var(--text-sm);">AK</div>
+      <div class="token-label" style="margin-top:var(--space-2);">--radius-full</div>
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Usage</h2>
+  <table class="preview-table">
+    <thead><tr><th>Token</th><th>Used for</th></tr></thead>
+    <tbody>
+      <tr><td><code>--radius-sm</code></td><td>Input addons, kbd chips, small inline elements</td></tr>
+      <tr><td><code>--radius-md</code></td><td>Buttons, inputs, selects, dropdowns, icon buttons</td></tr>
+      <tr><td><code>--radius-lg</code></td><td>Cards, modals, toasts, offcanvas panels</td></tr>
+      <tr><td><code>--radius-xl</code></td><td>Large overlays, image containers (student photos)</td></tr>
+      <tr><td><code>--radius-full</code></td><td>Badges, pills, avatars, notification dots</td></tr>
+    </tbody>
+  </table>
+</section>
+</body>
+</html>

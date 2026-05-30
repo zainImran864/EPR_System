@@ -1,0 +1,133 @@
+/* ═══════════════════════════════════════════════
+   EPR-Design — Tokens
+   School ERP System design system tokens
+   Override the :root variables to retheme a school.
+═══════════════════════════════════════════════ */
+
+:root {
+  /* ─── Primary — Teal ─── */
+  --color-primary-50:  #F0FDFA;
+  --color-primary-100: #CCFBF1;
+  --color-primary-200: #99F6E4;
+  --color-primary-300: #5EEAD4;
+  --color-primary-400: #2DD4BF;
+  --color-primary-500: #14B8A6;
+  --color-primary-600: #0D9488;
+  --color-primary-700: #0F766E;
+  --color-primary-800: #115E59;
+  --color-primary-900: #134E4A;
+
+  --color-primary:       var(--color-primary-600);
+  --color-primary-hover: var(--color-primary-700);
+  --color-primary-light: var(--color-primary-100);
+  --color-primary-text:  #ffffff;
+
+  /* ─── Neutrals — Slate ─── */
+  --color-bg:            #F8FAFC;
+  --color-surface:       #FFFFFF;
+  --color-border:        #E2E8F0;
+  --color-border-strong: #CBD5E1;
+
+  --color-text:           #0F172A;
+  --color-text-secondary: #475569;
+  --color-text-muted:     #94A3B8;
+  --color-text-disabled:  #CBD5E1;
+
+  /* ─── Semantic ─── */
+  --color-success:       #16A34A;
+  --color-success-light: #DCFCE7;
+  --color-success-text:  #15803D;
+
+  --color-warning:       #D97706;
+  --color-warning-light: #FEF3C7;
+  --color-warning-text:  #B45309;
+
+  --color-danger:        #DC2626;
+  --color-danger-light:  #FEE2E2;
+  --color-danger-text:   #B91C1C;
+
+  --color-info:          #0284C7;
+  --color-info-light:    #E0F2FE;
+  --color-info-text:     #0369A1;
+
+  /* ─── Sidebar ─── */
+  --color-sidebar-bg:    #0F172A;
+  --color-sidebar-text:  #CBD5E1;
+  --color-sidebar-hover: #1E293B;
+  --color-sidebar-icon:  #64748B;
+
+  /* ─── Spacing — 4px base ─── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* ─── Radius ─── */
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:  12px;
+  --radius-xl:  16px;
+  --radius-full: 9999px;
+
+  /* ─── Shadow ─── */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 5%);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 7%), 0 2px 4px -2px rgb(0 0 0 / 5%);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 8%), 0 4px 6px -4px rgb(0 0 0 / 5%);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 10%), 0 8px 10px -6px rgb(0 0 0 / 5%);
+
+  /* ─── Typography ─── */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  --text-xs:   11px;
+  --text-sm:   13px;
+  --text-base: 14px;
+  --text-md:   15px;
+  --text-lg:   18px;
+  --text-xl:   20px;
+  --text-2xl:  24px;
+  --text-3xl:  30px;
+
+  --fw-normal:   400;
+  --fw-medium:   500;
+  --fw-semibold: 600;
+  --fw-bold:     700;
+
+  --leading-tight:  1.2;
+  --leading-snug:   1.4;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.6;
+
+  /* ─── Motion ─── */
+  --transition: 150ms ease;
+  --transition-enter: 220ms ease-out;
+  --transition-exit:  150ms ease-in;
+}
+
+/* ─── Base type rules ─── */
+html { font-family: var(--font-sans); color: var(--color-text); background: var(--color-bg); }
+body { font-size: var(--text-base); line-height: var(--leading-relaxed); margin: 0; }
+
+h1 { font-size: var(--text-2xl); font-weight: var(--fw-bold); line-height: var(--leading-tight); }
+h2 { font-size: var(--text-xl); font-weight: var(--fw-semibold); line-height: var(--leading-snug); }
+h3 { font-size: var(--text-lg); font-weight: var(--fw-semibold); line-height: var(--leading-snug); }
+h4 { font-size: var(--text-md); font-weight: var(--fw-semibold); }
+small { font-size: var(--text-xs); color: var(--color-text-muted); }
+
+code, .mono { font-family: var(--font-mono); font-size: var(--text-sm); }
+
+a { color: var(--color-primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition: 0ms;
+    --transition-enter: 0ms;
+    --transition-exit: 0ms;
+  }
+}

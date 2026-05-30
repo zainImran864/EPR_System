@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Dialog / Modal — EPR Design</title>
+<link rel="stylesheet" href="../colors_and_type.css"/>
+<link rel="stylesheet" href="_preview.css"/>
+<style>
+  .stage { background:rgb(15 23 42 / 50%); padding:var(--space-8); border-radius:var(--radius-lg); }
+  .modal { background:var(--color-surface); border-radius:var(--radius-lg); box-shadow:var(--shadow-xl); max-width:540px; margin:0 auto; overflow:hidden; }
+  .modal-head { padding:var(--space-5) var(--space-6); border-bottom:1px solid var(--color-border); display:flex; justify-content:space-between; align-items:center; }
+  .modal-title { font-size:var(--text-lg); font-weight:var(--fw-semibold); margin:0; }
+  .modal-body { padding:var(--space-6); }
+  .modal-foot { padding:var(--space-4) var(--space-6); border-top:1px solid var(--color-border); background:var(--color-bg); display:flex; justify-content:flex-end; gap:var(--space-2); }
+  .close { background:none; border:none; cursor:pointer; color:var(--color-text-muted); font-size:24px; line-height:1; padding:0; }
+  .btn { padding:9px 16px; border-radius:var(--radius-md); border:1px solid transparent; font-family:var(--font-sans); font-size:var(--text-sm); font-weight:var(--fw-medium); cursor:pointer; }
+  .btn-primary { background:var(--color-primary); color:#fff; }
+  .btn-secondary { background:var(--color-surface); color:var(--color-text); border-color:var(--color-border-strong); }
+  .btn-danger { background:var(--color-danger); color:#fff; }
+  .field { display:flex; flex-direction:column; gap:var(--space-2); }
+  .field label { font-size:var(--text-sm); font-weight:var(--fw-medium); }
+  .field input, .field select { padding:8px 12px; border:1px solid var(--color-border-strong); border-radius:var(--radius-md); font-family:var(--font-sans); font-size:var(--text-base); }
+  .row-2 { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4); }
+  .alert-inline { display:flex; gap:var(--space-3); padding:var(--space-4); background:var(--color-danger-light); border-radius:var(--radius-md); color:var(--color-danger-text); font-size:var(--text-sm); }
+</style>
+</head>
+<body>
+<header class="preview-header">
+  <div>
+    <h1>Dialog / Modal</h1>
+    <p class="lead">Centered overlay panels. Use sparingly — only when the task must complete before continuing.</p>
+  </div>
+  <a href="README.md">← All previews</a>
+</header>
+
+<section class="preview-section">
+  <h2>Form modal — Add Student</h2>
+  <div class="stage">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 class="modal-title">Add Student</h3>
+        <button class="close" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="row-2">
+          <div class="field">
+            <label>First name <span style="color:var(--color-danger);">*</span></label>
+            <input value="Ahmed"/>
+          </div>
+          <div class="field">
+            <label>Surname <span style="color:var(--color-danger);">*</span></label>
+            <input value="Khan"/>
+          </div>
+          <div class="field">
+            <label>Roll number</label>
+            <input value="042" style="font-family:var(--font-mono);"/>
+          </div>
+          <div class="field">
+            <label>Class <span style="color:var(--color-danger);">*</span></label>
+            <select><option>Select…</option><option selected>Class 10-A</option></select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-secondary">Cancel</button>
+        <button class="btn btn-primary">Save Student</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Confirmation — destructive</h2>
+  <div class="stage">
+    <div class="modal" style="max-width:440px;">
+      <div class="modal-head">
+        <h3 class="modal-title">Delete student?</h3>
+        <button class="close" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:var(--space-4);">
+        <div class="alert-inline">
+          <span>⚠️</span>
+          <div>This will permanently remove <strong>Ahmed Khan</strong> and all attendance, marks, and fee history. This cannot be undone.</div>
+        </div>
+        <div class="field">
+          <label>Type <code style="font-family:var(--font-mono);background:var(--color-bg);padding:1px 6px;border-radius:var(--radius-sm);">DELETE</code> to confirm</label>
+          <input placeholder="DELETE"/>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-secondary">Cancel</button>
+        <button class="btn btn-danger">Delete student</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Info modal — view-only</h2>
+  <div class="stage">
+    <div class="modal" style="max-width:440px;">
+      <div class="modal-head">
+        <h3 class="modal-title">Student details</h3>
+        <button class="close" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body" style="font-size:var(--text-sm);color:var(--color-text-secondary);line-height:var(--leading-relaxed);">
+        <strong style="color:var(--color-text);">Ahmed Khan</strong><br>
+        Class 10-A · Roll 042<br><br>
+        Joined August 2022. Attendance 92% this term. All fees paid through Term 1 — 2025.<br><br>
+        Guardian: Mr. Imran Khan (+92 300 1234567)
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-primary">Close</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Spec</h2>
+  <table class="preview-table">
+    <thead><tr><th>Property</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Backdrop</td><td><code>rgb(15 23 42 / 50%)</code></td></tr>
+      <tr><td>Default width</td><td>540px</td></tr>
+      <tr><td>Small width</td><td>440px (confirm / info)</td></tr>
+      <tr><td>Large width</td><td>720px (wizard, multi-section form)</td></tr>
+      <tr><td>Shadow</td><td><code>--shadow-xl</code></td></tr>
+      <tr><td>Enter animation</td><td><code>opacity + transform · 220ms ease-out</code></td></tr>
+      <tr><td>Exit animation</td><td><code>opacity + transform · 150ms ease-in</code></td></tr>
+      <tr><td>Focus</td><td>Trap inside modal; restore to trigger on close</td></tr>
+      <tr><td>Esc</td><td>Closes (except destructive confirms — require button)</td></tr>
+    </tbody>
+  </table>
+</section>
+</body>
+</html>

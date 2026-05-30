@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Badges &amp; Tags — EPR Design</title>
+<link rel="stylesheet" href="../colors_and_type.css"/>
+<link rel="stylesheet" href="_preview.css"/>
+<style>
+  .badge { display:inline-flex; align-items:center; gap:var(--space-1); border-radius:var(--radius-full); font-weight:var(--fw-medium); }
+  .badge-sm { font-size:10px; padding:1px 6px; }
+  .badge-md { font-size:var(--text-xs); padding:2px 8px; }
+  .badge-lg { font-size:var(--text-sm); padding:4px 12px; }
+  .badge-primary { background:var(--color-primary-light); color:var(--color-primary-700); }
+  .badge-success { background:var(--color-success-light); color:var(--color-success-text); }
+  .badge-warning { background:var(--color-warning-light); color:var(--color-warning-text); }
+  .badge-danger  { background:var(--color-danger-light);  color:var(--color-danger-text); }
+  .badge-info    { background:var(--color-info-light);    color:var(--color-info-text); }
+  .badge-neutral { background:#F1F5F9; color:var(--color-text-secondary); }
+  .badge-outline { background:transparent; border:1px solid var(--color-primary); color:var(--color-primary); }
+  .dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+  .tag { display:inline-flex; align-items:center; gap:var(--space-2); background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:4px 10px; font-size:var(--text-xs); color:var(--color-text-secondary); }
+  .tag-close { width:14px; height:14px; display:flex; align-items:center; justify-content:center; border-radius:50%; cursor:pointer; }
+  .tag-close:hover { background:var(--color-border); color:var(--color-text); }
+</style>
+</head>
+<body>
+<header class="preview-header">
+  <div>
+    <h1>Badges &amp; Tags</h1>
+    <p class="lead">Status badges (pill-shaped) for state and tags (rounded-rectangle) for categorisation.</p>
+  </div>
+  <a href="README.md">← All previews</a>
+</header>
+
+<section class="preview-section">
+  <h2>Badge variants</h2>
+  <div class="canvas row">
+    <span class="badge badge-md badge-primary">Primary</span>
+    <span class="badge badge-md badge-success">Success</span>
+    <span class="badge badge-md badge-warning">Warning</span>
+    <span class="badge badge-md badge-danger">Danger</span>
+    <span class="badge badge-md badge-info">Info</span>
+    <span class="badge badge-md badge-neutral">Neutral</span>
+    <span class="badge badge-md badge-outline">Outline</span>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>With dot</h2>
+  <div class="canvas row">
+    <span class="badge badge-md badge-success"><span class="dot"></span> Present</span>
+    <span class="badge badge-md badge-warning"><span class="dot"></span> Late</span>
+    <span class="badge badge-md badge-danger"><span class="dot"></span> Absent</span>
+    <span class="badge badge-md badge-primary"><span class="dot"></span> Active</span>
+    <span class="badge badge-md badge-neutral"><span class="dot"></span> Pending</span>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Sizes</h2>
+  <div class="canvas row">
+    <span class="badge badge-sm badge-success">sm</span>
+    <span class="badge badge-md badge-success">md · default</span>
+    <span class="badge badge-lg badge-success">lg</span>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>School ERP use cases</h2>
+  <table class="preview-table">
+    <thead><tr><th>Context</th><th>Badge</th></tr></thead>
+    <tbody>
+      <tr><td>Attendance status</td><td><span class="badge badge-md badge-success">Present</span> &nbsp; <span class="badge badge-md badge-warning">Late</span> &nbsp; <span class="badge badge-md badge-danger">Absent</span></td></tr>
+      <tr><td>Fee status</td><td><span class="badge badge-md badge-success">Paid</span> &nbsp; <span class="badge badge-md badge-warning">Pending</span> &nbsp; <span class="badge badge-md badge-danger">Overdue</span></td></tr>
+      <tr><td>Enrolment</td><td><span class="badge badge-md badge-primary">Active</span> &nbsp; <span class="badge badge-md badge-neutral">Inactive</span> &nbsp; <span class="badge badge-md badge-danger">Suspended</span></td></tr>
+      <tr><td>Grade</td><td><span class="badge badge-md badge-success">A+</span> &nbsp; <span class="badge badge-md badge-primary">B</span> &nbsp; <span class="badge badge-md badge-warning">C</span> &nbsp; <span class="badge badge-md badge-danger">F</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="preview-section">
+  <h2>Tags — removable</h2>
+  <p>Used in filter bars and multi-select inputs. Square-edged, lower weight than badges.</p>
+  <div class="canvas row">
+    <span class="tag">Class 10-A <span class="tag-close" aria-label="Remove">×</span></span>
+    <span class="tag">Term 1 <span class="tag-close" aria-label="Remove">×</span></span>
+    <span class="tag">Active only <span class="tag-close" aria-label="Remove">×</span></span>
+    <span class="tag" style="background:var(--color-primary-light);border-color:var(--color-primary-200);color:var(--color-primary-700);">Highlighted <span class="tag-close" aria-label="Remove">×</span></span>
+  </div>
+</section>
+</body>
+</html>

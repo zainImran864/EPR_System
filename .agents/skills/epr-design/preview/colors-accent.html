@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Colors — Accent — EPR Design</title>
+<link rel="stylesheet" href="../colors_and_type.css"/>
+<link rel="stylesheet" href="_preview.css"/>
+</head>
+<body>
+<header class="preview-header">
+  <div>
+    <h1>Colors — Accent</h1>
+    <p class="lead">Primary brand colour and its full ramp. Schools override this ramp at runtime.</p>
+  </div>
+  <a href="README.md">← All previews</a>
+</header>
+
+<section class="preview-section">
+  <h2>Teal ramp — default brand</h2>
+  <p><strong>--color-primary</strong> = ramp 600. Hover uses ramp 700. Tinted backgrounds use ramp 100.</p>
+  <div class="canvas" style="display:grid;grid-template-columns:repeat(5,1fr);gap:var(--space-3);">
+    <div class="swatch"><div class="swatch-color" style="background:#F0FDFA;"></div><div class="swatch-meta"><strong>50</strong>#F0FDFA</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#CCFBF1;"></div><div class="swatch-meta"><strong>100</strong>#CCFBF1</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#99F6E4;"></div><div class="swatch-meta"><strong>200</strong>#99F6E4</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#5EEAD4;"></div><div class="swatch-meta"><strong>300</strong>#5EEAD4</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#2DD4BF;"></div><div class="swatch-meta"><strong>400</strong>#2DD4BF</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#14B8A6;"></div><div class="swatch-meta"><strong>500</strong>#14B8A6</div></div>
+    <div class="swatch" style="outline:2px solid var(--color-primary);outline-offset:2px;"><div class="swatch-color" style="background:#0D9488;"></div><div class="swatch-meta"><strong>600 ★ default</strong>#0D9488</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#0F766E;"></div><div class="swatch-meta"><strong>700 hover</strong>#0F766E</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#115E59;"></div><div class="swatch-meta"><strong>800</strong>#115E59</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#134E4A;"></div><div class="swatch-meta"><strong>900</strong>#134E4A</div></div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Semantic accent tokens</h2>
+  <table class="preview-table">
+    <thead><tr><th>Token</th><th>Value</th><th>Used for</th></tr></thead>
+    <tbody>
+      <tr><td><code>--color-primary</code></td><td>ramp 600</td><td>Primary buttons, active nav, links, focus rings</td></tr>
+      <tr><td><code>--color-primary-hover</code></td><td>ramp 700</td><td>Primary button hover state</td></tr>
+      <tr><td><code>--color-primary-light</code></td><td>ramp 100</td><td>Badge backgrounds, hover tints, soft chips</td></tr>
+      <tr><td><code>--color-primary-text</code></td><td>#FFFFFF</td><td>Text on primary background</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="preview-section">
+  <h2>Per-school theming</h2>
+  <p>Override the ramp in a school-scoped <code>:root</code> block. Every component picks up the change.</p>
+  <div class="canvas">
+    <pre style="margin:0;font-family:var(--font-mono);font-size:var(--text-xs);background:var(--color-sidebar-bg);color:#E2E8F0;padding:var(--space-5);border-radius:var(--radius-md);overflow-x:auto;">:root {
+  --color-primary-100: #DBEAFE;
+  --color-primary-500: #3B82F6;
+  --color-primary-600: #2563EB;  /* --color-primary */
+  --color-primary-700: #1D4ED8;  /* --color-primary-hover */
+  --color-primary-light: #DBEAFE;
+}</pre>
+  </div>
+</section>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Colors — Text — EPR Design</title>
+<link rel="stylesheet" href="../colors_and_type.css"/>
+<link rel="stylesheet" href="_preview.css"/>
+</head>
+<body>
+<header class="preview-header">
+  <div>
+    <h1>Colors — Text</h1>
+    <p class="lead">The text colour hierarchy. Four tiers, plus link colour.</p>
+  </div>
+  <a href="README.md">← All previews</a>
+</header>
+
+<section class="preview-section">
+  <h2>On light</h2>
+  <div class="canvas col">
+    <div style="color:var(--color-text);font-size:var(--text-lg);font-weight:var(--fw-semibold);">
+      Primary text — headings &amp; body
+      <span class="token-label" style="margin-left:var(--space-3);">--color-text · #0F172A</span>
+    </div>
+    <div style="color:var(--color-text-secondary);font-size:var(--text-md);font-weight:var(--fw-medium);">
+      Secondary text — labels, captions
+      <span class="token-label" style="margin-left:var(--space-3);">--color-text-secondary · #475569</span>
+    </div>
+    <div style="color:var(--color-text-muted);font-size:var(--text-sm);">
+      Muted text — placeholders, helper text, timestamps
+      <span class="token-label" style="margin-left:var(--space-3);">--color-text-muted · #94A3B8</span>
+    </div>
+    <div style="color:var(--color-text-disabled);font-size:var(--text-sm);">
+      Disabled text — inputs &amp; controls in disabled state
+      <span class="token-label" style="margin-left:var(--space-3);">--color-text-disabled · #CBD5E1</span>
+    </div>
+    <div>
+      <a href="#" style="color:var(--color-primary);">Link — primary brand</a>
+      <span class="token-label" style="margin-left:var(--space-3);">--color-primary · #0D9488</span>
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>On dark</h2>
+  <div class="canvas dark col">
+    <div style="color:#FFFFFF;font-size:var(--text-lg);font-weight:var(--fw-semibold);">
+      Primary on dark — #FFFFFF
+    </div>
+    <div style="color:var(--color-sidebar-text);font-size:var(--text-md);">
+      Secondary on dark — --color-sidebar-text · #CBD5E1
+    </div>
+    <div style="color:var(--color-sidebar-icon);font-size:var(--text-sm);">
+      Muted on dark — --color-sidebar-icon · #64748B
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Usage</h2>
+  <table class="preview-table">
+    <thead><tr><th>Token</th><th>Contrast on white</th><th>Used for</th></tr></thead>
+    <tbody>
+      <tr><td><code>--color-text</code></td><td>17.6 : 1 (AAA)</td><td>Headings, body copy, table cells</td></tr>
+      <tr><td><code>--color-text-secondary</code></td><td>7.5 : 1 (AAA)</td><td>Form labels, breadcrumb, secondary actions</td></tr>
+      <tr><td><code>--color-text-muted</code></td><td>3.2 : 1 (large only)</td><td>Placeholders, timestamps, hint text</td></tr>
+      <tr><td><code>--color-text-disabled</code></td><td>1.7 : 1 (decorative)</td><td>Disabled state only — never for content</td></tr>
+    </tbody>
+  </table>
+</section>
+</body>
+</html>

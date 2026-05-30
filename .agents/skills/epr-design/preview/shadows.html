@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Shadows — EPR Design</title>
+<link rel="stylesheet" href="../colors_and_type.css"/>
+<link rel="stylesheet" href="_preview.css"/>
+</head>
+<body>
+<header class="preview-header">
+  <div>
+    <h1>Shadows</h1>
+    <p class="lead">Four elevation levels. Use the lowest shadow that communicates the right depth.</p>
+  </div>
+  <a href="README.md">← All previews</a>
+</header>
+
+<section class="preview-section">
+  <h2>The four levels</h2>
+  <div class="canvas" style="background:#F1F5F9;">
+    <div style="display:flex;gap:var(--space-8);flex-wrap:wrap;align-items:flex-end;">
+      <div style="text-align:center;">
+        <div style="width:140px;height:100px;background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);font-size:var(--text-sm);">sm</div>
+        <div class="token-label" style="margin-top:var(--space-3);"><strong>--shadow-sm</strong>0 1px 2px · 5%</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="width:140px;height:100px;background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-md);display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);font-size:var(--text-sm);">md</div>
+        <div class="token-label" style="margin-top:var(--space-3);"><strong>--shadow-md</strong>0 4px 6px · 7%</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="width:140px;height:100px;background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);font-size:var(--text-sm);">lg</div>
+        <div class="token-label" style="margin-top:var(--space-3);"><strong>--shadow-lg</strong>0 10px 15px · 8%</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="width:140px;height:100px;background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-xl);display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);font-size:var(--text-sm);">xl</div>
+        <div class="token-label" style="margin-top:var(--space-3);"><strong>--shadow-xl</strong>0 20px 25px · 10%</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Applied</h2>
+  <div class="canvas" style="background:#F1F5F9;display:flex;gap:var(--space-6);align-items:flex-start;flex-wrap:wrap;">
+    <div>
+      <div class="token-label" style="margin-bottom:var(--space-3);">Stat card · shadow-sm</div>
+      <div style="width:200px;background:#fff;border-radius:var(--radius-lg);padding:var(--space-5);box-shadow:var(--shadow-sm);">
+        <div style="font-size:var(--text-sm);color:var(--color-text-secondary);">Total Students</div>
+        <div style="font-size:var(--text-2xl);font-weight:var(--fw-bold);color:var(--color-primary);font-family:var(--font-mono);">248</div>
+      </div>
+    </div>
+    <div>
+      <div class="token-label" style="margin-bottom:var(--space-3);">Dropdown · shadow-lg</div>
+      <div style="width:180px;background:#fff;border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-2);box-shadow:var(--shadow-lg);">
+        <div style="padding:8px 12px;font-size:var(--text-sm);border-radius:var(--radius-sm);">Edit student</div>
+        <div style="padding:8px 12px;font-size:var(--text-sm);border-radius:var(--radius-sm);">View report</div>
+        <div style="padding:8px 12px;font-size:var(--text-sm);border-radius:var(--radius-sm);color:var(--color-danger);">Delete</div>
+      </div>
+    </div>
+    <div>
+      <div class="token-label" style="margin-bottom:var(--space-3);">Modal · shadow-xl</div>
+      <div style="width:220px;background:#fff;border-radius:var(--radius-lg);padding:var(--space-5);box-shadow:var(--shadow-xl);">
+        <div style="font-weight:var(--fw-semibold);margin-bottom:var(--space-2);">Confirm Delete</div>
+        <div style="font-size:var(--text-sm);color:var(--color-text-muted);">This action cannot be undone.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Usage</h2>
+  <table class="preview-table">
+    <thead><tr><th>Token</th><th>Used for</th></tr></thead>
+    <tbody>
+      <tr><td><code>--shadow-sm</code></td><td>Stat cards, table rows on hover</td></tr>
+      <tr><td><code>--shadow-md</code></td><td>Content cards, popovers, floating labels</td></tr>
+      <tr><td><code>--shadow-lg</code></td><td>Dropdowns, tooltips, notification panel</td></tr>
+      <tr><td><code>--shadow-xl</code></td><td>Modals, offcanvas panels, full-screen overlays</td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top:var(--space-3);font-size:var(--text-xs);color:var(--color-text-muted);">Sidebar and topbar use borders only — no shadows on structural chrome.</p>
+</section>
+</body>
+</html>

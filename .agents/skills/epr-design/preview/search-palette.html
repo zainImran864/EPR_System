@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Search Palette — EPR Design</title>
+<link rel="stylesheet" href="../colors_and_type.css"/>
+<link rel="stylesheet" href="_preview.css"/>
+<style>
+  .stage { background:rgb(15 23 42 / 50%); padding:var(--space-8); border-radius:var(--radius-lg); }
+  .palette { background:var(--color-surface); border-radius:var(--radius-lg); box-shadow:var(--shadow-xl); max-width:560px; margin:0 auto; overflow:hidden; }
+  .palette-input { display:flex; align-items:center; gap:var(--space-3); padding:var(--space-4) var(--space-5); border-bottom:1px solid var(--color-border); }
+  .palette-input input { flex:1; border:none; outline:none; font-family:var(--font-sans); font-size:var(--text-md); color:var(--color-text); background:transparent; }
+  .palette-input .kbd { display:inline-flex; align-items:center; padding:2px 7px; background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-sm); font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-secondary); }
+  .palette-section { padding:var(--space-3) var(--space-5) var(--space-1); font-size:10px; font-weight:var(--fw-semibold); text-transform:uppercase; letter-spacing:.08em; color:var(--color-text-muted); }
+  .palette-row { display:flex; align-items:center; gap:var(--space-3); padding:var(--space-3) var(--space-5); cursor:pointer; }
+  .palette-row.active { background:var(--color-primary-light); }
+  .palette-row:hover:not(.active) { background:var(--color-bg); }
+  .palette-row .icon { width:28px; height:28px; border-radius:var(--radius-md); background:var(--color-bg); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:14px; }
+  .palette-row.active .icon { background:var(--color-primary); color:#fff; }
+  .palette-row .label { flex:1; font-size:var(--text-sm); color:var(--color-text); }
+  .palette-row .meta { font-size:var(--text-xs); color:var(--color-text-muted); font-family:var(--font-mono); }
+  .palette-foot { display:flex; gap:var(--space-4); padding:var(--space-3) var(--space-5); border-top:1px solid var(--color-border); background:var(--color-bg); font-size:var(--text-xs); color:var(--color-text-muted); }
+  .palette-foot .kbd { display:inline-flex; align-items:center; padding:1px 5px; background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-sm); font-family:var(--font-mono); margin-right:var(--space-2); }
+  .avatar-xs { width:24px; height:24px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-weight:600; font-size:10px; flex-shrink:0; }
+</style>
+</head>
+<body>
+<header class="preview-header">
+  <div>
+    <h1>Search Palette</h1>
+    <p class="lead">⌘K command palette — global search across students, classes, fees, and quick actions.</p>
+  </div>
+  <a href="README.md">← All previews</a>
+</header>
+
+<section class="preview-section">
+  <h2>Empty — initial open</h2>
+  <div class="stage">
+    <div class="palette">
+      <div class="palette-input">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--color-text-muted);"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input placeholder="Search or run a command…" autofocus/>
+        <span class="kbd">esc</span>
+      </div>
+
+      <div class="palette-section">Recent</div>
+      <div class="palette-row">
+        <span class="avatar-xs" style="background:#DBEAFE;color:#1D4ED8;">AK</span>
+        <span class="label">Ahmed Khan</span>
+        <span class="meta">Class 10-A · 042</span>
+      </div>
+      <div class="palette-row">
+        <span class="icon">🏫</span>
+        <span class="label">Class 10-A — Term 1 Attendance</span>
+        <span class="meta">Page</span>
+      </div>
+
+      <div class="palette-section">Quick actions</div>
+      <div class="palette-row">
+        <span class="icon">➕</span>
+        <span class="label">Add student</span>
+        <span class="meta">A</span>
+      </div>
+      <div class="palette-row">
+        <span class="icon">✅</span>
+        <span class="label">Mark today's attendance</span>
+        <span class="meta">M</span>
+      </div>
+      <div class="palette-row">
+        <span class="icon">📊</span>
+        <span class="label">Generate term report</span>
+        <span class="meta">R</span>
+      </div>
+
+      <div class="palette-foot">
+        <span><span class="kbd">↑↓</span>Navigate</span>
+        <span><span class="kbd">↵</span>Select</span>
+        <span><span class="kbd">esc</span>Close</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Typing "ahm"</h2>
+  <div class="stage">
+    <div class="palette">
+      <div class="palette-input">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--color-text);"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input value="ahm"/>
+        <span class="kbd">esc</span>
+      </div>
+
+      <div class="palette-section">Students · 3 matches</div>
+      <div class="palette-row active">
+        <span class="avatar-xs" style="background:#DBEAFE;color:#1D4ED8;">AK</span>
+        <span class="label"><strong>Ahm</strong>ed Khan</span>
+        <span class="meta">Class 10-A · 042</span>
+      </div>
+      <div class="palette-row">
+        <span class="avatar-xs" style="background:#FCE7F3;color:#9D174D;">ZA</span>
+        <span class="label">Zain <strong>Ahm</strong>ed</span>
+        <span class="meta">Class 10-A · 044</span>
+      </div>
+      <div class="palette-row">
+        <span class="avatar-xs" style="background:#FEF3C7;color:#B45309;">AR</span>
+        <span class="label"><strong>Ahm</strong>ad Raza</span>
+        <span class="meta">Class 9-B · 028</span>
+      </div>
+
+      <div class="palette-section">Pages</div>
+      <div class="palette-row">
+        <span class="icon">📋</span>
+        <span class="label"><strong>Ahm</strong>ed Khan — Marks</span>
+        <span class="meta">Page</span>
+      </div>
+
+      <div class="palette-foot">
+        <span><span class="kbd">↑↓</span>Navigate</span>
+        <span><span class="kbd">↵</span>Select</span>
+        <span><span class="kbd">esc</span>Close</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>No results</h2>
+  <div class="stage">
+    <div class="palette">
+      <div class="palette-input">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input value="zxqv"/>
+        <span class="kbd">esc</span>
+      </div>
+      <div style="padding:var(--space-10) var(--space-5);text-align:center;color:var(--color-text-muted);font-size:var(--text-sm);">
+        No matches for <strong style="color:var(--color-text);">"zxqv"</strong><br>
+        <span style="font-size:var(--text-xs);">Try a different name, roll number, or class.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="preview-section">
+  <h2>Spec</h2>
+  <table class="preview-table">
+    <thead><tr><th>Property</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Shortcut</td><td><code>⌘K</code> / <code>Ctrl K</code> — global</td></tr>
+      <tr><td>Width</td><td>560px max; 90vw on small screens</td></tr>
+      <tr><td>Position</td><td>Centered vertically at 20% from top</td></tr>
+      <tr><td>Backdrop</td><td><code>rgb(15 23 42 / 50%)</code></td></tr>
+      <tr><td>Result categories</td><td>Recent · Students · Classes · Fees · Quick actions</td></tr>
+      <tr><td>Keyboard</td><td>↑↓ navigate · ↵ select · esc close</td></tr>
+    </tbody>
+  </table>
+</section>
+</body>
+</html>
