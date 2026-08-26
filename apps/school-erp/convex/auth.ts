@@ -153,6 +153,35 @@ export const currentUser = query({
 
     const school = user.schoolId ? await ctx.db.get(user.schoolId) : null;
 
+    // Resolve the linked student (for student self-view, or parent's child).
+    let student = null;
+    if (user.role === "student" && user.linkedStudentId) {
+      student = await ctx.db.get(user.linkedStudentId);
+    } else if (user.role === "parent") {
+      student = (
+        await ctx.db
+          .query("students")
+          .withIndex("by_schoolId", (q) => q.eq("schoolId", user.schoolId!))
+          .collect()
+      ).find((s) => s.linkedParentUserId === user._id) ?? null;
+    }
+    let studentContext = null;
+    if (student) {
+      const cls = await ctx.db.get(student.classId);
+      const sec = await ctx.db.get(student.sectionId);
+      studentContext = {
+        studentId: student._id,
+        classId: student.classId,
+        sectionId: student.sectionId,
+        className: cls?.name ?? "",
+        sectionName: sec?.name ?? "",
+        firstName: student.firstName,
+        lastName: student.lastName,
+        rollNumber: student.rollNumber,
+        admissionNumber: student.admissionNumber,
+      };
+    }
+
     return {
       _id: user._id,
       name: user.name,
@@ -161,9 +190,13 @@ export const currentUser = query({
       status: user.status,
       schoolId: user.schoolId ?? null,
       avatarUrl: user.avatarUrl ?? null,
+      phone: user.phone ?? null,
       linkedTeacherId: user.linkedTeacherId ?? null,
       linkedStudentId: user.linkedStudentId ?? null,
       mustChangePassword: user.mustChangePassword ?? false,
+      twoFactorEnabled: user.twoFactorEnabled ?? false,
+      notificationsEnabled: user.notificationsEnabled ?? true,
+      studentContext,
       school: school
         ? {
             _id: school._id,

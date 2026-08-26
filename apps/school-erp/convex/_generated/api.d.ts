@@ -22,6 +22,7 @@ import type * as seed from "../seed.js";
 import type * as students from "../students.js";
 import type * as superadmin from "../superadmin.js";
 import type * as teachers from "../teachers.js";
+import type * as timetable from "../timetable.js";
 
 import type {
   ApiFromModules,
@@ -44,6 +45,7 @@ declare const fullApi: ApiFromModules<{
   students: typeof students;
   superadmin: typeof superadmin;
   teachers: typeof teachers;
+  timetable: typeof timetable;
 }>;
 
 /**

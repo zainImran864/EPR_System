@@ -1,18 +1,12 @@
 "use client";
 
-import { CalendarDays } from "lucide-react";
-import { PortalPlaceholder } from "@/components/layout/PortalPlaceholder";
+import { MyTimetableView } from "@/modules/timetable/MyTimetableView";
 
 export default function ParentTimetablePage() {
   return (
-    <PortalPlaceholder
-      icon={CalendarDays}
+    <MyTimetableView
       title="Child's Timetable"
-      description="Your child's weekly class schedule by day and period."
-      points={[
-        "Day × period grid of subjects and teachers",
-        "Auto-updated when the admin edits the section's timetable",
-      ]}
+      subtitle="Your child's weekly class schedule by day and period."
     />
   );
 }

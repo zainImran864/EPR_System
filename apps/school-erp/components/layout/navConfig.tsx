@@ -9,6 +9,7 @@ import {
   Settings,
   CalendarDays,
   Wallet,
+  Bell,
 } from "lucide-react";
 
 export interface NavLink {
@@ -24,8 +25,11 @@ export const ADMIN_NAV: NavLink[] = [
   { href: "/admin/students", label: "Students", icon: ico(GraduationCap) },
   { href: "/admin/classes", label: "Classes & Sections", icon: ico(BookOpen) },
   { href: "/admin/teachers", label: "Faculty & Staff", icon: ico(Users) },
+  { href: "/admin/timetable", label: "Timetable", icon: ico(CalendarDays) },
   { href: "/admin/attendance", label: "Attendance", icon: ico(CalendarCheck) },
   { href: "/admin/marks", label: "Marks & Exams", icon: ico(Award) },
+  { href: "/admin/fees", label: "Fees & Challans", icon: ico(Wallet) },
+  { href: "/admin/notifications", label: "Notifications", icon: ico(Bell) },
   { href: "/admin/settings", label: "School Settings", icon: ico(Settings) },
 ];
 
@@ -34,6 +38,7 @@ export const TEACHER_NAV: NavLink[] = [
   { href: "/teacher/marks", label: "Marks Upload", icon: ico(Award) },
   { href: "/teacher/attendance", label: "Attendance", icon: ico(CalendarCheck) },
   { href: "/teacher/timetable", label: "Timetable", icon: ico(CalendarDays) },
+  { href: "/teacher/settings", label: "Settings", icon: ico(Settings) },
 ];
 
 export const STUDENT_NAV: NavLink[] = [
@@ -41,6 +46,7 @@ export const STUDENT_NAV: NavLink[] = [
   { href: "/student/results", label: "My Results", icon: ico(Award) },
   { href: "/student/attendance", label: "My Attendance", icon: ico(CalendarCheck) },
   { href: "/student/timetable", label: "My Timetable", icon: ico(CalendarDays) },
+  { href: "/student/settings", label: "Settings", icon: ico(Settings) },
 ];
 
 export const PARENT_NAV: NavLink[] = [
@@ -49,6 +55,7 @@ export const PARENT_NAV: NavLink[] = [
   { href: "/parent/attendance", label: "Attendance", icon: ico(CalendarCheck) },
   { href: "/parent/timetable", label: "Timetable", icon: ico(CalendarDays) },
   { href: "/parent/fees", label: "Fees", icon: ico(Wallet) },
+  { href: "/parent/settings", label: "Settings", icon: ico(Settings) },
 ];
 
 /** Resolve the page title from the current pathname against a nav list. */

@@ -42,6 +42,10 @@ export default defineSchema({
     linkedTeacherId: v.optional(v.id("teachers")),
     linkedStudentId: v.optional(v.id("students")),
     mustChangePassword: v.optional(v.boolean()),
+    // Per-user settings
+    twoFactorEnabled: v.optional(v.boolean()),
+    twoFactorSecret: v.optional(v.string()),
+    notificationsEnabled: v.optional(v.boolean()),
     createdAt: v.number(),
   })
     .index("by_schoolId", ["schoolId"])
@@ -153,6 +157,7 @@ export default defineSchema({
     guardianPhone: v.string(),
     guardianEmail: v.optional(v.string()),
     address: v.optional(v.string()),
+    linkedParentUserId: v.optional(v.id("users")),
     status: v.union(v.literal("active"), v.literal("inactive"), v.literal("transferred")),
     enrollmentDate: v.string(),
   })
@@ -207,4 +212,100 @@ export default defineSchema({
     .index("by_school_exam_student", ["schoolId", "examId", "studentId"])
     .index("by_school_exam_subject", ["schoolId", "examId", "subjectId"])
     .index("by_school_exam_section", ["schoolId", "examId", "classId", "sectionId"]),
+
+  // ─── Timetable ───────────────────────────────────────────────────
+  timetableSlots: defineTable({
+    schoolId: v.id("schools"),
+    classId: v.id("classes"),
+    sectionId: v.id("sections"),
+    dayOfWeek: v.number(), // 1 = Monday … 7 = Sunday
+    period: v.number(), // 1-based period index
+    startTime: v.string(), // "08:00"
+    endTime: v.string(), // "08:45"
+    subjectId: v.optional(v.id("subjects")),
+    subjectName: v.string(), // denormalized for quick display
+    teacherId: v.optional(v.id("teachers")),
+    teacherName: v.optional(v.string()),
+    room: v.optional(v.string()),
+  })
+    .index("by_schoolId", ["schoolId"])
+    .index("by_section", ["schoolId", "classId", "sectionId"])
+    .index("by_teacher", ["schoolId", "teacherId"]),
+
+  // ─── Fees ────────────────────────────────────────────────────────
+  feeBills: defineTable({
+    schoolId: v.id("schools"),
+    studentId: v.id("students"),
+    classId: v.id("classes"),
+    sectionId: v.id("sections"),
+    title: v.string(), // e.g. "Term 1 Fees 2026"
+    heads: v.array(v.object({ name: v.string(), amount: v.number() })),
+    totalAmount: v.number(),
+    paidAmount: v.number(),
+    issueDate: v.string(),
+    dueDate: v.string(),
+    status: v.union(
+      v.literal("unpaid"),
+      v.literal("partial"),
+      v.literal("paid")
+    ),
+    createdAt: v.number(),
+  })
+    .index("by_schoolId", ["schoolId"])
+    .index("by_student", ["schoolId", "studentId"])
+    .index("by_section", ["schoolId", "classId", "sectionId"]),
+
+  // ─── Notifications ───────────────────────────────────────────────
+  notifications: defineTable({
+    schoolId: v.optional(v.id("schools")),
+    title: v.string(),
+    body: v.string(),
+    // Targeting
+    audienceRole: v.optional(
+      v.union(
+        v.literal("all"),
+        v.literal("admin"),
+        v.literal("teacher"),
+        v.literal("student"),
+        v.literal("parent")
+      )
+    ),
+    targetUserId: v.optional(v.id("users")),
+    kind: v.union(
+      v.literal("info"),
+      v.literal("success"),
+      v.literal("warning"),
+      v.literal("announcement")
+    ),
+    createdBy: v.optional(v.id("users")),
+    createdAt: v.number(),
+  })
+    .index("by_schoolId", ["schoolId"])
+    .index("by_targetUser", ["targetUserId"]),
+
+  // Per-user read receipts (so unread badge is per recipient)
+  notificationReads: defineTable({
+    userId: v.id("users"),
+    notificationId: v.id("notifications"),
+    readAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_and_notification", ["userId", "notificationId"]),
+
+  // ─── School change requests (name changes need super-admin approval) ─
+  schoolChangeRequests: defineTable({
+    schoolId: v.id("schools"),
+    requestedBy: v.id("users"),
+    field: v.literal("name"),
+    currentValue: v.string(),
+    requestedValue: v.string(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("approved"),
+      v.literal("rejected")
+    ),
+    createdAt: v.number(),
+  })
+    .index("by_status", ["status"])
+    .index("by_schoolId", ["schoolId"]),
 });
