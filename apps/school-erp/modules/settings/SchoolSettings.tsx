@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Settings, Save, Palette, Check, Lock } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { Settings, Save, Palette, Check, ImageUp, SendHorizonal } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/Input";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { schoolsApi } from "@/app/api/schools";
 import { useAuth } from "@/app/hooks/useAuth";
+import { useAccount } from "@/app/hooks/useAccount";
 import { useToast } from "@/app/hooks/useToast";
 
 const THEME_COLORS = [
@@ -25,7 +26,9 @@ export const SchoolSettings: React.FC = () => {
   const schoolId = user?.schoolId ?? null;
   const school = useQuery(schoolsApi.getById, schoolId ? { schoolId } : "skip");
   const updateBranding = useMutation(schoolsApi.updateBranding);
+  const { uploadImage, requestSchoolNameChange } = useAccount();
   const { success, error } = useToast();
+  const logoRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     email: "",
@@ -35,6 +38,9 @@ export const SchoolSettings: React.FC = () => {
     activeYear: "",
   });
   const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [nameReq, setNameReq] = useState("");
+  const [reqSending, setReqSending] = useState(false);
 
   useEffect(() => {
     if (school) {
@@ -49,6 +55,35 @@ export const SchoolSettings: React.FC = () => {
   }, [school]);
 
   const loading = schoolId === null || school === undefined;
+
+  const handleLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingLogo(true);
+    try {
+      await uploadImage(file, "logo");
+      success("School logo updated.");
+    } catch {
+      error("Could not upload logo.");
+    } finally {
+      setUploadingLogo(false);
+      if (logoRef.current) logoRef.current.value = "";
+    }
+  };
+
+  const handleNameRequest = async () => {
+    if (!nameReq.trim()) return;
+    setReqSending(true);
+    try {
+      await requestSchoolNameChange(nameReq.trim());
+      success("Name change requested — pending platform approval.");
+      setNameReq("");
+    } catch {
+      error("Could not submit request.");
+    } finally {
+      setReqSending(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!schoolId) return;
@@ -114,11 +149,10 @@ export const SchoolSettings: React.FC = () => {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
-              label="School Name"
+              label="Current School Name"
               value={school?.name ?? ""}
               disabled
-              rightIcon={<Lock className="w-3.5 h-3.5" />}
-              helperText="Name changes require platform approval (request coming soon)"
+              helperText="Name changes require platform approval"
             />
             <Input
               label="Tenant Code"
@@ -126,6 +160,30 @@ export const SchoolSettings: React.FC = () => {
               disabled
               helperText="Unique identifier for multi-tenant scoping"
             />
+          </div>
+
+          {/* Request a school-name change (needs super-admin approval) */}
+          <div className="flex flex-col sm:flex-row sm:items-end gap-3 p-3 rounded-xl bg-amber-50/60 border border-amber-100">
+            <div className="flex-1">
+              <Input
+                label="Request a new school name"
+                value={nameReq}
+                onChange={(e) => setNameReq(e.target.value)}
+                placeholder="e.g. Oakridge International Academy"
+                helperText="Submitted to the platform super-admin for approval."
+              />
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNameRequest}
+              isLoading={reqSending}
+              disabled={!nameReq.trim()}
+              leftIcon={<SendHorizonal className="w-4 h-4" />}
+              className="text-xs"
+            >
+              Request Change
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -154,6 +212,54 @@ export const SchoolSettings: React.FC = () => {
               onChange={(e) => setForm({ ...form, activeYear: e.target.value })}
               placeholder="2026-2027"
             />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* School Logo */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ImageUp className="w-4 h-4 text-[#0D9488]" />
+            School Logo
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4">
+            {school?.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={school.logoUrl}
+                alt={school.name}
+                className="w-16 h-16 rounded-xl object-cover border border-slate-200"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center text-slate-300">
+                <ImageUp className="w-6 h-6" />
+              </div>
+            )}
+            <div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => logoRef.current?.click()}
+                isLoading={uploadingLogo}
+                leftIcon={<ImageUp className="w-4 h-4" />}
+                className="text-xs"
+              >
+                Upload Logo
+              </Button>
+              <p className="text-[11px] text-slate-400 mt-1.5">
+                Appears in the sidebar and at the top of report cards & fee challans.
+              </p>
+              <input
+                ref={logoRef}
+                type="file"
+                accept="image/*"
+                onChange={handleLogo}
+                className="hidden"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>

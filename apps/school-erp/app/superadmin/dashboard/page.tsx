@@ -39,13 +39,27 @@ function SuperAdminDashboard() {
     requests,
     isLoading,
     stats,
+    changeRequests,
     statusFilter,
     setStatusFilter,
     approveRequest,
     rejectRequest,
+    resolveChangeRequest,
   } = useRegistrations();
   const [busyId, setBusyId] = useState<string | null>(null);
   const { success, error } = useToast();
+
+  const handleResolveChange = async (id: string, approve: boolean) => {
+    setBusyId(id);
+    try {
+      await resolveChangeRequest(id, approve);
+      success(approve ? "School name updated." : "Change request rejected.");
+    } catch {
+      error("Could not resolve the request.");
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   const handleApprove = async (id: string) => {
     setBusyId(id);
@@ -230,6 +244,55 @@ function SuperAdminDashboard() {
           emptyTitle="No registration requests"
           emptyDescription="New school registrations will appear here for approval."
         />
+
+        {/* School name-change requests */}
+        {changeRequests.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-[#0D9488]" />
+              School Name Change Requests
+              <Badge variant="warning" size="sm">
+                {changeRequests.length}
+              </Badge>
+            </h3>
+            <div className="space-y-2">
+              {changeRequests.map((c) => (
+                <div
+                  key={c._id}
+                  className="flex items-center justify-between gap-3 p-4 bg-white rounded-xl border border-slate-200 shadow-xs"
+                >
+                  <div className="text-sm">
+                    <span className="text-slate-500">{c.currentValue}</span>
+                    <span className="mx-2 text-slate-300">→</span>
+                    <span className="font-semibold text-slate-900">
+                      {c.requestedValue}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="success"
+                      size="xs"
+                      isLoading={busyId === c._id}
+                      onClick={() => handleResolveChange(c._id, true)}
+                      leftIcon={<Check className="w-3.5 h-3.5" />}
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="xs"
+                      disabled={busyId === c._id}
+                      onClick={() => handleResolveChange(c._id, false)}
+                      leftIcon={<X className="w-3.5 h-3.5" />}
+                    >
+                      Reject
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

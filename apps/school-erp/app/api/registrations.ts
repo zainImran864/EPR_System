@@ -5,6 +5,8 @@ export const registrationsApi = {
   list: api.registrations.listRequests,
   approve: api.registrations.approveRequest,
   reject: api.registrations.rejectRequest,
+  listChangeRequests: api.registrations.listSchoolChangeRequests,
+  resolveChangeRequest: api.registrations.resolveSchoolChangeRequest,
 };
 
 /** Super-admin / platform endpoints. */

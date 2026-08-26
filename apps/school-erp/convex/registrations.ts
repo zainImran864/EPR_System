@@ -115,3 +115,49 @@ export const rejectRequest = mutation({
     return { ok: true };
   },
 });
+
+// ─── School change requests (name changes → super-admin approval) ─────────────
+
+export const listSchoolChangeRequests = query({
+  args: {
+    status: v.optional(
+      v.union(v.literal("pending"), v.literal("approved"), v.literal("rejected"))
+    ),
+  },
+  handler: async (ctx, args) => {
+    const list = args.status
+      ? await ctx.db
+          .query("schoolChangeRequests")
+          .withIndex("by_status", (q) => q.eq("status", args.status!))
+          .order("desc")
+          .collect()
+      : await ctx.db.query("schoolChangeRequests").order("desc").collect();
+
+    return await Promise.all(
+      list.map(async (r) => {
+        const school = await ctx.db.get(r.schoolId);
+        return { ...r, schoolName: school?.name ?? "" };
+      })
+    );
+  },
+});
+
+export const resolveSchoolChangeRequest = mutation({
+  args: {
+    requestId: v.id("schoolChangeRequests"),
+    approve: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const req = await ctx.db.get(args.requestId);
+    if (!req) throw new Error("Change request not found");
+    if (req.status !== "pending") return { alreadyResolved: true as const };
+
+    if (args.approve && req.field === "name") {
+      await ctx.db.patch(req.schoolId, { name: req.requestedValue });
+    }
+    await ctx.db.patch(args.requestId, {
+      status: args.approve ? "approved" : "rejected",
+    });
+    return { ok: true as const };
+  },
+});
