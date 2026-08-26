@@ -1,38 +1,84 @@
 "use client";
 
-import React, { useState } from "react";
-import { Settings, Save, Palette, Globe, School, Check } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Settings, Save, Palette, Check, Lock } from "lucide-react";
+import { useQuery, useMutation } from "convex/react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Badge } from "@/components/ui/Badge";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { schoolsApi } from "@/app/api/schools";
+import { useAuth } from "@/app/hooks/useAuth";
+import { useToast } from "@/app/hooks/useToast";
+
+const THEME_COLORS = [
+  { name: "Teal", hex: "#0D9488" },
+  { name: "Royal Blue", hex: "#2563EB" },
+  { name: "Indigo", hex: "#4F46E5" },
+  { name: "Emerald", hex: "#059669" },
+  { name: "Crimson", hex: "#DC2626" },
+  { name: "Violet", hex: "#7C3AED" },
+];
 
 export const SchoolSettings: React.FC = () => {
-  const [settings, setSettings] = useState({
-    name: "Oakridge International Academy",
-    code: "OAK-RIDGE",
+  const { user } = useAuth();
+  const schoolId = user?.schoolId ?? null;
+  const school = useQuery(schoolsApi.getById, schoolId ? { schoolId } : "skip");
+  const updateBranding = useMutation(schoolsApi.updateBranding);
+  const { success, error } = useToast();
+
+  const [form, setForm] = useState({
+    email: "",
+    phone: "",
+    address: "",
     primaryColor: "#0D9488",
-    activeYear: "2026-2027",
-    email: "admissions@oakridge.edu",
-    phone: "+1 (555) 234-5678",
-    address: "450 Academic Boulevard, Cambridge, MA",
-    customDomain: "portal.oakridge.edu",
+    activeYear: "",
   });
+  const [saving, setSaving] = useState(false);
 
-  const [isSaved, setIsSaved] = useState(false);
+  useEffect(() => {
+    if (school) {
+      setForm({
+        email: school.email ?? "",
+        phone: school.phone ?? "",
+        address: school.address ?? "",
+        primaryColor: school.primaryColor ?? "#0D9488",
+        activeYear: school.activeYear ?? "",
+      });
+    }
+  }, [school]);
 
-  const themeColors = [
-    { name: "Teal (Default)", hex: "#0D9488" },
-    { name: "Royal Blue", hex: "#2563EB" },
-    { name: "Indigo", hex: "#4F46E5" },
-    { name: "Emerald Green", hex: "#059669" },
-    { name: "Crimson", hex: "#DC2626" },
-  ];
+  const loading = schoolId === null || school === undefined;
 
-  const handleSave = () => {
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 3000);
+  const handleSave = async () => {
+    if (!schoolId) return;
+    setSaving(true);
+    try {
+      await updateBranding({
+        schoolId,
+        email: form.email || undefined,
+        phone: form.phone || undefined,
+        address: form.address || undefined,
+        primaryColor: form.primaryColor,
+        activeYear: form.activeYear || undefined,
+      });
+      success("Settings saved.");
+    } catch {
+      error("Could not save settings.");
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6 max-w-4xl">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-48 w-full" />
+        <Skeleton className="h-32 w-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -41,10 +87,10 @@ export const SchoolSettings: React.FC = () => {
         <div>
           <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <Settings className="w-5 h-5 text-[#0D9488]" />
-            School Branding & Institutional Settings
+            School Branding & Settings
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Configure multi-tenant branding, active session, domain mapping, and theme palette
+            Configure your institution profile, active session, and theme palette
           </p>
         </div>
 
@@ -52,14 +98,15 @@ export const SchoolSettings: React.FC = () => {
           variant="primary"
           size="sm"
           onClick={handleSave}
+          isLoading={saving}
           leftIcon={<Save className="w-4 h-4" />}
           className="text-xs"
         >
-          {isSaved ? "Settings Saved!" : "Save Changes"}
+          Save Changes
         </Button>
       </div>
 
-      {/* Settings Cards */}
+      {/* Institution Profile */}
       <Card>
         <CardHeader>
           <CardTitle>Institution Profile</CardTitle>
@@ -68,14 +115,16 @@ export const SchoolSettings: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label="School Name"
-              value={settings.name}
-              onChange={(e) => setSettings({ ...settings, name: e.target.value })}
+              value={school?.name ?? ""}
+              disabled
+              rightIcon={<Lock className="w-3.5 h-3.5" />}
+              helperText="Name changes require platform approval (request coming soon)"
             />
             <Input
               label="Tenant Code"
-              value={settings.code}
+              value={school?.code ?? ""}
               disabled
-              helperText="Unique identifier for multi-tenant database scoping"
+              helperText="Unique identifier for multi-tenant scoping"
             />
           </div>
 
@@ -83,24 +132,33 @@ export const SchoolSettings: React.FC = () => {
             <Input
               label="Official Email"
               type="email"
-              value={settings.email}
-              onChange={(e) => setSettings({ ...settings, email: e.target.value })}
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
             />
             <Input
               label="Phone Number"
-              value={settings.phone}
-              onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
+              value={form.phone}
+              onChange={(e) => setForm({ ...form, phone: e.target.value })}
             />
           </div>
 
-          <Input
-            label="Campus Address"
-            value={settings.address}
-            onChange={(e) => setSettings({ ...settings, address: e.target.value })}
-          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Campus Address"
+              value={form.address}
+              onChange={(e) => setForm({ ...form, address: e.target.value })}
+            />
+            <Input
+              label="Active Academic Year"
+              value={form.activeYear}
+              onChange={(e) => setForm({ ...form, activeYear: e.target.value })}
+              placeholder="2026-2027"
+            />
+          </div>
         </CardContent>
       </Card>
 
+      {/* Theme */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -114,15 +172,13 @@ export const SchoolSettings: React.FC = () => {
               Primary Brand Accent
             </span>
             <div className="flex flex-wrap gap-3">
-              {themeColors.map((color) => {
-                const isSelected = settings.primaryColor === color.hex;
+              {THEME_COLORS.map((color) => {
+                const isSelected = form.primaryColor === color.hex;
                 return (
                   <button
                     key={color.hex}
                     type="button"
-                    onClick={() =>
-                      setSettings({ ...settings, primaryColor: color.hex })
-                    }
+                    onClick={() => setForm({ ...form, primaryColor: color.hex })}
                     className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-all ${
                       isSelected
                         ? "border-slate-800 bg-slate-50 shadow-xs ring-2 ring-slate-800/10"
@@ -146,4 +202,3 @@ export const SchoolSettings: React.FC = () => {
     </div>
   );
 };
-

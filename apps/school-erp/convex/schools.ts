@@ -18,6 +18,14 @@ export const getActiveSchool = query({
   },
 });
 
+// Get a single school by id (full document)
+export const getSchool = query({
+  args: { schoolId: v.id("schools") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.schoolId);
+  },
+});
+
 // List all registered schools/tenants
 export const listSchools = query({
   args: {},
