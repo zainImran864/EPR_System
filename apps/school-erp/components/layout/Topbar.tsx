@@ -3,13 +3,7 @@
 import React from "react";
 import { useAppStore } from "@/app/store/useAppStore";
 import { cn } from "@/app/lib/utils";
-import {
-  Menu,
-  Search,
-  Sparkles,
-  LogOut,
-} from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { Menu, Search, LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { NotificationBell } from "./NotificationBell";
@@ -84,20 +78,6 @@ export const Topbar: React.FC<TopbarProps> = ({
             /
           </kbd>
         </div>
-
-        {/* Demo Seed Database Button */}
-        {onSeedData && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onSeedData}
-            isLoading={isSeeding}
-            leftIcon={<Sparkles className="w-3.5 h-3.5 text-[#0D9488]" />}
-            className="hidden sm:inline-flex text-xs border-[#99F6E4] bg-[#F0FDFA] text-[#0F766E] hover:bg-[#CCFBF1]"
-          >
-            Seed Demo Data
-          </Button>
-        )}
 
         {/* Notification Bell */}
         <NotificationBell />

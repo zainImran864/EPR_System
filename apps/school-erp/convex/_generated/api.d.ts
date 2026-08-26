@@ -13,6 +13,7 @@ import type * as attendance from "../attendance.js";
 import type * as auth from "../auth.js";
 import type * as classes from "../classes.js";
 import type * as dashboard from "../dashboard.js";
+import type * as demo from "../demo.js";
 import type * as email from "../email.js";
 import type * as fees from "../fees.js";
 import type * as lib_hash from "../lib/hash.js";
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   classes: typeof classes;
   dashboard: typeof dashboard;
+  demo: typeof demo;
   email: typeof email;
   fees: typeof fees;
   "lib/hash": typeof lib_hash;
