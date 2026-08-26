@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/Button";
 import { DataGrid, type Column } from "@/components/ui/DataGrid";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useRegistrations } from "@/app/hooks/useRegistrations";
+import { useToast } from "@/app/hooks/useToast";
 
 type RequestRow = {
   _id: string;
@@ -44,11 +45,17 @@ function SuperAdminDashboard() {
     rejectRequest,
   } = useRegistrations();
   const [busyId, setBusyId] = useState<string | null>(null);
+  const { success, error } = useToast();
 
   const handleApprove = async (id: string) => {
     setBusyId(id);
     try {
       await approveRequest(id);
+      success("School approved — the admin has been notified by email.", {
+        title: "Approved",
+      });
+    } catch {
+      error("Could not approve this request.");
     } finally {
       setBusyId(null);
     }
@@ -59,6 +66,11 @@ function SuperAdminDashboard() {
     setBusyId(id);
     try {
       await rejectRequest(id, note);
+      success("Request rejected — the applicant has been notified.", {
+        title: "Rejected",
+      });
+    } catch {
+      error("Could not reject this request.");
     } finally {
       setBusyId(null);
     }

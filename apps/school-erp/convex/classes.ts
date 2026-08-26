@@ -61,11 +61,16 @@ export const createClass = mutation({
       academicYear: args.academicYear,
     });
 
+    // De-dupe section names within this class (case-insensitive).
+    const seen = new Set<string>();
     for (const sectionName of args.sections) {
+      const key = sectionName.trim().toLowerCase();
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
       await ctx.db.insert("sections", {
         schoolId: args.schoolId,
         classId,
-        name: sectionName,
+        name: sectionName.trim(),
       });
     }
 

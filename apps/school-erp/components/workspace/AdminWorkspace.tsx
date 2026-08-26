@@ -10,6 +10,7 @@ import { MarkEntryGrid } from "@/modules/marks/MarkEntryGrid";
 import { SchoolSettings } from "@/modules/settings/SchoolSettings";
 import { useSeed } from "@/app/hooks/useDashboard";
 import { useAuth } from "@/app/hooks/useAuth";
+import { useToast } from "@/app/hooks/useToast";
 
 const MODULE_META: Record<string, { title: string; subtitle: string }> = {
   dashboard: {
@@ -47,19 +48,20 @@ export const AdminWorkspace: React.FC = () => {
   const [isSeeding, setIsSeeding] = useState(false);
   const seedSchool = useSeed();
   const { user, logout } = useAuth();
+  const { success, error, info } = useToast();
 
   const handleSeedData = async () => {
     setIsSeeding(true);
     try {
       const result = await seedSchool({});
-      alert(
-        result?.alreadySeeded
-          ? "Demo data already present for this tenant."
-          : "Demo data seeded successfully!"
-      );
+      if (result?.alreadySeeded) {
+        info("Demo data already present for this tenant.");
+      } else {
+        success("Demo data seeded successfully!");
+      }
     } catch (err) {
       console.error("Seed failed", err);
-      alert("Seeding failed — is the Convex backend deployed?");
+      error("Seeding failed — is the Convex backend deployed?");
     } finally {
       setIsSeeding(false);
     }

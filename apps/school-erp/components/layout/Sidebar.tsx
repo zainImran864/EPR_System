@@ -64,7 +64,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       )}
     >
       {/* Brand Header */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800">
+      <div
+        className={cn(
+          "border-b border-slate-800 px-3",
+          isSidebarOpen
+            ? "h-16 flex items-center justify-between px-4"
+            : "py-3 flex flex-col items-center gap-2"
+        )}
+      >
         <div className="flex items-center gap-3 overflow-hidden">
           {schoolLogoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element

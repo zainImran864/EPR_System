@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import { hashPassword, verifyPassword, generateToken } from "./lib/hash";
 import { slugify, buildEmail } from "./lib/identity";
 
@@ -71,6 +72,16 @@ export const register = mutation({
       passwordSalt: salt,
       status: "pending",
       createdAt: now,
+    });
+
+    // Send the "registration received / under review" email.
+    await ctx.scheduler.runAfter(0, internal.email.sendRegistrationPending, {
+      to: args.contactEmail,
+      adminName: args.adminName,
+      schoolName: args.schoolName,
+      adminEmail,
+      classes: args.classesOffered,
+      address: args.address,
     });
 
     return { requestId, adminEmail, schoolSlug: slug };

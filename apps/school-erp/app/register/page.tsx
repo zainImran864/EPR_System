@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { useAuth } from "@/app/hooks/useAuth";
+import { useToast } from "@/app/hooks/useToast";
 
 const slugify = (s: string) =>
   s.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "");
@@ -25,6 +26,7 @@ const GRADES = Array.from({ length: 12 }, (_, i) => i + 1);
 
 export default function RegisterPage() {
   const { register } = useAuth();
+  const { success, error: toastError } = useToast();
 
   const [form, setForm] = useState({
     schoolName: "",
@@ -77,9 +79,13 @@ export default function RegisterPage() {
         password: form.password,
       });
       setDone({ email: res.adminEmail });
+      success("Registration submitted — check your email for details.", {
+        title: "Submitted for approval",
+      });
     } catch (err) {
       console.error(err);
       setError("Registration failed. Is the backend running?");
+      toastError("Registration failed. Please try again.");
     } finally {
       setSubmitting(false);
     }

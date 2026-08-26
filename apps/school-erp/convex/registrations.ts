@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 
 // ─── List registration requests (super-admin queue) ──────────────────────────
 
@@ -71,6 +72,13 @@ export const approveRequest = mutation({
       reviewNote: args.reviewNote,
     });
 
+    await ctx.scheduler.runAfter(0, internal.email.sendApproved, {
+      to: req.contactEmail,
+      adminName: req.adminName,
+      schoolName: req.schoolName,
+      adminEmail: req.adminEmail,
+    });
+
     return { schoolId };
   },
 });
@@ -96,6 +104,14 @@ export const rejectRequest = mutation({
       status: "rejected",
       reviewNote: args.reviewNote,
     });
+
+    await ctx.scheduler.runAfter(0, internal.email.sendDeclined, {
+      to: req.contactEmail,
+      adminName: req.adminName,
+      schoolName: req.schoolName,
+      reason: args.reviewNote,
+    });
+
     return { ok: true };
   },
 });

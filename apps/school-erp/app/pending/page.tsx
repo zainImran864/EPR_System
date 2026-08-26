@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { Clock, LogOut } from "lucide-react";
 import { AuthShell } from "@/components/auth/AuthShell";
@@ -9,6 +9,13 @@ import { useAuth } from "@/app/hooks/useAuth";
 
 export default function PendingPage() {
   const { user, logout } = useAuth();
+  const [queryEmail, setQueryEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    setQueryEmail(new URLSearchParams(window.location.search).get("email"));
+  }, []);
+
+  const displayEmail = user?.email ?? queryEmail;
 
   return (
     <AuthShell>

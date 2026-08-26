@@ -9,7 +9,6 @@ import {
   Bell,
   Sparkles,
   LogOut,
-  School,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -55,27 +54,6 @@ export const Topbar: React.FC<TopbarProps> = ({
         >
           <Menu className="w-5 h-5" />
         </button>
-
-        {/* Tenant school brand (name + logo) */}
-        {schoolName && (
-          <div className="hidden md:flex items-center gap-2.5 pr-3 mr-1 border-r border-slate-200">
-            {schoolLogoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={schoolLogoUrl}
-                alt={schoolName}
-                className="w-8 h-8 rounded-lg object-cover shrink-0 border border-slate-200"
-              />
-            ) : (
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#0D9488] to-[#2DD4BF] text-white flex items-center justify-center shrink-0">
-                <School className="w-4 h-4" />
-              </div>
-            )}
-            <span className="text-sm font-bold text-slate-900 tracking-tight truncate max-w-[180px]">
-              {schoolName}
-            </span>
-          </div>
-        )}
 
         <div className="flex flex-col">
           <div className="flex items-center gap-2">

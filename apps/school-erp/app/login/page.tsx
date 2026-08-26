@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, LogIn, AlertCircle, Clock } from "lucide-react";
+import { Mail, Lock, LogIn, AlertCircle } from "lucide-react";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -18,7 +18,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
 
   // Already logged in → bounce to the right dashboard.
   useEffect(() => {
@@ -28,14 +27,13 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setPending(false);
     setSubmitting(true);
     try {
       const res = await login(email.trim(), password);
       if (res.ok && res.role) {
         router.replace(ROLE_HOME[res.role]);
       } else if ("status" in res && res.status === "pending") {
-        setPending(true);
+        router.replace(`/pending?email=${encodeURIComponent(email.trim())}`);
       } else if ("status" in res && res.status === "inactive") {
         setError("This account is inactive. Please contact your administrator.");
       } else {
@@ -59,16 +57,6 @@ export default function LoginPage() {
           Use the email and password provided by your school.
         </p>
       </div>
-
-      {pending && (
-        <div className="mb-4 flex items-start gap-2.5 rounded-lg bg-amber-50 border border-amber-200 p-3 text-amber-800">
-          <Clock className="w-4 h-4 mt-0.5 shrink-0" />
-          <p className="text-xs leading-relaxed">
-            Your school registration is <strong>under review</strong>. You&apos;ll
-            be able to sign in once a platform administrator approves it.
-          </p>
-        </div>
-      )}
 
       {error && (
         <div className="mb-4 flex items-start gap-2.5 rounded-lg bg-rose-50 border border-rose-200 p-3 text-rose-700">
