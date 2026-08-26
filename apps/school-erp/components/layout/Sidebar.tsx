@@ -16,7 +16,7 @@ import {
   School,
 } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
-import { Badge } from "@/components/ui/Badge";
+import { MadeByAcademiX } from "@/components/brand/AcademiXLogo";
 
 export interface NavItem {
   id: string;
@@ -30,6 +30,7 @@ export interface SidebarProps {
   onSelectModule: (id: string) => void;
   schoolName?: string;
   schoolCode?: string;
+  schoolLogoUrl?: string | null;
   userName?: string;
   userRole?: string;
 }
@@ -39,6 +40,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSelectModule,
   schoolName = "Oakridge Academy",
   schoolCode = "OAK-RIDGE",
+  schoolLogoUrl,
   userName = "Administrator",
   userRole = "Admin",
 }) => {
@@ -64,9 +66,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Brand Header */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800">
         <div className="flex items-center gap-3 overflow-hidden">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#0D9488] to-[#2DD4BF] text-white flex items-center justify-center shrink-0 shadow-md shadow-teal-900/40 font-bold text-base">
-            <School className="w-5 h-5" />
-          </div>
+          {schoolLogoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={schoolLogoUrl}
+              alt={schoolName}
+              className="w-9 h-9 rounded-xl object-cover shrink-0 shadow-md shadow-teal-900/40 border border-slate-700"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#0D9488] to-[#2DD4BF] text-white flex items-center justify-center shrink-0 shadow-md shadow-teal-900/40 font-bold text-base">
+              <School className="w-5 h-5" />
+            </div>
+          )}
           {isSidebarOpen && (
             <div className="flex flex-col truncate">
               <span className="text-sm font-semibold text-white truncate tracking-tight">
@@ -161,6 +172,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           )}
         </div>
+
+        {/* Platform attribution */}
+        {isSidebarOpen && <MadeByAcademiX inverted className="mt-3" />}
       </div>
     </aside>
   );

@@ -23,6 +23,7 @@ function ParentDashboard() {
       <RoleHeader
         title="Parent Portal"
         schoolName={user?.school?.name}
+        schoolLogoUrl={user?.school?.logoUrl}
         userName={user?.name ?? "Parent"}
         roleLabel="Parent"
         onLogout={logout}

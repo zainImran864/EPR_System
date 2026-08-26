@@ -15,6 +15,7 @@ export interface ShellProps {
   isSeeding?: boolean;
   schoolName?: string;
   schoolCode?: string;
+  schoolLogoUrl?: string | null;
   userName?: string;
   userRole?: string;
   onLogout?: () => void;
@@ -30,6 +31,7 @@ export const Shell: React.FC<ShellProps> = ({
   isSeeding,
   schoolName,
   schoolCode,
+  schoolLogoUrl,
   userName,
   userRole,
   onLogout,
@@ -45,6 +47,7 @@ export const Shell: React.FC<ShellProps> = ({
         onSelectModule={onSelectModule}
         schoolName={schoolName}
         schoolCode={schoolCode}
+        schoolLogoUrl={schoolLogoUrl}
         userName={userName}
         userRole={userRole}
       />
@@ -58,6 +61,8 @@ export const Shell: React.FC<ShellProps> = ({
         userName={userName}
         userRole={userRole}
         onLogout={onLogout}
+        schoolName={schoolName}
+        schoolLogoUrl={schoolLogoUrl}
       />
 
       {/* Main Content Area */}

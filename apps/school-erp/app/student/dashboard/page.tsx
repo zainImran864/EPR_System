@@ -23,6 +23,7 @@ function StudentDashboard() {
       <RoleHeader
         title="Student Portal"
         schoolName={user?.school?.name}
+        schoolLogoUrl={user?.school?.logoUrl}
         userName={user?.name ?? "Student"}
         roleLabel="Student"
         onLogout={logout}

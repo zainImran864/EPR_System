@@ -79,6 +79,7 @@ export const AdminWorkspace: React.FC = () => {
       isSeeding={isSeeding}
       schoolName={schoolName}
       schoolCode={schoolCode}
+      schoolLogoUrl={user?.school?.logoUrl}
       userName={user?.name ?? "Administrator"}
       userRole="Administrator"
       onLogout={logout}

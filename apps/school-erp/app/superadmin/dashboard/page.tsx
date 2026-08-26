@@ -156,6 +156,7 @@ function SuperAdminDashboard() {
       <RoleHeader
         title="Platform Console"
         subtitle="Super Admin"
+        platform
         userName={user?.name ?? "Super Admin"}
         roleLabel="Super Admin"
         onLogout={logout}
