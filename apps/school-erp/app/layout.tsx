@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ConvexClientProvider } from "./ConvexClientProvider";
 import { Toaster } from "@/components/ui/Toast";
+import { PWARegister } from "@/components/pwa/PWARegister";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -17,8 +18,21 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "School ERP — Multi-Tenant Institution Platform",
-  description: "Modern, reactive School ERP platform for managing student records, attendance, marks, classes, and teachers.",
+  title: "AcademiX — School Management Platform",
+  description:
+    "Modern, reactive School ERP platform for managing student records, attendance, marks, classes, and teachers.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "AcademiX",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0D9488",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -35,6 +49,7 @@ export default function RootLayout({
         <ConvexClientProvider>
           {children}
           <Toaster />
+          <PWARegister />
         </ConvexClientProvider>
       </body>
     </html>
