@@ -19,6 +19,7 @@ import type * as lib_identity from "../lib/identity.js";
 import type * as marks from "../marks.js";
 import type * as notifications from "../notifications.js";
 import type * as registrations from "../registrations.js";
+import type * as results from "../results.js";
 import type * as schools from "../schools.js";
 import type * as seed from "../seed.js";
 import type * as students from "../students.js";
@@ -44,6 +45,7 @@ declare const fullApi: ApiFromModules<{
   marks: typeof marks;
   notifications: typeof notifications;
   registrations: typeof registrations;
+  results: typeof results;
   schools: typeof schools;
   seed: typeof seed;
   students: typeof students;
