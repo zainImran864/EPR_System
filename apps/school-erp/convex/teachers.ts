@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import { hashPassword } from "./lib/hash";
 import { buildEmail } from "./lib/identity";
 
@@ -39,6 +40,50 @@ export const listTeachers = query({
   },
 });
 
+// Extract a school's SMTP config into the shape the email actions expect.
+function smtpFromSchool(school: {
+  smtpHost?: string;
+  smtpPort?: number;
+  smtpUser?: string;
+  smtpPass?: string;
+  smtpFrom?: string;
+  smtpSecure?: boolean;
+  smtpEnabled?: boolean;
+}) {
+  return {
+    host: school.smtpHost,
+    port: school.smtpPort,
+    user: school.smtpUser,
+    pass: school.smtpPass,
+    from: school.smtpFrom,
+    secure: school.smtpSecure,
+    enabled: school.smtpEnabled,
+  };
+}
+
+// Next auto employee id, e.g. "EMP-001" (max existing + 1).
+async function nextEmployeeIdFor(
+  ctx: { db: any },
+  schoolId: string
+): Promise<string> {
+  const teachers = await ctx.db
+    .query("teachers")
+    .withIndex("by_schoolId", (q: any) => q.eq("schoolId", schoolId))
+    .collect();
+  let max = 0;
+  for (const t of teachers) {
+    const m = /EMP-(\d+)/i.exec(t.employeeId ?? "");
+    if (m) max = Math.max(max, parseInt(m[1], 10));
+  }
+  return `EMP-${String(max + 1).padStart(3, "0")}`;
+}
+
+// Preview query for the (read-only) auto employee id in the add form.
+export const nextEmployeeId = query({
+  args: { schoolId: v.id("schools") },
+  handler: async (ctx, args) => nextEmployeeIdFor(ctx, args.schoolId),
+});
+
 // ─── Create Teacher ───────────────────────────────────────────────────────────
 
 // Provisions a teacher profile + a login user (auto email {name}T@{slug}.com).
@@ -47,18 +92,21 @@ export const createTeacher = mutation({
     schoolId: v.id("schools"),
     firstName: v.string(),
     lastName: v.string(),
-    employeeId: v.string(),
     phone: v.optional(v.string()),
     designation: v.string(),
     department: v.string(),
     joinDate: v.optional(v.string()),
     status: v.optional(v.union(v.literal("active"), v.literal("inactive"))),
     password: v.string(),
+    personalEmail: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const school = await ctx.db.get(args.schoolId);
     const slug = (school?.code ?? "school").toLowerCase();
     const fullName = `${args.firstName} ${args.lastName}`;
+
+    // Auto, server-authoritative employee id
+    const employeeId = await nextEmployeeIdFor(ctx, args.schoolId);
 
     // Unique login email within the school
     let counter = 0;
@@ -76,7 +124,7 @@ export const createTeacher = mutation({
       schoolId: args.schoolId,
       firstName: args.firstName,
       lastName: args.lastName,
-      employeeId: args.employeeId,
+      employeeId,
       email,
       phone: args.phone,
       designation: args.designation,
@@ -99,7 +147,20 @@ export const createTeacher = mutation({
       createdAt: Date.now(),
     });
 
-    return { teacherId, email };
+    // Email the login to the teacher's real inbox, via the school's SMTP.
+    if (args.personalEmail) {
+      await ctx.scheduler.runAfter(0, internal.email.sendTeacherCredentials, {
+        to: args.personalEmail,
+        teacherName: fullName,
+        loginEmail: email,
+        password: args.password,
+        schoolName: school?.name ?? "Your School",
+        schoolLogoUrl: school?.logoUrl ?? null,
+        smtp: school ? smtpFromSchool(school) : undefined,
+      });
+    }
+
+    return { teacherId, email, employeeId };
   },
 });
 

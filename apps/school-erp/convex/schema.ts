@@ -13,6 +13,14 @@ export default defineSchema({
     email: v.optional(v.string()),
     address: v.optional(v.string()),
     activeYear: v.string(), // e.g. "2026-2027"
+    // Per-school SMTP (credential emails to teachers/students are sent from here)
+    smtpHost: v.optional(v.string()),
+    smtpPort: v.optional(v.number()),
+    smtpUser: v.optional(v.string()),
+    smtpPass: v.optional(v.string()),
+    smtpFrom: v.optional(v.string()),
+    smtpSecure: v.optional(v.boolean()),
+    smtpEnabled: v.optional(v.boolean()),
     createdAt: v.number(),
   })
     .index("by_code", ["code"])

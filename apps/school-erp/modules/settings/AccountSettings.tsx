@@ -103,7 +103,7 @@ export const AccountSettings: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 max-w-4xl mx-auto">
       <div>
         <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
           <User className="w-5 h-5 text-[#0D9488]" />

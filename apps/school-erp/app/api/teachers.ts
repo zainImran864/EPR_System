@@ -5,4 +5,5 @@ export const teachersApi = {
   list: api.teachers.listTeachers,
   create: api.teachers.createTeacher,
   updateStatus: api.teachers.updateTeacherStatus,
+  nextEmployeeId: api.teachers.nextEmployeeId,
 };

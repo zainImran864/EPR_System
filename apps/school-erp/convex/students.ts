@@ -1,5 +1,8 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
+import { hashPassword } from "./lib/hash";
+import { buildEmail } from "./lib/identity";
 
 // ─── List Students ────────────────────────────────────────────────────────────
 
@@ -95,6 +98,41 @@ export const getStudent = query({
   },
 });
 
+// Next auto admission number, e.g. "ADM-2026-001" (per school + year, max + 1).
+async function nextAdmissionNumberFor(
+  ctx: { db: any },
+  schoolId: string,
+  year: string
+): Promise<string> {
+  const students = await ctx.db
+    .query("students")
+    .withIndex("by_schoolId", (q: any) => q.eq("schoolId", schoolId))
+    .collect();
+  const prefix = `ADM-${year}-`;
+  let max = 0;
+  for (const s of students) {
+    if ((s.admissionNumber ?? "").startsWith(prefix)) {
+      const n = parseInt(s.admissionNumber.slice(prefix.length), 10);
+      if (!Number.isNaN(n)) max = Math.max(max, n);
+    }
+  }
+  return `${prefix}${String(max + 1).padStart(3, "0")}`;
+}
+
+function admissionYear(activeYear?: string): string {
+  // "2026-2027" → "2026"; fallback keeps only digits
+  return (activeYear ?? "").split("-")[0] || "0000";
+}
+
+// Preview query for the (read-only) auto admission number in the add form.
+export const nextAdmissionNumber = query({
+  args: { schoolId: v.id("schools") },
+  handler: async (ctx, args) => {
+    const school = await ctx.db.get(args.schoolId);
+    return nextAdmissionNumberFor(ctx, args.schoolId, admissionYear(school?.activeYear));
+  },
+});
+
 // ─── Create Student ───────────────────────────────────────────────────────────
 
 export const createStudent = mutation({
@@ -104,12 +142,12 @@ export const createStudent = mutation({
     sectionId: v.id("sections"),
     firstName: v.string(),
     lastName: v.string(),
-    admissionNumber: v.string(),
     rollNumber: v.string(),
     gender: v.union(v.literal("male"), v.literal("female"), v.literal("other")),
     guardianName: v.string(),
     guardianPhone: v.string(),
     guardianEmail: v.optional(v.string()),
+    studentContactEmail: v.optional(v.string()),
     dob: v.optional(v.string()),
     bloodGroup: v.optional(v.string()),
     address: v.optional(v.string()),
@@ -117,14 +155,119 @@ export const createStudent = mutation({
       v.union(v.literal("active"), v.literal("inactive"), v.literal("transferred"))
     ),
     enrollmentDate: v.optional(v.string()),
+    // Single admin-set login password, shared by the student + parent accounts.
+    password: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const { status, enrollmentDate, ...rest } = args;
-    return await ctx.db.insert("students", {
+    const {
+      status,
+      enrollmentDate,
+      password,
+      studentContactEmail,
+      ...rest
+    } = args;
+
+    const school = await ctx.db.get(args.schoolId);
+    const slug = (school?.code ?? "school").toLowerCase();
+    const fullName = `${args.firstName} ${args.lastName}`;
+    const finalStatus = status ?? "active";
+    const userStatus = finalStatus === "transferred" ? "inactive" : finalStatus;
+
+    // Auto, server-authoritative admission number
+    const admissionNumber = await nextAdmissionNumberFor(
+      ctx,
+      args.schoolId,
+      admissionYear(school?.activeYear)
+    );
+
+    // Unique email helper within the tenant
+    const uniqueEmail = async (role: "student" | "parent") => {
+      let counter = 0;
+      let email = buildEmail(fullName, role, slug, counter);
+      while (
+        await ctx.db.query("users").withIndex("by_email", (q) => q.eq("email", email)).first()
+      ) {
+        counter++;
+        email = buildEmail(fullName, role, slug, counter);
+      }
+      return email;
+    };
+
+    const studentEmail = await uniqueEmail("student");
+    const parentEmail = await uniqueEmail("parent");
+
+    // Create the student profile first
+    const studentId = await ctx.db.insert("students", {
       ...rest,
-      status: status ?? "active",
+      admissionNumber,
+      status: finalStatus,
       enrollmentDate: enrollmentDate ?? "",
     });
+
+    // One password for both accounts (admin-set)
+    const pass = password || "welcome123";
+    const { hash, salt } = await hashPassword(pass);
+
+    // Student login
+    await ctx.db.insert("users", {
+      schoolId: args.schoolId,
+      name: fullName,
+      email: studentEmail,
+      role: "student",
+      passwordHash: hash,
+      passwordSalt: salt,
+      status: userStatus,
+      linkedStudentId: studentId,
+      mustChangePassword: true,
+      createdAt: Date.now(),
+    });
+
+    // Parent login (linked to this student)
+    const parentUserId = await ctx.db.insert("users", {
+      schoolId: args.schoolId,
+      name: args.guardianName,
+      email: parentEmail,
+      role: "parent",
+      passwordHash: hash,
+      passwordSalt: salt,
+      status: userStatus,
+      mustChangePassword: true,
+      createdAt: Date.now(),
+    });
+    await ctx.db.patch(studentId, { linkedParentUserId: parentUserId });
+
+    const smtp = school ? smtpFromSchool(school) : undefined;
+    const schoolName = school?.name ?? "Your School";
+    const logoUrl = school?.logoUrl ?? null;
+
+    // Student credentials → student's own inbox (if provided)
+    if (studentContactEmail) {
+      await ctx.scheduler.runAfter(0, internal.email.sendStudentCredentials, {
+        to: studentContactEmail,
+        studentName: fullName,
+        loginEmail: studentEmail,
+        password: pass,
+        schoolName,
+        schoolLogoUrl: logoUrl,
+        smtp,
+      });
+    }
+
+    // Parent credentials → guardian's inbox (if provided)
+    if (args.guardianEmail) {
+      await ctx.scheduler.runAfter(0, internal.email.sendParentCredentials, {
+        to: args.guardianEmail,
+        parentName: args.guardianName,
+        studentName: fullName,
+        loginEmail: parentEmail,
+        password: pass,
+        schoolName,
+        schoolLogoUrl: logoUrl,
+        smtp,
+      });
+    }
+
+    return { studentId, studentEmail, parentEmail, admissionNumber };
   },
 });
 

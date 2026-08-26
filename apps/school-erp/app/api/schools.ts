@@ -6,4 +6,5 @@ export const schoolsApi = {
   getById: api.schools.getSchool,
   list: api.schools.listSchools,
   updateBranding: api.schools.updateBranding,
+  updateSmtp: api.schools.updateSmtp,
 };

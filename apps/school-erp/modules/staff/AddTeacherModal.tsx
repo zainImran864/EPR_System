@@ -1,23 +1,26 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { Mail, KeyRound, Copy, Check } from "lucide-react";
+import { useQuery } from "convex/react";
+import { Mail, KeyRound, Copy, Check, Hash, Send } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { previewEmail } from "@/app/lib/emailPreview";
+import { teachersApi } from "@/app/api/teachers";
+import { useActiveSchool } from "@/app/hooks/useActiveSchool";
 
 export interface AddTeacherSubmit {
   firstName: string;
   lastName: string;
-  employeeId: string;
   phone?: string;
   designation: string;
   department: string;
   joinDate?: string;
   status: "active" | "inactive";
   password: string;
+  personalEmail?: string;
 }
 
 export interface AddTeacherModalProps {
@@ -42,13 +45,13 @@ const DEPARTMENTS = [
 const emptyForm = {
   firstName: "",
   lastName: "",
-  employeeId: "",
   phone: "",
   designation: "",
   department: DEPARTMENTS[0],
   joinDate: "",
   status: "active" as "active" | "inactive",
   password: "",
+  personalEmail: "",
 };
 
 export const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
@@ -57,6 +60,12 @@ export const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
   onSubmit,
   schoolCode,
 }) => {
+  const { schoolId } = useActiveSchool();
+  const nextEmpId = useQuery(
+    teachersApi.nextEmployeeId,
+    schoolId && isOpen ? { schoolId } : "skip"
+  );
+
   const [form, setForm] = useState(emptyForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -70,7 +79,6 @@ export const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
   const isValid =
     form.firstName &&
     form.lastName &&
-    form.employeeId &&
     form.designation &&
     form.department &&
     form.password.length >= 6;
@@ -93,13 +101,13 @@ export const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
       await onSubmit({
         firstName: form.firstName,
         lastName: form.lastName,
-        employeeId: form.employeeId,
         phone: form.phone || undefined,
         designation: form.designation,
         department: form.department,
         joinDate: form.joinDate || undefined,
         status: form.status,
         password: form.password,
+        personalEmail: form.personalEmail || undefined,
       });
       setForm(emptyForm);
       onClose();
@@ -113,7 +121,7 @@ export const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Add Faculty Member"
-      description="Provision a teacher profile and a login. The email is generated automatically and is unique within your school."
+      description="Provision a teacher profile and login. The employee ID and login email are generated automatically."
       size="lg"
       footer={
         <>
@@ -153,11 +161,11 @@ export const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Input
-            label="Employee ID *"
-            placeholder="e.g. EMP-014"
-            value={form.employeeId}
-            onChange={(e) => setForm({ ...form, employeeId: e.target.value })}
-            required
+            label="Employee ID (auto)"
+            value={nextEmpId ?? "…"}
+            disabled
+            leftIcon={<Hash className="w-3.5 h-3.5" />}
+            helperText="Generated automatically"
           />
           <Input
             label="Designation *"
@@ -231,15 +239,26 @@ export const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
           </p>
         </div>
 
-        <Input
-          label="Temporary Password *"
-          type="text"
-          placeholder="Min. 6 characters — teacher changes on first login"
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-          leftIcon={<KeyRound className="w-4 h-4" />}
-          required
-        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Input
+            label="Temporary Password *"
+            type="text"
+            placeholder="Min. 6 characters"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            leftIcon={<KeyRound className="w-4 h-4" />}
+            required
+          />
+          <Input
+            label="Teacher's Personal Email"
+            type="email"
+            placeholder="Where to send the login"
+            value={form.personalEmail}
+            onChange={(e) => setForm({ ...form, personalEmail: e.target.value })}
+            leftIcon={<Send className="w-4 h-4" />}
+            helperText="Credentials are emailed here (via your school SMTP)."
+          />
+        </div>
       </form>
     </Modal>
   );

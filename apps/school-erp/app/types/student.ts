@@ -28,15 +28,18 @@ export interface CreateStudentInput {
   sectionId: string;
   firstName: string;
   lastName: string;
-  admissionNumber: string;
   rollNumber: string;
   gender: "male" | "female" | "other";
   guardianName: string;
   guardianPhone: string;
   guardianEmail?: string;
+  /** Student's own real inbox — receives their login. */
+  studentContactEmail?: string;
   dob?: string;
   bloodGroup?: string;
   address?: string;
+  /** Single admin-set password shared by the student + parent accounts. */
+  password?: string;
 }
 
 export interface StudentFilter {

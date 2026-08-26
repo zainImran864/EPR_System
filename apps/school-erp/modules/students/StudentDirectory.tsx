@@ -19,6 +19,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { AddStudentModal } from "./AddStudentModal";
 import { useStudents } from "@/app/hooks/useStudents";
 import { useClasses } from "@/app/hooks/useClasses";
+import { useActiveSchool } from "@/app/hooks/useActiveSchool";
 import { exportToCSV } from "@/app/lib/export";
 
 type StudentRow = {
@@ -52,6 +53,7 @@ export const StudentDirectory: React.FC = () => {
   } = useStudents();
 
   const { classOptions, sectionOptions } = useClasses();
+  const { school } = useActiveSchool();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const handleExport = () => {
@@ -281,6 +283,7 @@ export const StudentDirectory: React.FC = () => {
         onSubmit={addStudent}
         classOptions={classOptions}
         getSections={sectionOptions}
+        schoolCode={school?.code}
       />
     </div>
   );

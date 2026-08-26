@@ -9,13 +9,13 @@ import { useDebounce } from "./useDebounce";
 interface CreateTeacherArgs {
   firstName: string;
   lastName: string;
-  employeeId: string;
   phone?: string;
   designation: string;
   department: string;
   joinDate?: string;
   status?: "active" | "inactive";
   password: string;
+  personalEmail?: string;
 }
 
 /**
