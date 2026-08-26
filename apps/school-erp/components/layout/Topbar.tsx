@@ -8,9 +8,7 @@ import {
   Search,
   Bell,
   Sparkles,
-  Calendar,
-  Layers,
-  ChevronDown,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -21,6 +19,9 @@ export interface TopbarProps {
   subtitle?: string;
   onSeedData?: () => void;
   isSeeding?: boolean;
+  userName?: string;
+  userRole?: string;
+  onLogout?: () => void;
 }
 
 export const Topbar: React.FC<TopbarProps> = ({
@@ -28,6 +29,9 @@ export const Topbar: React.FC<TopbarProps> = ({
   subtitle = "Academic Year 2026-2027",
   onSeedData,
   isSeeding = false,
+  userName = "Administrator",
+  userRole = "Admin",
+  onLogout,
 }) => {
   const { isSidebarOpen, toggleSidebar } = useAppStore();
 
@@ -99,14 +103,22 @@ export const Topbar: React.FC<TopbarProps> = ({
 
         {/* User Mini Avatar Menu */}
         <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
-          <Avatar name="Eleanor Vance" size="sm" />
+          <Avatar name={userName} size="sm" />
           <div className="hidden xl:flex flex-col text-left">
-            <span className="text-xs font-semibold text-slate-800 leading-tight">
-              Dr. Vance
+            <span className="text-xs font-semibold text-slate-800 leading-tight truncate max-w-[140px]">
+              {userName}
             </span>
-            <span className="text-[10px] text-slate-500">Admin</span>
+            <span className="text-[10px] text-slate-500 capitalize">{userRole}</span>
           </div>
-          <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden xl:inline" />
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              title="Sign out"
+              className="ml-1 p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
     </header>

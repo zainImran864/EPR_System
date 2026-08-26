@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "convex": "convex dev",
+    "seed:superadmin": "convex run superadmin:seedDefaultSuperAdmin",
+    "seed:demo": "convex run seed:seedSchool"
   },
   "dependencies": {
     "clsx": "^2.1.1",

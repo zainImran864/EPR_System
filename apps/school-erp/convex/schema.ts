@@ -18,24 +18,68 @@ export default defineSchema({
     .index("by_code", ["code"])
     .index("by_customDomain", ["customDomain"]),
 
-  // ─── Users & Roles ────────────────────────────────────────────────
+  // ─── Users & Roles (custom DB auth) ───────────────────────────────
   users: defineTable({
-    schoolId: v.id("schools"),
+    schoolId: v.optional(v.id("schools")), // undefined for platform superadmin
     name: v.string(),
-    email: v.string(),
+    email: v.string(), // login identifier — unique per deployment
     role: v.union(
+      v.literal("superadmin"),
       v.literal("admin"),
       v.literal("teacher"),
       v.literal("parent"),
       v.literal("student")
     ),
+    passwordHash: v.string(),
+    passwordSalt: v.string(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("active"),
+      v.literal("inactive")
+    ),
     avatarUrl: v.optional(v.string()),
     phone: v.optional(v.string()),
+    linkedTeacherId: v.optional(v.id("teachers")),
+    linkedStudentId: v.optional(v.id("students")),
+    mustChangePassword: v.optional(v.boolean()),
     createdAt: v.number(),
   })
     .index("by_schoolId", ["schoolId"])
     .index("by_email", ["email"])
     .index("by_schoolId_and_role", ["schoolId", "role"]),
+
+  // ─── Sessions (login tokens) ──────────────────────────────────────
+  sessions: defineTable({
+    userId: v.id("users"),
+    token: v.string(),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+  })
+    .index("by_token", ["token"])
+    .index("by_userId", ["userId"]),
+
+  // ─── School Registration Requests (super-admin approval queue) ────
+  registrationRequests: defineTable({
+    schoolName: v.string(),
+    schoolSlug: v.string(), // e.g. "oakridge" → used for @slug.com emails
+    address: v.optional(v.string()),
+    phone: v.optional(v.string()),
+    contactEmail: v.string(), // real inbox of the registrant
+    classesOffered: v.array(v.number()), // e.g. [1,2,...,10]
+    totalTeachers: v.optional(v.number()),
+    totalStudents: v.optional(v.number()),
+    adminName: v.string(),
+    adminEmail: v.string(), // generated: admin@slug.com
+    adminPasswordHash: v.string(),
+    adminPasswordSalt: v.string(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("approved"),
+      v.literal("rejected")
+    ),
+    reviewNote: v.optional(v.string()),
+    createdAt: v.number(),
+  }).index("by_status", ["status"]),
 
   // ─── Academic Classes & Sections ─────────────────────────────────
   classes: defineTable({

@@ -30,6 +30,8 @@ export interface SidebarProps {
   onSelectModule: (id: string) => void;
   schoolName?: string;
   schoolCode?: string;
+  userName?: string;
+  userRole?: string;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -37,6 +39,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSelectModule,
   schoolName = "Oakridge Academy",
   schoolCode = "OAK-RIDGE",
+  userName = "Administrator",
+  userRole = "Admin",
 }) => {
   const { isSidebarOpen, toggleSidebar } = useAppStore();
 
@@ -145,14 +149,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* User Profile Mini Footer */}
       <div className="p-3 border-t border-slate-800 bg-[#0B1120]/60">
         <div className="flex items-center gap-3">
-          <Avatar name="Dr. Eleanor Vance" size={isSidebarOpen ? "md" : "sm"} status="online" />
+          <Avatar name={userName} size={isSidebarOpen ? "md" : "sm"} status="online" />
           {isSidebarOpen && (
             <div className="flex flex-col truncate">
               <span className="text-xs font-semibold text-white truncate">
-                Dr. Eleanor Vance
+                {userName}
               </span>
               <span className="text-[10px] text-teal-400 font-medium capitalize">
-                Principal (Admin)
+                {userRole}
               </span>
             </div>
           )}

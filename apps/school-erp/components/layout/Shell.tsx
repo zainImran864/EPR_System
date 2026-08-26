@@ -15,6 +15,9 @@ export interface ShellProps {
   isSeeding?: boolean;
   schoolName?: string;
   schoolCode?: string;
+  userName?: string;
+  userRole?: string;
+  onLogout?: () => void;
   children: React.ReactNode;
 }
 
@@ -27,6 +30,9 @@ export const Shell: React.FC<ShellProps> = ({
   isSeeding,
   schoolName,
   schoolCode,
+  userName,
+  userRole,
+  onLogout,
   children,
 }) => {
   const { isSidebarOpen } = useAppStore();
@@ -39,6 +45,8 @@ export const Shell: React.FC<ShellProps> = ({
         onSelectModule={onSelectModule}
         schoolName={schoolName}
         schoolCode={schoolCode}
+        userName={userName}
+        userRole={userRole}
       />
 
       {/* Topbar */}
@@ -47,6 +55,9 @@ export const Shell: React.FC<ShellProps> = ({
         subtitle={subtitle}
         onSeedData={onSeedData}
         isSeeding={isSeeding}
+        userName={userName}
+        userRole={userRole}
+        onLogout={onLogout}
       />
 
       {/* Main Content Area */}
