@@ -46,6 +46,7 @@ export const STUDENT_NAV: NavLink[] = [
   { href: "/student/results", label: "My Results", icon: ico(Award) },
   { href: "/student/attendance", label: "My Attendance", icon: ico(CalendarCheck) },
   { href: "/student/timetable", label: "My Timetable", icon: ico(CalendarDays) },
+  { href: "/student/fees", label: "My Fees", icon: ico(Wallet) },
   { href: "/student/settings", label: "Settings", icon: ico(Settings) },
 ];
 
