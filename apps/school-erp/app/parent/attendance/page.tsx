@@ -1,18 +1,12 @@
 "use client";
 
-import { CalendarCheck } from "lucide-react";
-import { PortalPlaceholder } from "@/components/layout/PortalPlaceholder";
+import { MyAttendanceView } from "@/modules/attendance/MyAttendanceView";
 
 export default function ParentAttendancePage() {
   return (
-    <PortalPlaceholder
-      icon={CalendarCheck}
+    <MyAttendanceView
       title="Child's Attendance"
-      description="Your child's day-by-day attendance, uploaded by teachers and visible here in real time."
-      points={[
-        "Present / absent / late record per day and per lecture",
-        "Overall attendance rate for the term",
-      ]}
+      subtitle="Your child's day-by-day attendance, uploaded by teachers."
     />
   );
 }

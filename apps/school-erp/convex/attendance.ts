@@ -145,3 +145,35 @@ export const getAttendanceSummary = query({
     return { total, ...counts, presentRate };
   },
 });
+
+// ─── One student's attendance record + summary (student/parent/admin view) ────
+
+export const getStudentAttendance = query({
+  args: { schoolId: v.id("schools"), studentId: v.id("students") },
+  handler: async (ctx, args) => {
+    const rows = await ctx.db
+      .query("attendance")
+      .withIndex("by_student_and_date", (q) =>
+        q.eq("schoolId", args.schoolId).eq("studentId", args.studentId)
+      )
+      .collect();
+
+    rows.sort((a, b) => b.date.localeCompare(a.date));
+
+    const counts = { present: 0, absent: 0, late: 0, excused: 0 };
+    for (const r of rows) counts[r.status]++;
+    const total = rows.length;
+    const presentRate =
+      total > 0 ? Math.round(((counts.present + counts.late) / total) * 100) : null;
+
+    return {
+      records: rows.map((r) => ({
+        _id: r._id,
+        date: r.date,
+        status: r.status,
+        remarks: r.remarks ?? "",
+      })),
+      summary: { total, ...counts, presentRate },
+    };
+  },
+});

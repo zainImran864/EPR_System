@@ -5,4 +5,5 @@ export const attendanceApi = {
   sectionRoster: api.attendance.getSectionRoster,
   save: api.attendance.saveAttendance,
   summary: api.attendance.getAttendanceSummary,
+  studentAttendance: api.attendance.getStudentAttendance,
 };
