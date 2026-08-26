@@ -16,6 +16,7 @@ import type * as email from "../email.js";
 import type * as lib_hash from "../lib/hash.js";
 import type * as lib_identity from "../lib/identity.js";
 import type * as marks from "../marks.js";
+import type * as notifications from "../notifications.js";
 import type * as registrations from "../registrations.js";
 import type * as schools from "../schools.js";
 import type * as seed from "../seed.js";
@@ -39,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   "lib/hash": typeof lib_hash;
   "lib/identity": typeof lib_identity;
   marks: typeof marks;
+  notifications: typeof notifications;
   registrations: typeof registrations;
   schools: typeof schools;
   seed: typeof seed;

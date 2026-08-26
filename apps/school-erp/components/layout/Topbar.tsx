@@ -6,13 +6,13 @@ import { cn } from "@/app/lib/utils";
 import {
   Menu,
   Search,
-  Bell,
   Sparkles,
   LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
+import { NotificationBell } from "./NotificationBell";
 
 export interface TopbarProps {
   title?: string;
@@ -100,10 +100,7 @@ export const Topbar: React.FC<TopbarProps> = ({
         )}
 
         {/* Notification Bell */}
-        <button className="relative p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors">
-          <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-teal-500 ring-2 ring-white" />
-        </button>
+        <NotificationBell />
 
         {/* User Mini Avatar Menu */}
         <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
