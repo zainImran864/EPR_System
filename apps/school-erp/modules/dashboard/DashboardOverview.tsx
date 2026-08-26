@@ -9,29 +9,57 @@ import {
   ArrowUpRight,
   Plus,
   Clock,
-  CheckCircle2,
+  BookOpen,
 } from "lucide-react";
 import { StatCard, Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/Table";
+import { DonutChart, BarChart, CHART_COLORS } from "@/components/charts";
+import { useDashboard } from "@/app/hooks/useDashboard";
+import { useActiveSchool } from "@/app/hooks/useActiveSchool";
 
 export interface DashboardOverviewProps {
   onNavigate: (module: string) => void;
   onOpenAddStudent?: () => void;
-  studentCount?: number;
-  teacherCount?: number;
-  classCount?: number;
 }
+
+const GRADE_ORDER = ["A+", "A", "B", "C", "D", "F"];
 
 export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   onNavigate,
   onOpenAddStudent,
-  studentCount = 184,
-  teacherCount = 18,
-  classCount = 12,
 }) => {
+  const { school } = useActiveSchool();
+  const today = new Date().toISOString().split("T")[0];
+  const { stats, isLoading } = useDashboard(today);
+
+  if (isLoading || !stats) {
+    return <DashboardSkeleton />;
+  }
+
+  const genderData = [
+    { name: "Male", value: stats.genderBreakdown.male, color: CHART_COLORS.sky },
+    { name: "Female", value: stats.genderBreakdown.female, color: CHART_COLORS.rose },
+    { name: "Other", value: stats.genderBreakdown.other, color: CHART_COLORS.violet },
+  ].filter((d) => d.value > 0);
+
+  const gradeData = GRADE_ORDER.filter(
+    (g) => (stats.gradeDistribution[g] ?? 0) > 0
+  ).map((g) => ({ grade: g, count: stats.gradeDistribution[g] ?? 0 }));
+
+  const att = stats.attendanceByStatus;
+  const attTotal = att.present + att.absent + att.late + att.excused;
+  const attendanceData = [
+    { name: "Present", value: att.present, color: CHART_COLORS.emerald },
+    { name: "Late", value: att.late, color: CHART_COLORS.amber },
+    { name: "Absent", value: att.absent, color: CHART_COLORS.rose },
+    { name: "Excused", value: att.excused, color: CHART_COLORS.sky },
+  ].filter((d) => d.value > 0);
+
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}
@@ -42,13 +70,14 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             size="sm"
             className="bg-teal-800/80 text-teal-100 border-teal-600/50 mb-3"
           >
-            Academic Session 2026-2027
+            Academic Session {school?.activeYear ?? "2026-2027"}
           </Badge>
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
-            Oakridge International Academy
+            {school?.name ?? "Your Institution"}
           </h2>
           <p className="mt-1.5 text-xs sm:text-sm text-teal-100 max-w-lg leading-relaxed">
-            Manage student enrollments, track daily attendance, record examination scores, and manage class assignments across your institution.
+            Manage student enrollments, track daily attendance, record examination
+            scores, and manage class assignments across your institution.
           </p>
 
           <div className="mt-5 flex flex-wrap gap-2.5">
@@ -82,47 +111,100 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           </div>
         </div>
 
-        {/* Decorative circle shapes */}
         <div className="absolute -top-12 -right-12 w-64 h-64 rounded-full bg-white/5 pointer-events-none" />
         <div className="absolute -bottom-16 right-24 w-48 h-48 rounded-full bg-teal-400/10 pointer-events-none" />
       </div>
 
-      {/* KPI Metric Stat Cards */}
+      {/* KPI Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         <StatCard
           title="Total Students"
-          value={studentCount}
-          subtitle="Enrolled this term"
-          trend={{ value: "+8.4%", isPositive: true }}
+          value={stats.studentCount}
+          subtitle="Active enrollments"
           icon={<GraduationCap className="w-5 h-5" />}
         />
         <StatCard
           title="Teaching Staff"
-          value={teacherCount}
-          subtitle="Across 6 departments"
-          trend={{ value: "+2 new", isPositive: true }}
+          value={stats.teacherCount}
+          subtitle="Active faculty"
           icon={<Users className="w-5 h-5" />}
         />
         <StatCard
           title="Today's Attendance"
-          value="96.2%"
-          subtitle="177 of 184 Present"
-          trend={{ value: "+1.8%", isPositive: true }}
+          value={
+            stats.todayAttendanceRate !== null
+              ? `${stats.todayAttendanceRate}%`
+              : "—"
+          }
+          subtitle={
+            stats.todayAttendanceRate !== null
+              ? `${attTotal} students recorded`
+              : "Not recorded yet"
+          }
           icon={<CalendarCheck className="w-5 h-5" />}
         />
         <StatCard
           title="Average Exam Score"
-          value="88.4"
-          subtitle="Mid-Term Exams"
-          trend={{ value: "+3.2 pts", isPositive: true }}
+          value={stats.avgExamScore !== null ? `${stats.avgExamScore}%` : "—"}
+          subtitle={stats.avgExamScore !== null ? "Across published marks" : "No marks yet"}
           icon={<Award className="w-5 h-5" />}
         />
       </div>
 
-      {/* Two-Column Grid: Quick Actions & Recent Admissions */}
+      {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column: Recent Students */}
-        <div className="lg:col-span-2 space-y-6">
+        {/* Grade Distribution */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Grade Distribution</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {gradeData.length > 0 ? (
+              <BarChart
+                data={gradeData}
+                xKey="grade"
+                bars={[{ key: "count", name: "Students", color: CHART_COLORS.teal }]}
+                height={240}
+              />
+            ) : (
+              <EmptyState
+                className="border-none"
+                icon={<Award className="w-6 h-6" />}
+                title="No marks recorded"
+                description="Grade distribution appears once exam marks are entered."
+              />
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Gender Split Donut */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Student Gender Split</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {genderData.length > 0 ? (
+              <DonutChart
+                data={genderData}
+                centerValue={stats.studentCount}
+                centerLabel="Students"
+                height={240}
+              />
+            ) : (
+              <EmptyState
+                className="border-none"
+                icon={<Users className="w-6 h-6" />}
+                title="No students yet"
+                description="Enroll students to see the breakdown."
+              />
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Admissions + Attendance Pulse */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
           <Card>
             <CardHeader className="flex-row items-center justify-between">
               <div>
@@ -142,161 +224,118 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               </Button>
             </CardHeader>
             <CardContent className="p-0">
-              <Table className="border-none shadow-none rounded-none">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Student</TableHead>
-                    <TableHead>Roll Number</TableHead>
-                    <TableHead>Class</TableHead>
-                    <TableHead>Guardian Contact</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {[
-                    {
-                      name: "Aiden Clark",
-                      roll: "10-A-01",
-                      class: "Grade 10 - Sec A",
-                      guardian: "David Clark (+1 555-444-1101)",
-                      status: "active",
-                    },
-                    {
-                      name: "Sophia Martinez",
-                      roll: "10-A-02",
-                      class: "Grade 10 - Sec A",
-                      guardian: "Elena Martinez (+1 555-444-1102)",
-                      status: "active",
-                    },
-                    {
-                      name: "Ethan Wright",
-                      roll: "10-A-03",
-                      class: "Grade 10 - Sec A",
-                      guardian: "Robert Wright (+1 555-444-1103)",
-                      status: "active",
-                    },
-                    {
-                      name: "Liam Chen",
-                      roll: "10-A-04",
-                      class: "Grade 10 - Sec A",
-                      guardian: "Hui Chen (+1 555-444-1104)",
-                      status: "active",
-                    },
-                    {
-                      name: "Emma Davis",
-                      roll: "10-A-05",
-                      class: "Grade 10 - Sec A",
-                      guardian: "Karen Davis (+1 555-444-1105)",
-                      status: "active",
-                    },
-                  ].map((s, idx) => (
-                    <TableRow key={idx}>
-                      <TableCell>
-                        <div className="flex items-center gap-2.5">
-                          <Avatar name={s.name} size="xs" />
-                          <span className="font-semibold text-slate-800">
-                            {s.name}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="neutral" size="sm" isMono>
-                          {s.roll}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-slate-600 text-xs">
-                        {s.class}
-                      </TableCell>
-                      <TableCell className="text-slate-500 text-xs">
-                        {s.guardian}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="success" size="sm" dot>
-                          Active
-                        </Badge>
-                      </TableCell>
+              {stats.recentAdmissions.length > 0 ? (
+                <Table className="border-none shadow-none rounded-none">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Student</TableHead>
+                      <TableHead>Roll Number</TableHead>
+                      <TableHead>Class</TableHead>
+                      <TableHead>Guardian</TableHead>
+                      <TableHead>Status</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {stats.recentAdmissions.map((s) => (
+                      <TableRow key={s._id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2.5">
+                            <Avatar name={`${s.firstName} ${s.lastName}`} size="xs" />
+                            <span className="font-semibold text-slate-800">
+                              {s.firstName} {s.lastName}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="neutral" size="sm" isMono>
+                            {s.rollNumber}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-slate-600 text-xs">
+                          {s.className} {s.sectionName ? `· ${s.sectionName}` : ""}
+                        </TableCell>
+                        <TableCell className="text-slate-500 text-xs">
+                          {s.guardianName}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={s.status === "active" ? "success" : "neutral"}
+                            size="sm"
+                            dot
+                          >
+                            {s.status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <EmptyState
+                  className="border-none"
+                  icon={<GraduationCap className="w-6 h-6" />}
+                  title="No students yet"
+                  description="Seed demo data or enroll your first student to get started."
+                  action={
+                    <Button variant="primary" size="sm" onClick={onOpenAddStudent}>
+                      Enroll Student
+                    </Button>
+                  }
+                />
+              )}
             </CardContent>
           </Card>
         </div>
 
-        {/* Right Column: Today's Status & Quick Stats */}
+        {/* Attendance Pulse */}
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Attendance Pulse</CardTitle>
+              <CardTitle>Today&apos;s Attendance</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                    <CheckCircle2 className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold text-slate-800">
-                      Section 10-A Synced
-                    </div>
-                    <div className="text-[11px] text-slate-500">
-                      All 5 students recorded
-                    </div>
-                  </div>
-                </div>
-                <Badge variant="success" size="sm">
-                  100%
-                </Badge>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs font-medium text-slate-600">
-                  <span>Present</span>
-                  <span className="font-semibold font-mono-data text-emerald-600">
-                    4 Students (80%)
-                  </span>
-                </div>
-                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full w-[80%]" />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs font-medium text-slate-600">
-                  <span>Late Arrivals</span>
-                  <span className="font-semibold font-mono-data text-amber-600">
-                    1 Student (20%)
-                  </span>
-                </div>
-                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-amber-500 rounded-full w-[20%]" />
-                </div>
-              </div>
-
-              <Button
-                variant="outline"
-                size="sm"
-                fullWidth
-                onClick={() => onNavigate("attendance")}
-                className="mt-2 text-xs"
-              >
-                Open Full Attendance Grid
-              </Button>
+            <CardContent>
+              {attendanceData.length > 0 ? (
+                <DonutChart
+                  data={attendanceData}
+                  centerValue={
+                    stats.todayAttendanceRate !== null
+                      ? `${stats.todayAttendanceRate}%`
+                      : "—"
+                  }
+                  centerLabel="Present"
+                  height={240}
+                />
+              ) : (
+                <EmptyState
+                  className="border-none"
+                  icon={<CalendarCheck className="w-6 h-6" />}
+                  title="Not recorded"
+                  description="No attendance has been recorded for today yet."
+                  action={
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onNavigate("attendance")}
+                    >
+                      Record Attendance
+                    </Button>
+                  }
+                />
+              )}
             </CardContent>
           </Card>
 
-          {/* School System Info */}
           <Card variant="subtle">
             <CardContent className="p-4 flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-[#CCFBF1] text-[#0D9488] flex items-center justify-center shrink-0">
-                <Clock className="w-4 h-4" />
+                <BookOpen className="w-4 h-4" />
               </div>
               <div className="text-xs">
                 <div className="font-semibold text-slate-800">
-                  Convex Reactive Sync Active
+                  {stats.classCount} classes · {stats.sectionCount} sections
                 </div>
                 <div className="text-[11px] text-slate-500">
-                  Multi-tenant cloud backend connected
+                  Live multi-tenant Convex backend
                 </div>
               </div>
             </CardContent>

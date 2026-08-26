@@ -8,17 +8,28 @@ import { ClassManager } from "@/modules/classes/ClassManager";
 import { AttendanceSheet } from "@/modules/attendance/AttendanceSheet";
 import { MarkEntryGrid } from "@/modules/marks/MarkEntryGrid";
 import { SchoolSettings } from "@/modules/settings/SchoolSettings";
+import { useSeed } from "@/app/hooks/useDashboard";
 
 export default function Home() {
   const [activeModule, setActiveModule] = useState("dashboard");
   const [isSeeding, setIsSeeding] = useState(false);
+  const seedSchool = useSeed();
 
-  const handleSeedData = () => {
+  const handleSeedData = async () => {
     setIsSeeding(true);
-    setTimeout(() => {
+    try {
+      const result = await seedSchool({});
+      if (result?.alreadySeeded) {
+        alert("Demo data already present for this tenant.");
+      } else {
+        alert("Oakridge International Academy demo data seeded successfully!");
+      }
+    } catch (err) {
+      console.error("Seed failed", err);
+      alert("Seeding failed — is the Convex backend deployed?");
+    } finally {
       setIsSeeding(false);
-      alert("Oakridge International Academy data synced successfully!");
-    }, 800);
+    }
   };
 
   const getModuleTitle = () => {

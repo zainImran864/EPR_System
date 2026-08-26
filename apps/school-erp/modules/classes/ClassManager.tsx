@@ -1,104 +1,293 @@
 "use client";
 
 import React, { useState } from "react";
-import { BookOpen, Plus, Users, School, Layers, DoorClosed } from "lucide-react";
+import { BookOpen, Plus, DoorClosed } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { Avatar } from "@/components/ui/Avatar";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { useClasses } from "@/app/hooks/useClasses";
 
-export interface ClassSection {
-  id: string;
+// ---------------------------------------------------------------------------
+// Types inferred from the hook's return shape
+// ---------------------------------------------------------------------------
+
+interface Section {
+  _id: string;
   name: string;
-  roomNumber: string;
-  classTeacher: string;
+  roomNumber?: string;
+  classTeacherId?: string;
   studentCount: number;
 }
 
-export interface ClassGrade {
-  id: string;
+interface ClassRecord {
+  _id: string;
   name: string;
   numericGrade: number;
   academicYear: string;
   totalStudents: number;
-  sections: ClassSection[];
+  sections: Section[];
 }
 
+// ---------------------------------------------------------------------------
+// Card-shaped loading skeleton — two cards matching the real layout
+// ---------------------------------------------------------------------------
+
+const ClassCardSkeleton: React.FC = () => (
+  <Card>
+    <CardHeader className="bg-slate-50/60 flex-row items-center justify-between">
+      <div className="flex items-center gap-3">
+        <Skeleton className="w-8 h-8 rounded-lg" />
+        <div className="space-y-1.5">
+          <Skeleton className="h-4 w-28" />
+          <Skeleton className="h-3 w-20" />
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <Skeleton className="h-5 w-24 rounded-full" />
+        <Skeleton className="h-5 w-20 rounded-full" />
+      </div>
+    </CardHeader>
+    <CardContent className="p-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {[1, 2].map((i) => (
+          <div
+            key={i}
+            className="p-4 rounded-xl border border-slate-200/80 space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-3 w-16" />
+            </div>
+            <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-5 w-20 rounded-full" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </CardContent>
+  </Card>
+);
+
+// ---------------------------------------------------------------------------
+// Per-section card (no teacher name — only room + studentCount + badge)
+// ---------------------------------------------------------------------------
+
+const SectionCard: React.FC<{ section: Section }> = ({ section }) => (
+  <div className="p-4 rounded-xl border border-slate-200/80 bg-white hover:border-[#0D9488]/40 hover:shadow-xs transition-all duration-150 flex flex-col justify-between space-y-3">
+    <div className="flex items-center justify-between">
+      <span className="font-bold text-sm text-slate-900">{section.name}</span>
+      {section.roomNumber && (
+        <span className="text-xs text-slate-500 flex items-center gap-1 font-mono-data">
+          <DoorClosed className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
+          {section.roomNumber}
+        </span>
+      )}
+    </div>
+
+    <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+      <Badge
+        variant={section.classTeacherId ? "success" : "neutral"}
+        size="sm"
+      >
+        {section.classTeacherId ? "Teacher assigned" : "No teacher"}
+      </Badge>
+      <Badge variant="info" size="sm" isMono>
+        {section.studentCount} enrolled
+      </Badge>
+    </div>
+  </div>
+);
+
+// ---------------------------------------------------------------------------
+// Add Section modal (self-contained, keyed per classId)
+// ---------------------------------------------------------------------------
+
+interface AddSectionModalProps {
+  classId: string;
+  className: string;
+  isOpen: boolean;
+  onClose: () => void;
+  addSection: (args: {
+    classId: string;
+    name: string;
+    roomNumber?: string;
+  }) => Promise<unknown> | undefined;
+}
+
+const AddSectionModal: React.FC<AddSectionModalProps> = ({
+  classId,
+  className,
+  isOpen,
+  onClose,
+  addSection,
+}) => {
+  const [sectionName, setSectionName] = useState("");
+  const [roomNumber, setRoomNumber] = useState("");
+
+  const handleClose = () => {
+    setSectionName("");
+    setRoomNumber("");
+    onClose();
+  };
+
+  const handleSubmit = async () => {
+    if (!sectionName.trim()) return;
+    await addSection({
+      classId,
+      name: sectionName.trim(),
+      roomNumber: roomNumber.trim() || undefined,
+    });
+    handleClose();
+  };
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title={`Add Section — ${className}`}
+      description="Create a new section within this class."
+      size="sm"
+      footer={
+        <>
+          <Button variant="outline" size="sm" onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleSubmit}
+            disabled={!sectionName.trim()}
+          >
+            Add Section
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <Input
+          label="Section Name *"
+          placeholder="e.g. Section B"
+          value={sectionName}
+          onChange={(e) => setSectionName(e.target.value)}
+        />
+        <Input
+          label="Room Number"
+          placeholder="e.g. Room 305"
+          value={roomNumber}
+          onChange={(e) => setRoomNumber(e.target.value)}
+        />
+      </div>
+    </Modal>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Per-class card with inline "Add Section" affordance
+// ---------------------------------------------------------------------------
+
+interface ClassCardProps {
+  cls: ClassRecord;
+  addSection: AddSectionModalProps["addSection"];
+}
+
+const ClassCard: React.FC<ClassCardProps> = ({ cls, addSection }) => {
+  const [isSectionModalOpen, setIsSectionModalOpen] = useState(false);
+
+  return (
+    <>
+      <Card key={cls._id}>
+        <CardHeader className="bg-slate-50/60 flex-row items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-8 h-8 rounded-lg bg-[#CCFBF1] text-[#0D9488] flex items-center justify-center font-bold text-sm"
+              aria-hidden="true"
+            >
+              {cls.numericGrade}
+            </div>
+            <div>
+              <CardTitle className="text-base">{cls.name}</CardTitle>
+              <span className="text-xs text-slate-500">
+                Session: {cls.academicYear}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Badge variant="primary" size="sm" isMono>
+              {cls.totalStudents} Students
+            </Badge>
+            <Badge variant="neutral" size="sm">
+              {cls.sections.length} Sections
+            </Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label={`Add section to ${cls.name}`}
+              leftIcon={<Plus className="w-3.5 h-3.5" aria-hidden="true" />}
+              onClick={() => setIsSectionModalOpen(true)}
+              className="text-xs"
+            >
+              Add Section
+            </Button>
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-5">
+          {cls.sections.length === 0 ? (
+            <p className="text-sm text-slate-400 italic">
+              No sections yet — use "Add Section" to create one.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {cls.sections.map((sec) => (
+                <SectionCard key={sec._id} section={sec} />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <AddSectionModal
+        classId={cls._id}
+        className={cls.name}
+        isOpen={isSectionModalOpen}
+        onClose={() => setIsSectionModalOpen(false)}
+        addSection={addSection}
+      />
+    </>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Main export
+// ---------------------------------------------------------------------------
+
 export const ClassManager: React.FC = () => {
-  const [classes, setClasses] = useState<ClassGrade[]>([
-    {
-      id: "cls-10",
-      name: "Grade 10",
-      numericGrade: 10,
-      academicYear: "2026-2027",
-      totalStudents: 58,
-      sections: [
-        {
-          id: "sec-10a",
-          name: "Section A",
-          roomNumber: "Room 301",
-          classTeacher: "Marcus Sterling",
-          studentCount: 30,
-        },
-        {
-          id: "sec-10b",
-          name: "Section B",
-          roomNumber: "Room 302",
-          classTeacher: "Sarah Jenkins",
-          studentCount: 28,
-        },
-      ],
-    },
-    {
-      id: "cls-9",
-      name: "Grade 9",
-      numericGrade: 9,
-      academicYear: "2026-2027",
-      totalStudents: 62,
-      sections: [
-        {
-          id: "sec-9a",
-          name: "Section A",
-          roomNumber: "Room 201",
-          classTeacher: "David Miller",
-          studentCount: 32,
-        },
-        {
-          id: "sec-9b",
-          name: "Section B",
-          roomNumber: "Room 202",
-          classTeacher: "Rachel Adams",
-          studentCount: 30,
-        },
-      ],
-    },
-  ]);
+  const { classes, isLoading, addClass, addSection } = useClasses();
 
   const [isAddClassOpen, setIsAddClassOpen] = useState(false);
   const [newClassName, setNewClassName] = useState("");
   const [newClassGrade, setNewClassGrade] = useState("");
 
-  const handleCreateClass = () => {
-    if (!newClassName) return;
-    const newClass: ClassGrade = {
-      id: `cls-${Date.now()}`,
-      name: newClassName,
+  const handleCreateClass = async () => {
+    if (!newClassName.trim()) return;
+    await addClass({
+      name: newClassName.trim(),
       numericGrade: parseInt(newClassGrade) || 1,
       academicYear: "2026-2027",
-      totalStudents: 0,
-      sections: [
-        {
-          id: `sec-${Date.now()}`,
-          name: "Section A",
-          roomNumber: "Room TBA",
-          classTeacher: "Unassigned",
-          studentCount: 0,
-        },
-      ],
-    };
-    setClasses([...classes, newClass]);
+      sections: ["Section A"],
+    });
+    setNewClassName("");
+    setNewClassGrade("");
+    setIsAddClassOpen(false);
+  };
+
+  const handleCloseAddClass = () => {
     setNewClassName("");
     setNewClassGrade("");
     setIsAddClassOpen(false);
@@ -110,8 +299,8 @@ export const ClassManager: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-[#0D9488]" />
-            Academic Classes & Sections
+            <BookOpen className="w-5 h-5 text-[#0D9488]" aria-hidden="true" />
+            Academic Classes &amp; Sections
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
             Organize grades, allocate section rooms, and assign faculty leads
@@ -121,7 +310,7 @@ export const ClassManager: React.FC = () => {
         <Button
           variant="primary"
           size="sm"
-          leftIcon={<Plus className="w-4 h-4" />}
+          leftIcon={<Plus className="w-4 h-4" aria-hidden="true" />}
           onClick={() => setIsAddClassOpen(true)}
           className="text-xs"
         >
@@ -129,86 +318,59 @@ export const ClassManager: React.FC = () => {
         </Button>
       </div>
 
-      {/* Class List Cards */}
-      <div className="space-y-6">
-        {classes.map((cls) => (
-          <Card key={cls.id}>
-            <CardHeader className="bg-slate-50/60 flex-row items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#CCFBF1] text-[#0D9488] flex items-center justify-center font-bold text-sm">
-                  {cls.numericGrade}
-                </div>
-                <div>
-                  <CardTitle className="text-base">{cls.name}</CardTitle>
-                  <span className="text-xs text-slate-500">
-                    Session: {cls.academicYear}
-                  </span>
-                </div>
-              </div>
+      {/* Loading state */}
+      {isLoading && (
+        <div className="space-y-6" aria-busy="true" aria-label="Loading classes">
+          <ClassCardSkeleton />
+          <ClassCardSkeleton />
+        </div>
+      )}
 
-              <div className="flex items-center gap-3">
-                <Badge variant="primary" size="sm" isMono>
-                  {cls.totalStudents} Students
-                </Badge>
-                <Badge variant="neutral" size="sm">
-                  {cls.sections.length} Sections
-                </Badge>
-              </div>
-            </CardHeader>
+      {/* Empty state */}
+      {!isLoading && classes.length === 0 && (
+        <EmptyState
+          icon={<BookOpen className="w-6 h-6" aria-hidden="true" />}
+          title="No classes yet"
+          description="No academic classes have been created for this school. Add your first class to get started, or seed the database with sample data."
+          action={
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={<Plus className="w-4 h-4" aria-hidden="true" />}
+              onClick={() => setIsAddClassOpen(true)}
+            >
+              Add New Class
+            </Button>
+          }
+        />
+      )}
 
-            <CardContent className="p-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {cls.sections.map((sec) => (
-                  <div
-                    key={sec.id}
-                    className="p-4 rounded-xl border border-slate-200/80 bg-white hover:border-[#0D9488]/40 hover:shadow-xs transition-all duration-150 flex flex-col justify-between space-y-3"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-sm text-slate-900">
-                        {sec.name}
-                      </span>
-                      <span className="text-xs text-slate-500 flex items-center gap-1 font-mono-data">
-                        <DoorClosed className="w-3.5 h-3.5 text-slate-400" />
-                        {sec.roomNumber}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
-                      <div className="flex items-center gap-2">
-                        <Avatar name={sec.classTeacher} size="xs" />
-                        <span className="text-slate-700 font-medium truncate max-w-[120px]">
-                          {sec.classTeacher}
-                        </span>
-                      </div>
-
-                      <Badge variant="info" size="sm" isMono>
-                        {sec.studentCount} enrolled
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Data state */}
+      {!isLoading && classes.length > 0 && (
+        <div className="space-y-6">
+          {(classes as ClassRecord[]).map((cls) => (
+            <ClassCard key={cls._id} cls={cls} addSection={addSection} />
+          ))}
+        </div>
+      )}
 
       {/* Add Class Modal */}
       <Modal
         isOpen={isAddClassOpen}
-        onClose={() => setIsAddClassOpen(false)}
+        onClose={handleCloseAddClass}
         title="Create New Academic Grade / Class"
         description="Add a new class to your institution curriculum."
         footer={
           <>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsAddClassOpen(false)}
-            >
+            <Button variant="outline" size="sm" onClick={handleCloseAddClass}>
               Cancel
             </Button>
-            <Button variant="primary" size="sm" onClick={handleCreateClass}>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleCreateClass}
+              disabled={!newClassName.trim()}
+            >
               Create Class
             </Button>
           </>
@@ -233,4 +395,3 @@ export const ClassManager: React.FC = () => {
     </div>
   );
 };
-

@@ -6,63 +6,86 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 
+export interface AddStudentSubmit {
+  firstName: string;
+  lastName: string;
+  admissionNumber: string;
+  rollNumber: string;
+  classId: string;
+  sectionId: string;
+  gender: "male" | "female" | "other";
+  guardianName: string;
+  guardianPhone: string;
+  guardianEmail?: string;
+}
+
 export interface AddStudentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (student: {
-    firstName: string;
-    lastName: string;
-    admissionNumber: string;
-    rollNumber: string;
-    classId?: string;
-    sectionId?: string;
-    gender: "male" | "female" | "other";
-    guardianName: string;
-    guardianPhone: string;
-    guardianEmail?: string;
-  }) => void;
-  classes?: Array<{ id: string; name: string }>;
-  sections?: Array<{ id: string; name: string }>;
+  onSubmit: (student: AddStudentSubmit) => Promise<unknown> | void;
+  /** Class options backed by real Convex ids. */
+  classOptions: { value: string; label: string }[];
+  /** Returns section options for a given class id. */
+  getSections: (classId: string) => { value: string; label: string }[];
 }
+
+const emptyForm = {
+  firstName: "",
+  lastName: "",
+  admissionNumber: "",
+  rollNumber: "",
+  classId: "",
+  sectionId: "",
+  gender: "male" as "male" | "female" | "other",
+  guardianName: "",
+  guardianPhone: "",
+  guardianEmail: "",
+};
 
 export const AddStudentModal: React.FC<AddStudentModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
-  classes = [
-    { id: "c1", name: "Grade 10" },
-    { id: "c2", name: "Grade 9" },
-    { id: "c3", name: "Grade 8" },
-  ],
-  sections = [
-    { id: "s1", name: "Section A" },
-    { id: "s2", name: "Section B" },
-  ],
+  classOptions,
+  getSections,
 }) => {
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    admissionNumber: `ADM-2026-${Math.floor(100 + Math.random() * 900)}`,
-    rollNumber: "",
-    classId: classes[0]?.id || "",
-    sectionId: sections[0]?.id || "",
-    gender: "male" as "male" | "female" | "other",
-    guardianName: "",
-    guardianPhone: "",
-    guardianEmail: "",
-  });
-
+  const [formData, setFormData] = useState(emptyForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const sectionOptions = formData.classId ? getSections(formData.classId) : [];
+
+  const isValid =
+    formData.firstName &&
+    formData.lastName &&
+    formData.rollNumber &&
+    formData.admissionNumber &&
+    formData.classId &&
+    formData.sectionId &&
+    formData.guardianName &&
+    formData.guardianPhone;
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.firstName || !formData.lastName || !formData.rollNumber) return;
+    if (!isValid) return;
     setIsSubmitting(true);
-    setTimeout(() => {
-      onSubmit(formData);
-      setIsSubmitting(false);
+    try {
+      await onSubmit({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        admissionNumber: formData.admissionNumber,
+        rollNumber: formData.rollNumber,
+        classId: formData.classId,
+        sectionId: formData.sectionId,
+        gender: formData.gender,
+        guardianName: formData.guardianName,
+        guardianPhone: formData.guardianPhone,
+        guardianEmail: formData.guardianEmail || undefined,
+      });
+      setFormData(emptyForm);
       onClose();
-    }, 400);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -82,6 +105,7 @@ export const AddStudentModal: React.FC<AddStudentModalProps> = ({
             size="sm"
             onClick={handleSubmit}
             isLoading={isSubmitting}
+            disabled={!isValid}
             type="submit"
           >
             Complete Admission
@@ -96,18 +120,14 @@ export const AddStudentModal: React.FC<AddStudentModalProps> = ({
             label="First Name *"
             placeholder="e.g. Liam"
             value={formData.firstName}
-            onChange={(e) =>
-              setFormData({ ...formData, firstName: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
             required
           />
           <Input
             label="Last Name *"
             placeholder="e.g. Chen"
             value={formData.lastName}
-            onChange={(e) =>
-              setFormData({ ...formData, lastName: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
             required
           />
         </div>
@@ -116,6 +136,7 @@ export const AddStudentModal: React.FC<AddStudentModalProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Input
             label="Admission No *"
+            placeholder="e.g. ADM-2026-020"
             value={formData.admissionNumber}
             onChange={(e) =>
               setFormData({ ...formData, admissionNumber: e.target.value })
@@ -126,9 +147,7 @@ export const AddStudentModal: React.FC<AddStudentModalProps> = ({
             label="Roll Number *"
             placeholder="e.g. 10-A-06"
             value={formData.rollNumber}
-            onChange={(e) =>
-              setFormData({ ...formData, rollNumber: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, rollNumber: e.target.value })}
             required
           />
           <Select
@@ -152,18 +171,19 @@ export const AddStudentModal: React.FC<AddStudentModalProps> = ({
           <Select
             label="Class / Grade *"
             value={formData.classId}
+            placeholder="Select class"
             onChange={(e) =>
-              setFormData({ ...formData, classId: e.target.value })
+              setFormData({ ...formData, classId: e.target.value, sectionId: "" })
             }
-            options={classes.map((c) => ({ value: c.id, label: c.name }))}
+            options={classOptions}
           />
           <Select
             label="Section *"
             value={formData.sectionId}
-            onChange={(e) =>
-              setFormData({ ...formData, sectionId: e.target.value })
-            }
-            options={sections.map((s) => ({ value: s.id, label: s.name }))}
+            placeholder={formData.classId ? "Select section" : "Choose a class first"}
+            disabled={!formData.classId}
+            onChange={(e) => setFormData({ ...formData, sectionId: e.target.value })}
+            options={sectionOptions}
           />
         </div>
 
