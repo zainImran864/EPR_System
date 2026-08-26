@@ -1,12 +1,16 @@
 "use client";
 
-import { RoleGate } from "@/components/auth/RoleGate";
-import { AdminWorkspace } from "@/components/workspace/AdminWorkspace";
+import { useRouter } from "next/navigation";
+import { DashboardOverview } from "@/modules/dashboard/DashboardOverview";
 
 export default function AdminDashboardPage() {
+  const router = useRouter();
+  const go = (module: string) => router.push(`/admin/${module}`);
+
   return (
-    <RoleGate allow={["admin"]}>
-      <AdminWorkspace />
-    </RoleGate>
+    <DashboardOverview
+      onNavigate={go}
+      onOpenAddStudent={() => router.push("/admin/students")}
+    />
   );
 }

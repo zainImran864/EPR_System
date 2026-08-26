@@ -10,11 +10,12 @@ interface CreateTeacherArgs {
   firstName: string;
   lastName: string;
   employeeId: string;
-  email: string;
   phone?: string;
   designation: string;
   department: string;
   joinDate?: string;
+  status?: "active" | "inactive";
+  password: string;
 }
 
 /**
