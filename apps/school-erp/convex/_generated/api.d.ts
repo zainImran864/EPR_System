@@ -18,6 +18,7 @@ import type * as email from "../email.js";
 import type * as fees from "../fees.js";
 import type * as lib_hash from "../lib/hash.js";
 import type * as lib_identity from "../lib/identity.js";
+import type * as lib_totp from "../lib/totp.js";
 import type * as marks from "../marks.js";
 import type * as notifications from "../notifications.js";
 import type * as registrations from "../registrations.js";
@@ -46,6 +47,7 @@ declare const fullApi: ApiFromModules<{
   fees: typeof fees;
   "lib/hash": typeof lib_hash;
   "lib/identity": typeof lib_identity;
+  "lib/totp": typeof lib_totp;
   marks: typeof marks;
   notifications: typeof notifications;
   registrations: typeof registrations;

@@ -4,10 +4,15 @@ import { api } from "@/convex/_generated/api";
 export const accountApi = {
   updateProfile: api.account.updateProfile,
   changePassword: api.account.changePassword,
-  setTwoFactor: api.account.setTwoFactor,
   setNotifications: api.account.setNotifications,
   generateUploadUrl: api.account.generateUploadUrl,
   setAvatar: api.account.setAvatar,
   setSchoolLogo: api.account.setSchoolLogo,
   requestSchoolNameChange: api.account.requestSchoolNameChange,
+  // Two-factor
+  startTwoFactorSetup: api.account.startTwoFactorSetup,
+  confirmTwoFactor: api.account.confirmTwoFactor,
+  disableTwoFactor: api.account.disableTwoFactor,
+  listTrustedDevices: api.account.listTrustedDevices,
+  deleteTrustedDevice: api.account.deleteTrustedDevice,
 };

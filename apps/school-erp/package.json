@@ -14,6 +14,7 @@
   "dependencies": {
     "clsx": "^2.1.1",
     "convex": "^1.45.0",
+    "crypto": "^1.0.1",
     "lucide-react": "^1.34.0",
     "next": "16.2.6",
     "nodemailer": "^9.0.5",

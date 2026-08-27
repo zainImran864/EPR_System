@@ -66,9 +66,22 @@ export default defineSchema({
     token: v.string(),
     createdAt: v.number(),
     expiresAt: v.number(),
+    // True while a 2FA-enabled login is awaiting its TOTP code (not usable yet).
+    pending2fa: v.optional(v.boolean()),
   })
     .index("by_token", ["token"])
     .index("by_userId", ["userId"]),
+
+  // ─── Trusted devices (skip 2FA on a remembered browser) ───────────
+  trustedDevices: defineTable({
+    userId: v.id("users"),
+    deviceToken: v.string(), // random, stored in the browser's localStorage
+    label: v.string(), // e.g. "Chrome on Windows"
+    createdAt: v.number(),
+    lastUsedAt: v.number(),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_deviceToken", ["deviceToken"]),
 
   // ─── School Registration Requests (super-admin approval queue) ────
   registrationRequests: defineTable({

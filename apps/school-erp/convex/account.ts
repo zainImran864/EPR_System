@@ -1,8 +1,11 @@
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { hashPassword, verifyPassword, generateToken } from "./lib/hash";
-import type { MutationCtx } from "./_generated/server";
+import { generateSecret, otpauthUrl, verifyTotp } from "./lib/totp";
+import type { MutationCtx, QueryCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
+
+const TOTP_ISSUER = process.env.TOTP_ISSUER || "AcademiX";
 
 /** Resolve a live session token to its user, or throw. */
 async function requireUser(ctx: MutationCtx, token: string) {
@@ -53,15 +56,91 @@ export const changePassword = mutation({
   },
 });
 
-// ─── Two-factor toggle (stores enabled flag + a secret) ───────────────────────
-export const setTwoFactor = mutation({
-  args: { token: v.string(), enabled: v.boolean() },
+// ─── Two-factor: start setup → returns secret + otpauth URL for the QR ────────
+export const startTwoFactorSetup = mutation({
+  args: { token: v.string() },
   handler: async (ctx, args) => {
     const user = await requireUser(ctx, args.token);
+    const secret = generateSecret();
+    // Store the pending secret; 2FA stays disabled until a code is confirmed.
     await ctx.db.patch(user._id, {
-      twoFactorEnabled: args.enabled,
-      twoFactorSecret: args.enabled ? generateToken() : undefined,
+      twoFactorSecret: secret,
+      twoFactorEnabled: false,
     });
+    return {
+      secret,
+      otpauthUrl: otpauthUrl(secret, user.email, TOTP_ISSUER),
+      issuer: TOTP_ISSUER,
+      account: user.email,
+    };
+  },
+});
+
+// Confirm the code → enable 2FA
+export const confirmTwoFactor = mutation({
+  args: { token: v.string(), code: v.string() },
+  handler: async (ctx, args) => {
+    const user = await requireUser(ctx, args.token);
+    if (!user.twoFactorSecret) return { ok: false as const, error: "no-setup" as const };
+    const ok = await verifyTotp(user.twoFactorSecret, args.code);
+    if (!ok) return { ok: false as const, error: "bad-code" as const };
+    await ctx.db.patch(user._id, { twoFactorEnabled: true });
+    return { ok: true as const };
+  },
+});
+
+// Disable 2FA — requires a valid current code
+export const disableTwoFactor = mutation({
+  args: { token: v.string(), code: v.string() },
+  handler: async (ctx, args) => {
+    const user = await requireUser(ctx, args.token);
+    if (!user.twoFactorEnabled || !user.twoFactorSecret)
+      return { ok: false as const, error: "not-enabled" as const };
+    const ok = await verifyTotp(user.twoFactorSecret, args.code);
+    if (!ok) return { ok: false as const, error: "bad-code" as const };
+    await ctx.db.patch(user._id, {
+      twoFactorEnabled: false,
+      twoFactorSecret: undefined,
+    });
+    // Drop all remembered devices when 2FA is turned off.
+    const devices = await ctx.db
+      .query("trustedDevices")
+      .withIndex("by_userId", (q) => q.eq("userId", user._id))
+      .collect();
+    for (const d of devices) await ctx.db.delete(d._id);
+    return { ok: true as const };
+  },
+});
+
+// ─── Trusted devices ──────────────────────────────────────────────────────────
+export const listTrustedDevices = query({
+  args: { token: v.string() },
+  handler: async (ctx: QueryCtx, args) => {
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", args.token))
+      .first();
+    if (!session || session.expiresAt < Date.now()) return [];
+    const devices = await ctx.db
+      .query("trustedDevices")
+      .withIndex("by_userId", (q) => q.eq("userId", session.userId))
+      .collect();
+    devices.sort((a, b) => b.lastUsedAt - a.lastUsedAt);
+    return devices.map((d) => ({
+      _id: d._id,
+      label: d.label,
+      createdAt: d.createdAt,
+      lastUsedAt: d.lastUsedAt,
+    }));
+  },
+});
+
+export const deleteTrustedDevice = mutation({
+  args: { token: v.string(), deviceId: v.id("trustedDevices") },
+  handler: async (ctx, args) => {
+    const user = await requireUser(ctx, args.token);
+    const device = await ctx.db.get(args.deviceId);
+    if (device && device.userId === user._id) await ctx.db.delete(args.deviceId);
     return { ok: true };
   },
 });

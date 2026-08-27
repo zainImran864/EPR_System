@@ -11,12 +11,15 @@ export function useAccount() {
 
   const updateProfileM = useMutation(accountApi.updateProfile);
   const changePasswordM = useMutation(accountApi.changePassword);
-  const setTwoFactorM = useMutation(accountApi.setTwoFactor);
   const setNotificationsM = useMutation(accountApi.setNotifications);
   const genUploadUrlM = useMutation(accountApi.generateUploadUrl);
   const setAvatarM = useMutation(accountApi.setAvatar);
   const setSchoolLogoM = useMutation(accountApi.setSchoolLogo);
   const requestNameChangeM = useMutation(accountApi.requestSchoolNameChange);
+  const startTwoFactorM = useMutation(accountApi.startTwoFactorSetup);
+  const confirmTwoFactorM = useMutation(accountApi.confirmTwoFactor);
+  const disableTwoFactorM = useMutation(accountApi.disableTwoFactor);
+  const deleteDeviceM = useMutation(accountApi.deleteTrustedDevice);
 
   const require = <T,>(fn: () => T): T => {
     if (!token) throw new Error("Not authenticated");
@@ -29,11 +32,18 @@ export function useAccount() {
   const changePassword = (currentPassword: string, newPassword: string) =>
     require(() => changePasswordM({ token: token!, currentPassword, newPassword }));
 
-  const setTwoFactor = (enabled: boolean) =>
-    require(() => setTwoFactorM({ token: token!, enabled }));
-
   const setNotifications = (enabled: boolean) =>
     require(() => setNotificationsM({ token: token!, enabled }));
+
+  // ── Two-factor ──
+  const startTwoFactorSetup = () =>
+    require(() => startTwoFactorM({ token: token! }));
+  const confirmTwoFactor = (code: string) =>
+    require(() => confirmTwoFactorM({ token: token!, code }));
+  const disableTwoFactor = (code: string) =>
+    require(() => disableTwoFactorM({ token: token!, code }));
+  const deleteTrustedDevice = (deviceId: string) =>
+    require(() => deleteDeviceM({ token: token!, deviceId: deviceId as Id<"trustedDevices"> }));
 
   const requestSchoolNameChange = (requestedValue: string) =>
     require(() => requestNameChangeM({ token: token!, requestedValue }));
@@ -56,9 +66,12 @@ export function useAccount() {
   return {
     updateProfile,
     changePassword,
-    setTwoFactor,
     setNotifications,
     requestSchoolNameChange,
     uploadImage,
+    startTwoFactorSetup,
+    confirmTwoFactor,
+    disableTwoFactor,
+    deleteTrustedDevice,
   };
 }

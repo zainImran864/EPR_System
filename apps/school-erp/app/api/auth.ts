@@ -6,4 +6,5 @@ export const authApi = {
   login: api.auth.login,
   logout: api.auth.logout,
   currentUser: api.auth.currentUser,
+  verifyLoginTwoFactor: api.auth.verifyLoginTwoFactor,
 };

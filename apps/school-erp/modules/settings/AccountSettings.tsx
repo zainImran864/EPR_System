@@ -1,7 +1,17 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { User, Lock, ShieldCheck, BellRing, Camera, Save } from "lucide-react";
+import { useQuery } from "convex/react";
+import {
+  User,
+  Lock,
+  ShieldCheck,
+  BellRing,
+  Camera,
+  Save,
+  Monitor,
+  Trash2,
+} from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -9,20 +19,30 @@ import { Switch } from "@/components/ui/Switch";
 import { Avatar } from "@/components/ui/Avatar";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useAccount } from "@/app/hooks/useAccount";
+import { useAuthStore } from "@/app/store/useAuthStore";
+import { accountApi } from "@/app/api/account";
 import { useToast } from "@/app/hooks/useToast";
+import { TwoFactorModal } from "./TwoFactorModal";
 
 /** Universal per-user settings — used by every role's /settings route. */
 export const AccountSettings: React.FC = () => {
   const { user } = useAuth();
+  const { token } = useAuthStore();
   const {
     updateProfile,
     changePassword,
-    setTwoFactor,
     setNotifications,
     uploadImage,
+    deleteTrustedDevice,
   } = useAccount();
   const { success, error } = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const [twoFAModal, setTwoFAModal] = useState<null | "enroll" | "disable">(null);
+  const devices = useQuery(
+    accountApi.listTrustedDevices,
+    token ? { token } : "skip"
+  );
 
   const [profile, setProfile] = useState({
     name: user?.name ?? "",
@@ -84,12 +104,15 @@ export const AccountSettings: React.FC = () => {
     }
   };
 
-  const toggle2FA = async (v: boolean) => {
+  // Toggling opens the QR/code modal instead of flipping the flag directly.
+  const toggle2FA = (v: boolean) => setTwoFAModal(v ? "enroll" : "disable");
+
+  const removeDevice = async (id: string) => {
     try {
-      await setTwoFactor(v);
-      success(v ? "Two-factor authentication enabled." : "Two-factor disabled.");
+      await deleteTrustedDevice(id);
+      success("Device removed — it will require 2FA on next login.");
     } catch {
-      error("Could not update 2FA.");
+      error("Could not remove device.");
     }
   };
 
@@ -253,6 +276,64 @@ export const AccountSettings: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Trusted devices (only relevant when 2FA is on) */}
+      {twoFA && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Monitor className="w-4 h-4 text-[#0D9488]" />
+              Remembered Devices
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-slate-500 mb-3">
+              These browsers skip the 2FA code at login. Remove one to require the code
+              again there.
+            </p>
+            {!devices || devices.length === 0 ? (
+              <p className="text-xs text-slate-400 py-3 text-center">
+                No remembered devices yet.
+              </p>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {devices.map((d) => (
+                  <div key={d._id} className="flex items-center justify-between py-3">
+                    <div className="flex items-center gap-3">
+                      <Monitor className="w-4 h-4 text-slate-400" />
+                      <div>
+                        <p className="text-sm font-medium text-slate-800">{d.label}</p>
+                        <p className="text-[11px] text-slate-400">
+                          Added {new Date(d.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      onClick={() => removeDevice(d._id)}
+                      className="text-slate-400 hover:text-rose-600"
+                      leftIcon={<Trash2 className="w-4 h-4" />}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* 2FA enroll / disable modal */}
+      {twoFAModal && (
+        <TwoFactorModal
+          mode={twoFAModal}
+          isOpen={Boolean(twoFAModal)}
+          onClose={() => setTwoFAModal(null)}
+          onSuccess={() => setTwoFAModal(null)}
+        />
+      )}
     </div>
   );
 };
