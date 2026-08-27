@@ -284,6 +284,7 @@ export const currentUser = query({
       mustChangePassword: user.mustChangePassword ?? false,
       twoFactorEnabled: user.twoFactorEnabled ?? false,
       notificationsEnabled: user.notificationsEnabled ?? true,
+      themeColor: user.themeColor ?? null,
       studentContext,
       school: school
         ? {

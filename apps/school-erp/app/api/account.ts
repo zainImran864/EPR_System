@@ -5,6 +5,7 @@ export const accountApi = {
   updateProfile: api.account.updateProfile,
   changePassword: api.account.changePassword,
   setNotifications: api.account.setNotifications,
+  setThemeColor: api.account.setThemeColor,
   generateUploadUrl: api.account.generateUploadUrl,
   setAvatar: api.account.setAvatar,
   setSchoolLogo: api.account.setSchoolLogo,

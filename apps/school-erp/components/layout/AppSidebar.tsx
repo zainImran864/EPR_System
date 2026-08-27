@@ -56,7 +56,10 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
               className="w-9 h-9 rounded-xl object-cover shrink-0 border border-slate-700"
             />
           ) : (
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#0D9488] to-[#2DD4BF] text-white flex items-center justify-center shrink-0 shadow-md shadow-teal-900/40">
+            <div
+              className="w-9 h-9 rounded-xl text-white flex items-center justify-center shrink-0 shadow-md shadow-black/30"
+              style={{ backgroundColor: "var(--sidebar-accent, #0D9488)" }}
+            >
               <School className="w-5 h-5" />
             </div>
           )}
@@ -95,17 +98,22 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             <Link
               key={item.href}
               href={item.href}
+              style={
+                isActive
+                  ? { backgroundColor: "var(--sidebar-accent, #0D9488)" }
+                  : undefined
+              }
               className={cn(
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all duration-150 group",
                 isActive
-                  ? "bg-[#0D9488] text-white font-semibold shadow-sm"
+                  ? "text-white font-semibold shadow-sm"
                   : "text-slate-400 hover:text-white hover:bg-slate-800/70"
               )}
             >
               <span
                 className={cn(
                   "shrink-0 transition-transform group-hover:scale-110",
-                  isActive ? "text-white" : "text-slate-400 group-hover:text-teal-400"
+                  isActive ? "text-white" : "text-slate-400 group-hover:text-white"
                 )}
               >
                 {item.icon}

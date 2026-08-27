@@ -4,6 +4,8 @@ import "./globals.css";
 import { ConvexClientProvider } from "./ConvexClientProvider";
 import { Toaster } from "@/components/ui/Toast";
 import { PWARegister } from "@/components/pwa/PWARegister";
+import { ThemeSync } from "@/components/theme/ThemeSync";
+import { THEME_BOOT_SCRIPT } from "@/app/lib/theme";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -46,10 +48,13 @@ export default function RootLayout({
       className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#F8FAFC] text-[#0F172A]">
+        {/* Applies the cached sidebar colour before first paint (no flash). */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <ConvexClientProvider>
           {children}
           <Toaster />
           <PWARegister />
+          <ThemeSync />
         </ConvexClientProvider>
       </body>
     </html>

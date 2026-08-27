@@ -155,6 +155,16 @@ export const setNotifications = mutation({
   },
 });
 
+// ─── Per-user sidebar theme color ─────────────────────────────────────────────
+export const setThemeColor = mutation({
+  args: { token: v.string(), color: v.string() },
+  handler: async (ctx, args) => {
+    const user = await requireUser(ctx, args.token);
+    await ctx.db.patch(user._id, { themeColor: args.color });
+    return { ok: true };
+  },
+});
+
 // ─── Avatar upload (Convex file storage) ──────────────────────────────────────
 export const generateUploadUrl = mutation({
   args: { token: v.string() },

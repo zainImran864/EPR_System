@@ -4,6 +4,7 @@ import { useMutation } from "convex/react";
 import type { Id } from "@/convex/_generated/dataModel";
 import { accountApi } from "@/app/api/account";
 import { useAuthStore } from "@/app/store/useAuthStore";
+import { applyThemeColor } from "@/app/lib/theme";
 
 /** Per-user account/settings actions, all scoped by the session token. */
 export function useAccount() {
@@ -12,6 +13,7 @@ export function useAccount() {
   const updateProfileM = useMutation(accountApi.updateProfile);
   const changePasswordM = useMutation(accountApi.changePassword);
   const setNotificationsM = useMutation(accountApi.setNotifications);
+  const setThemeColorM = useMutation(accountApi.setThemeColor);
   const genUploadUrlM = useMutation(accountApi.generateUploadUrl);
   const setAvatarM = useMutation(accountApi.setAvatar);
   const setSchoolLogoM = useMutation(accountApi.setSchoolLogo);
@@ -34,6 +36,12 @@ export function useAccount() {
 
   const setNotifications = (enabled: boolean) =>
     require(() => setNotificationsM({ token: token!, enabled }));
+
+  /** Apply the sidebar colour instantly (CSS var + cache) then persist to the DB. */
+  const setThemeColor = (color: string) => {
+    applyThemeColor(color);
+    return require(() => setThemeColorM({ token: token!, color }));
+  };
 
   // ── Two-factor ──
   const startTwoFactorSetup = () =>
@@ -67,6 +75,7 @@ export function useAccount() {
     updateProfile,
     changePassword,
     setNotifications,
+    setThemeColor,
     requestSchoolNameChange,
     uploadImage,
     startTwoFactorSetup,

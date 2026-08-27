@@ -54,6 +54,7 @@ export default defineSchema({
     twoFactorEnabled: v.optional(v.boolean()),
     twoFactorSecret: v.optional(v.string()),
     notificationsEnabled: v.optional(v.boolean()),
+    themeColor: v.optional(v.string()), // per-user sidebar accent (hex)
     createdAt: v.number(),
   })
     .index("by_schoolId", ["schoolId"])

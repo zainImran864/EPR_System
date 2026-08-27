@@ -11,6 +11,8 @@ import {
   Save,
   Monitor,
   Trash2,
+  Palette,
+  Check,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -22,6 +24,7 @@ import { useAccount } from "@/app/hooks/useAccount";
 import { useAuthStore } from "@/app/store/useAuthStore";
 import { accountApi } from "@/app/api/account";
 import { useToast } from "@/app/hooks/useToast";
+import { THEME_OPTIONS, DEFAULT_THEME } from "@/app/lib/theme";
 import { TwoFactorModal } from "./TwoFactorModal";
 
 /** Universal per-user settings — used by every role's /settings route. */
@@ -32,6 +35,7 @@ export const AccountSettings: React.FC = () => {
     updateProfile,
     changePassword,
     setNotifications,
+    setThemeColor,
     uploadImage,
     deleteTrustedDevice,
   } = useAccount();
@@ -106,6 +110,16 @@ export const AccountSettings: React.FC = () => {
 
   // Toggling opens the QR/code modal instead of flipping the flag directly.
   const toggle2FA = (v: boolean) => setTwoFAModal(v ? "enroll" : "disable");
+
+  const currentTheme = user?.themeColor ?? DEFAULT_THEME;
+  const chooseTheme = async (hex: string) => {
+    try {
+      await setThemeColor(hex); // applies instantly, then persists
+      success("Sidebar theme updated.");
+    } catch {
+      error("Could not update theme.");
+    }
+  };
 
   const removeDevice = async (id: string) => {
     try {
@@ -273,6 +287,51 @@ export const AccountSettings: React.FC = () => {
               </div>
             </div>
             <Switch checked={notifOn} onCheckedChange={toggleNotif} />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Sidebar theme (per-user — only you see your colour) */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Palette className="w-4 h-4" style={{ color: currentTheme }} />
+            Sidebar Theme
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-xs text-slate-500 mb-3">
+            Pick your sidebar accent colour. This is personal to your account — other
+            users keep their own.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            {THEME_OPTIONS.map((c) => {
+              const selected = currentTheme.toLowerCase() === c.hex.toLowerCase();
+              const isDefault = c.hex === DEFAULT_THEME;
+              return (
+                <button
+                  key={c.hex}
+                  type="button"
+                  onClick={() => chooseTheme(c.hex)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-all ${
+                    selected
+                      ? "border-slate-800 bg-slate-50 ring-2 ring-slate-800/10"
+                      : "border-slate-200 hover:bg-slate-50"
+                  }`}
+                >
+                  <span
+                    className="w-4 h-4 rounded-full shrink-0 flex items-center justify-center text-white"
+                    style={{ backgroundColor: c.hex }}
+                  >
+                    {selected && <Check className="w-2.5 h-2.5" />}
+                  </span>
+                  <span>
+                    {c.name}
+                    {isDefault && <span className="text-slate-400"> (Default)</span>}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </CardContent>
       </Card>

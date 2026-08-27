@@ -1,6 +1,9 @@
 @import "tailwindcss";
 
 :root {
+  /* Per-user sidebar accent (overridden at runtime; defaults to brand teal) */
+  --sidebar-accent: #0D9488;
+
   /* Brand Teal Palette */
   --color-primary-50:  #F0FDFA;
   --color-primary-100: #CCFBF1;
