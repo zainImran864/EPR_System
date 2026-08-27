@@ -12,7 +12,7 @@ import { AddTeacherModal } from "./AddTeacherModal";
 import { useTeachers } from "@/app/hooks/useTeachers";
 import { useActiveSchool } from "@/app/hooks/useActiveSchool";
 import { useToast } from "@/app/hooks/useToast";
-import { exportToCSV } from "@/app/lib/export";
+import { exportToExcel } from "@/app/lib/exportExcel";
 
 type TeacherRow = {
   _id: string;
@@ -43,8 +43,8 @@ export const StaffDirectory: React.FC = () => {
 
   const rows = teachers as TeacherRow[];
 
-  const handleExport = () => {
-    exportToCSV(
+  const handleExport = () =>
+    exportToExcel(
       rows.map((t) => ({
         Name: `${t.firstName} ${t.lastName}`,
         EmployeeID: t.employeeId,
@@ -54,9 +54,24 @@ export const StaffDirectory: React.FC = () => {
         Phone: t.phone ?? "",
         Status: t.status,
       })),
-      "staff"
+      [
+        { key: "Name", label: "Faculty Name", width: 26 },
+        { key: "EmployeeID", label: "Employee ID", width: 16 },
+        { key: "Email", label: "Login Email", width: 30 },
+        { key: "Designation", label: "Designation", width: 22 },
+        { key: "Department", label: "Department", width: 20 },
+        { key: "Phone", label: "Phone", width: 18 },
+        { key: "Status", label: "Status", width: 12 },
+      ],
+      "staff",
+      {
+        schoolName: school?.name ?? "School",
+        schoolCode: school?.code,
+        address: school?.address,
+        logoUrl: school?.logoUrl,
+        title: "Faculty & Staff Directory",
+      }
     );
-  };
 
   const handleAdd = async (t: Parameters<typeof addTeacher>[0]) => {
     try {
@@ -163,7 +178,7 @@ export const StaffDirectory: React.FC = () => {
             disabled={!rows.length}
             className="text-xs"
           >
-            Export CSV
+            Export Excel
           </Button>
           <Button
             variant="primary"

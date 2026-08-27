@@ -20,7 +20,7 @@ import { AddStudentModal } from "./AddStudentModal";
 import { useStudents } from "@/app/hooks/useStudents";
 import { useClasses } from "@/app/hooks/useClasses";
 import { useActiveSchool } from "@/app/hooks/useActiveSchool";
-import { exportToCSV } from "@/app/lib/export";
+import { exportToExcel } from "@/app/lib/exportExcel";
 
 type StudentRow = {
   _id: string;
@@ -56,8 +56,8 @@ export const StudentDirectory: React.FC = () => {
   const { school } = useActiveSchool();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const handleExport = () => {
-    exportToCSV(
+  const handleExport = () =>
+    exportToExcel(
       allStudents.map((s) => ({
         Name: `${s.firstName} ${s.lastName}`,
         Roll: s.rollNumber,
@@ -68,9 +68,25 @@ export const StudentDirectory: React.FC = () => {
         Phone: s.guardianPhone,
         Status: s.status,
       })),
-      "students"
+      [
+        { key: "Name", label: "Student Name", width: 26 },
+        { key: "Roll", label: "Roll No", width: 14 },
+        { key: "Admission", label: "Admission No", width: 18 },
+        { key: "Class", label: "Class", width: 14 },
+        { key: "Section", label: "Section", width: 14 },
+        { key: "Guardian", label: "Guardian", width: 22 },
+        { key: "Phone", label: "Guardian Phone", width: 18 },
+        { key: "Status", label: "Status", width: 12 },
+      ],
+      "students",
+      {
+        schoolName: school?.name ?? "School",
+        schoolCode: school?.code,
+        address: school?.address,
+        logoUrl: school?.logoUrl,
+        title: "Student Directory",
+      }
     );
-  };
 
   const columns: Column<StudentRow>[] = [
     {
@@ -189,7 +205,7 @@ export const StudentDirectory: React.FC = () => {
             disabled={!allStudents.length}
             className="text-xs"
           >
-            Export CSV
+            Export Excel
           </Button>
           <Button
             variant="primary"
