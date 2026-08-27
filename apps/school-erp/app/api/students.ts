@@ -10,5 +10,6 @@ export const studentsApi = {
   create: api.students.createStudent,
   update: api.students.updateStudent,
   updateStatus: api.students.updateStudentStatus,
+  remove: api.students.deleteStudent,
   nextAdmissionNumber: api.students.nextAdmissionNumber,
 };

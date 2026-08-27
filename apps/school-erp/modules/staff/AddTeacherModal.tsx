@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import { Mail, KeyRound, Copy, Check, Hash, Send } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
@@ -69,6 +69,14 @@ export const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
   const [form, setForm] = useState(emptyForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Clear the form whenever the modal closes so it reopens empty.
+  useEffect(() => {
+    if (!isOpen) {
+      setForm(emptyForm);
+      setCopied(false);
+    }
+  }, [isOpen]);
 
   const fullName = `${form.firstName} ${form.lastName}`.trim();
   const emailPreview = useMemo(
@@ -242,7 +250,7 @@ export const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
             label="Temporary Password *"
-            type="text"
+            type="password"
             placeholder="Min. 6 characters"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}

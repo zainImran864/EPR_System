@@ -3,7 +3,7 @@
 import React from "react";
 import { useAppStore } from "@/app/store/useAppStore";
 import { cn } from "@/app/lib/utils";
-import { Menu, Search, LogOut } from "lucide-react";
+import { Menu, LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { NotificationBell } from "./NotificationBell";
@@ -64,21 +64,8 @@ export const Topbar: React.FC<TopbarProps> = ({
         </div>
       </div>
 
-      {/* Right: Search, Seed Demo Action, Notifications & Profile */}
+      {/* Right: Notifications & Profile */}
       <div className="flex items-center gap-2.5 sm:gap-4">
-        {/* Quick Search */}
-        <div className="hidden lg:flex items-center relative w-64">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search students, roll no..."
-            className="w-full bg-slate-100 hover:bg-slate-200/60 focus:bg-white text-xs pl-9 pr-8 py-2 rounded-xl border border-transparent focus:border-[#0D9488] focus:outline-none transition-all placeholder:text-slate-400"
-          />
-          <kbd className="absolute right-2.5 px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-white border border-slate-200 rounded shadow-2xs">
-            /
-          </kbd>
-        </div>
-
         {/* Notification Bell */}
         <NotificationBell />
 

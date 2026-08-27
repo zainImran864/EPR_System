@@ -35,6 +35,8 @@ export function useClasses() {
 
   const createClassMutation = useMutation(classesApi.create);
   const addSectionMutation = useMutation(classesApi.addSection);
+  const updateClassMutation = useMutation(classesApi.updateClass);
+  const updateSectionMutation = useMutation(classesApi.updateSection);
 
   const classOptions = classes.map((c) => ({ value: c._id, label: c.name }));
 
@@ -49,6 +51,16 @@ export function useClasses() {
   const addSection = (args: AddSectionArgs) =>
     schoolId ? addSectionMutation({ schoolId, ...args }) : undefined;
 
+  const editClass = (
+    classId: string,
+    fields: { name?: string; numericGrade?: number; academicYear?: string }
+  ) => updateClassMutation({ classId, ...fields });
+
+  const editSection = (
+    sectionId: string,
+    fields: { name?: string; roomNumber?: string; classTeacherId?: string }
+  ) => updateSectionMutation({ sectionId, ...fields });
+
   return {
     classes,
     isLoading,
@@ -56,5 +68,7 @@ export function useClasses() {
     sectionOptions,
     addClass,
     addSection,
+    editClass,
+    editSection,
   };
 }

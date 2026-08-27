@@ -35,6 +35,7 @@ export function useNotifications() {
   const broadcastMutation = useMutation(notificationsApi.broadcast);
   const markReadMutation = useMutation(notificationsApi.markRead);
   const markAllReadMutation = useMutation(notificationsApi.markAllRead);
+  const clearAllMutation = useMutation(notificationsApi.clearAll);
 
   // Live toast on newly-arrived notification (skip first load).
   const seenTopId = useRef<string | null>(null);
@@ -75,6 +76,9 @@ export function useNotifications() {
   const markAllRead = () =>
     userId ? markAllReadMutation({ userId: userId as Id<"users"> }) : undefined;
 
+  const clearAll = () =>
+    userId ? clearAllMutation({ userId: userId as Id<"users"> }) : undefined;
+
   return {
     feed: feed ?? [],
     unreadCount: unread ?? 0,
@@ -82,5 +86,6 @@ export function useNotifications() {
     broadcast,
     markRead,
     markAllRead,
+    clearAll,
   };
 }

@@ -8,6 +8,8 @@ import {
   GraduationCap,
   Phone,
   Power,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -17,9 +19,11 @@ import { Avatar } from "@/components/ui/Avatar";
 import { DataGrid, type Column } from "@/components/ui/DataGrid";
 import { Pagination } from "@/components/ui/Pagination";
 import { AddStudentModal } from "./AddStudentModal";
+import { EditStudentModal, type EditStudentRow } from "./EditStudentModal";
 import { useStudents } from "@/app/hooks/useStudents";
 import { useClasses } from "@/app/hooks/useClasses";
 import { useActiveSchool } from "@/app/hooks/useActiveSchool";
+import { useToast } from "@/app/hooks/useToast";
 import { exportToExcel } from "@/app/lib/exportExcel";
 
 type StudentRow = {
@@ -46,7 +50,9 @@ export const StudentDirectory: React.FC = () => {
     filters,
     isLoading,
     addStudent,
+    editStudent,
     setStudentStatus,
+    removeStudent,
     setFilters,
     setCurrentPage,
     setPageSize,
@@ -54,7 +60,9 @@ export const StudentDirectory: React.FC = () => {
 
   const { classOptions, sectionOptions } = useClasses();
   const { school } = useActiveSchool();
+  const { success, error } = useToast();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editing, setEditing] = useState<EditStudentRow | null>(null);
 
   const handleExport = () =>
     exportToExcel(
@@ -167,20 +175,65 @@ export const StudentDirectory: React.FC = () => {
       header: "Actions",
       align: "right",
       render: (s) => (
-        <Button
-          variant="ghost"
-          size="xs"
-          onClick={() =>
-            setStudentStatus(s._id, s.status === "active" ? "inactive" : "active")
-          }
-          title={s.status === "active" ? "Deactivate" : "Activate"}
-          className="p-1 text-slate-400 hover:text-slate-700"
-        >
-          <Power className="w-4 h-4" />
-        </Button>
+        <div className="flex items-center justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="xs"
+            onClick={() => setEditing(s as unknown as EditStudentRow)}
+            title="Edit"
+            className="p-1 text-slate-400 hover:text-[#0D9488]"
+          >
+            <Pencil className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="xs"
+            onClick={() =>
+              setStudentStatus(s._id, s.status === "active" ? "inactive" : "active")
+            }
+            title={s.status === "active" ? "Deactivate" : "Activate"}
+            className="p-1 text-slate-400 hover:text-slate-700"
+          >
+            <Power className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="xs"
+            onClick={() => handleDelete(s)}
+            title="Delete student"
+            className="p-1 text-slate-400 hover:text-rose-600"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        </div>
       ),
     },
   ];
+
+  const handleEdit = async (studentId: string, fields: Record<string, unknown>) => {
+    try {
+      await editStudent(studentId, fields);
+      success("Student details updated.");
+    } catch {
+      error("Could not update student.");
+      throw new Error("update failed");
+    }
+  };
+
+  const handleDelete = async (s: StudentRow) => {
+    if (
+      !window.confirm(
+        `Delete ${s.firstName} ${s.lastName}? This permanently removes their profile and login (plus the linked guardian login) — they will lose dashboard access.`
+      )
+    )
+      return;
+    try {
+      await removeStudent(s._id);
+      success("Student deleted.");
+    } catch {
+      error("Could not delete student.");
+    }
+  };
 
   return (
     <div className="space-y-5">
@@ -300,6 +353,15 @@ export const StudentDirectory: React.FC = () => {
         classOptions={classOptions}
         getSections={sectionOptions}
         schoolCode={school?.code}
+      />
+
+      {/* Edit Student Modal */}
+      <EditStudentModal
+        student={editing}
+        onClose={() => setEditing(null)}
+        onSubmit={handleEdit}
+        classOptions={classOptions}
+        getSections={sectionOptions}
       />
     </div>
   );

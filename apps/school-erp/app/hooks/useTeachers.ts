@@ -43,13 +43,29 @@ export function useTeachers() {
   const teachers = data ?? [];
 
   const createMutation = useMutation(teachersApi.create);
+  const updateMutation = useMutation(teachersApi.update);
   const updateStatusMutation = useMutation(teachersApi.updateStatus);
+  const removeMutation = useMutation(teachersApi.remove);
 
   const addTeacher = (args: CreateTeacherArgs) =>
     schoolId ? createMutation({ schoolId, ...args }) : undefined;
 
+  const editTeacher = (
+    teacherId: string,
+    args: {
+      firstName?: string;
+      lastName?: string;
+      phone?: string;
+      designation?: string;
+      department?: string;
+      status?: "active" | "inactive";
+    }
+  ) => updateMutation({ teacherId, ...args });
+
   const setTeacherStatus = (teacherId: string, next: "active" | "inactive") =>
     updateStatusMutation({ teacherId, status: next });
+
+  const removeTeacher = (teacherId: string) => removeMutation({ teacherId });
 
   return {
     teachers,
@@ -59,6 +75,8 @@ export function useTeachers() {
     status,
     setStatus,
     addTeacher,
+    editTeacher,
     setTeacherStatus,
+    removeTeacher,
   };
 }

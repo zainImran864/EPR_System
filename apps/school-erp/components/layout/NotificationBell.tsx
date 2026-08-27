@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Bell, Check, CheckCheck } from "lucide-react";
+import { Bell, Check, CheckCheck, Trash2 } from "lucide-react";
 import { useNotifications } from "@/app/hooks/useNotifications";
 import { cn } from "@/app/lib/utils";
 
@@ -23,7 +23,7 @@ function timeAgo(ts: number): string {
 }
 
 export const NotificationBell: React.FC = () => {
-  const { feed, unreadCount, markRead, markAllRead } = useNotifications();
+  const { feed, unreadCount, markRead, markAllRead, clearAll } = useNotifications();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -54,15 +54,26 @@ export const NotificationBell: React.FC = () => {
         <div className="absolute right-0 mt-2 w-80 max-h-[28rem] rounded-2xl bg-white border border-slate-200 shadow-xl overflow-hidden z-50 flex flex-col">
           <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
             <span className="text-sm font-semibold text-slate-900">Notifications</span>
-            {unreadCount > 0 && (
-              <button
-                onClick={() => markAllRead()}
-                className="text-[11px] font-medium text-[#0D9488] hover:underline flex items-center gap-1"
-              >
-                <CheckCheck className="w-3.5 h-3.5" />
-                Mark all read
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              {unreadCount > 0 && (
+                <button
+                  onClick={() => markAllRead()}
+                  className="text-[11px] font-medium text-[#0D9488] hover:underline flex items-center gap-1"
+                >
+                  <CheckCheck className="w-3.5 h-3.5" />
+                  Mark all read
+                </button>
+              )}
+              {feed.length > 0 && (
+                <button
+                  onClick={() => clearAll()}
+                  className="text-[11px] font-medium text-slate-500 hover:text-rose-600 hover:underline flex items-center gap-1"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Clear all
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="overflow-y-auto flex-1">

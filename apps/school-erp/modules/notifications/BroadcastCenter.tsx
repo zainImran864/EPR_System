@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Bell, Send, Megaphone } from "lucide-react";
+import { Bell, Send, Megaphone, CheckCheck, Trash2 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -26,7 +26,7 @@ const KINDS = [
 ];
 
 export const BroadcastCenter: React.FC = () => {
-  const { feed, broadcast } = useNotifications();
+  const { feed, unreadCount, broadcast, markAllRead, clearAll } = useNotifications();
   const { success, error } = useToast();
   const [form, setForm] = useState({
     title: "",
@@ -56,14 +56,38 @@ export const BroadcastCenter: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <div>
-        <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-          <Bell className="w-5 h-5 text-[#0D9488]" />
-          Notification Center
-        </h2>
-        <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-          Broadcast announcements to a role. Recipients get a live toast + bell alert.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <Bell className="w-5 h-5 text-[#0D9488]" />
+            Notification Center
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+            Broadcast announcements to a role. Recipients get a live toast + bell alert.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => markAllRead()}
+            disabled={unreadCount === 0}
+            leftIcon={<CheckCheck className="w-4 h-4" />}
+            className="text-xs"
+          >
+            Mark all read
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => clearAll()}
+            disabled={feed.length === 0}
+            leftIcon={<Trash2 className="w-4 h-4" />}
+            className="text-xs text-rose-600 border-rose-200 hover:bg-rose-50"
+          >
+            Delete all
+          </Button>
+        </div>
       </div>
 
       <Card>

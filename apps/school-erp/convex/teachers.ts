@@ -164,6 +164,77 @@ export const createTeacher = mutation({
   },
 });
 
+// ─── Update Teacher (admin edit; syncs the linked login name/status) ──────────
+
+export const updateTeacher = mutation({
+  args: {
+    teacherId: v.id("teachers"),
+    firstName: v.optional(v.string()),
+    lastName: v.optional(v.string()),
+    phone: v.optional(v.string()),
+    designation: v.optional(v.string()),
+    department: v.optional(v.string()),
+    status: v.optional(v.union(v.literal("active"), v.literal("inactive"))),
+  },
+  handler: async (ctx, args) => {
+    const { teacherId, ...fields } = args;
+    const patch = Object.fromEntries(
+      Object.entries(fields).filter(([, v]) => v !== undefined)
+    );
+    await ctx.db.patch(teacherId, patch);
+
+    const teacher = await ctx.db.get(teacherId);
+    if (teacher) {
+      const user = await ctx.db
+        .query("users")
+        .withIndex("by_email", (q) => q.eq("email", teacher.email))
+        .first();
+      if (user && user.linkedTeacherId === teacherId) {
+        const userPatch: Record<string, unknown> = {};
+        if (fields.firstName !== undefined || fields.lastName !== undefined)
+          userPatch.name = `${teacher.firstName} ${teacher.lastName}`;
+        if (fields.phone !== undefined) userPatch.phone = teacher.phone;
+        if (fields.status !== undefined) userPatch.status = teacher.status;
+        if (Object.keys(userPatch).length) await ctx.db.patch(user._id, userPatch);
+      }
+    }
+    return await ctx.db.get(teacherId);
+  },
+});
+
+// ─── Delete Teacher (removes the profile + its login) ─────────────────────────
+
+export const deleteTeacher = mutation({
+  args: { teacherId: v.id("teachers") },
+  handler: async (ctx, args) => {
+    const teacher = await ctx.db.get(args.teacherId);
+    if (!teacher) return { ok: true };
+
+    // Remove the linked login so they can no longer access the dashboard.
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", teacher.email))
+      .first();
+    if (user && user.linkedTeacherId === args.teacherId) {
+      // Drop any active sessions + trusted devices for this login.
+      const sessions = await ctx.db
+        .query("sessions")
+        .withIndex("by_userId", (q) => q.eq("userId", user._id))
+        .collect();
+      for (const s of sessions) await ctx.db.delete(s._id);
+      const devices = await ctx.db
+        .query("trustedDevices")
+        .withIndex("by_userId", (q) => q.eq("userId", user._id))
+        .collect();
+      for (const d of devices) await ctx.db.delete(d._id);
+      await ctx.db.delete(user._id);
+    }
+
+    await ctx.db.delete(args.teacherId);
+    return { ok: true };
+  },
+});
+
 // ─── Update Teacher Status (syncs the linked login) ───────────────────────────
 
 export const updateTeacherStatus = mutation({

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Search, Plus, Download, Users, Mail, Power, Briefcase } from "lucide-react";
+import { Search, Plus, Download, Users, Mail, Power, Briefcase, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { DataGrid, type Column } from "@/components/ui/DataGrid";
 import { AddTeacherModal } from "./AddTeacherModal";
+import { EditTeacherModal, type EditTeacherRow } from "./EditTeacherModal";
 import { useTeachers } from "@/app/hooks/useTeachers";
 import { useActiveSchool } from "@/app/hooks/useActiveSchool";
 import { useToast } from "@/app/hooks/useToast";
@@ -35,11 +36,42 @@ export const StaffDirectory: React.FC = () => {
     status,
     setStatus,
     addTeacher,
+    editTeacher,
     setTeacherStatus,
+    removeTeacher,
   } = useTeachers();
   const { school } = useActiveSchool();
   const { success, error } = useToast();
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editing, setEditing] = useState<EditTeacherRow | null>(null);
+
+  const handleEdit = async (
+    teacherId: string,
+    fields: Parameters<typeof editTeacher>[1]
+  ) => {
+    try {
+      await editTeacher(teacherId, fields);
+      success("Faculty details updated.");
+    } catch {
+      error("Could not update faculty.");
+      throw new Error("update failed");
+    }
+  };
+
+  const handleDelete = async (t: TeacherRow) => {
+    if (
+      !window.confirm(
+        `Delete ${t.firstName} ${t.lastName}? This permanently removes their profile and login (${t.email}) — they will lose dashboard access.`
+      )
+    )
+      return;
+    try {
+      await removeTeacher(t._id);
+      success("Faculty member deleted.");
+    } catch {
+      error("Could not delete faculty member.");
+    }
+  };
 
   const rows = teachers as TeacherRow[];
 
@@ -140,17 +172,37 @@ export const StaffDirectory: React.FC = () => {
       header: "Actions",
       align: "right",
       render: (t) => (
-        <Button
-          variant="ghost"
-          size="xs"
-          onClick={() =>
-            setTeacherStatus(t._id, t.status === "active" ? "inactive" : "active")
-          }
-          title={t.status === "active" ? "Deactivate login" : "Activate login"}
-          className="p-1 text-slate-400 hover:text-slate-700"
-        >
-          <Power className="w-4 h-4" />
-        </Button>
+        <div className="flex items-center justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="xs"
+            onClick={() => setEditing(t as EditTeacherRow)}
+            title="Edit"
+            className="p-1 text-slate-400 hover:text-[#0D9488]"
+          >
+            <Pencil className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="xs"
+            onClick={() =>
+              setTeacherStatus(t._id, t.status === "active" ? "inactive" : "active")
+            }
+            title={t.status === "active" ? "Deactivate login" : "Activate login"}
+            className="p-1 text-slate-400 hover:text-slate-700"
+          >
+            <Power className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="xs"
+            onClick={() => handleDelete(t)}
+            title="Delete faculty member"
+            className="p-1 text-slate-400 hover:text-rose-600"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        </div>
       ),
     },
   ];
@@ -247,6 +299,13 @@ export const StaffDirectory: React.FC = () => {
         onClose={() => setIsAddOpen(false)}
         onSubmit={handleAdd}
         schoolCode={school?.code}
+      />
+
+      {/* Edit Modal */}
+      <EditTeacherModal
+        teacher={editing}
+        onClose={() => setEditing(null)}
+        onSubmit={handleEdit}
       />
     </div>
   );

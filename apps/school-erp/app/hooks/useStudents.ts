@@ -46,15 +46,35 @@ export function useStudents() {
   const students = useMemo(() => data ?? [], [data]);
 
   const createStudentMutation = useMutation(studentsApi.create);
+  const updateStudentMutation = useMutation(studentsApi.update);
   const updateStatusMutation = useMutation(studentsApi.updateStatus);
+  const removeStudentMutation = useMutation(studentsApi.remove);
 
   const addStudent = async (input: CreateStudentInput) => {
     if (!schoolId) return;
     return createStudentMutation({ schoolId, ...input });
   };
 
+  const editStudent = (
+    studentId: string,
+    fields: {
+      firstName?: string;
+      lastName?: string;
+      rollNumber?: string;
+      classId?: string;
+      sectionId?: string;
+      gender?: "male" | "female" | "other";
+      guardianName?: string;
+      guardianPhone?: string;
+      guardianEmail?: string;
+      status?: Status;
+    }
+  ) => updateStudentMutation({ studentId, ...fields });
+
   const setStudentStatus = (studentId: string, status: Status) =>
     updateStatusMutation({ studentId, status });
+
+  const removeStudent = (studentId: string) => removeStudentMutation({ studentId });
 
   const totalItems = students.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
@@ -74,7 +94,9 @@ export function useStudents() {
     isLoading,
     selectedStudent,
     addStudent,
+    editStudent,
     setStudentStatus,
+    removeStudent,
     setFilters,
     setCurrentPage,
     setPageSize,

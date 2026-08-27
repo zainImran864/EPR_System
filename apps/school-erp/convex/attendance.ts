@@ -146,6 +146,60 @@ export const getAttendanceSummary = query({
   },
 });
 
+// ─── Section overview (admin): each student's attendance counts + rate ────────
+
+export const getSectionAttendanceOverview = query({
+  args: {
+    schoolId: v.id("schools"),
+    classId: v.id("classes"),
+    sectionId: v.id("sections"),
+  },
+  handler: async (ctx, args) => {
+    const students = (
+      await ctx.db
+        .query("students")
+        .withIndex("by_schoolId_and_sectionId", (q) =>
+          q.eq("schoolId", args.schoolId).eq("sectionId", args.sectionId)
+        )
+        .collect()
+    ).filter((s) => s.status !== "inactive");
+
+    const rows = await ctx.db
+      .query("attendance")
+      .withIndex("by_section_and_date", (q) =>
+        q
+          .eq("schoolId", args.schoolId)
+          .eq("classId", args.classId)
+          .eq("sectionId", args.sectionId)
+      )
+      .collect();
+
+    const byStudent = new Map<string, { present: number; absent: number; late: number; excused: number }>();
+    for (const r of rows) {
+      const c = byStudent.get(r.studentId) ?? { present: 0, absent: 0, late: 0, excused: 0 };
+      c[r.status]++;
+      byStudent.set(r.studentId, c);
+    }
+
+    return students
+      .map((s) => {
+        const c = byStudent.get(s._id) ?? { present: 0, absent: 0, late: 0, excused: 0 };
+        const total = c.present + c.absent + c.late + c.excused;
+        const rate = total > 0 ? Math.round(((c.present + c.late) / total) * 100) : null;
+        return {
+          studentId: s._id,
+          name: `${s.firstName} ${s.lastName}`,
+          admissionNumber: s.admissionNumber,
+          rollNumber: s.rollNumber,
+          ...c,
+          total,
+          rate,
+        };
+      })
+      .sort((a, b) => a.rollNumber.localeCompare(b.rollNumber));
+  },
+});
+
 // ─── One student's attendance record + summary (student/parent/admin view) ────
 
 export const getStudentAttendance = query({

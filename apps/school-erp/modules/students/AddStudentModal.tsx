@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import { Mail, Hash, KeyRound, Send } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
@@ -64,6 +64,11 @@ export const AddStudentModal: React.FC<AddStudentModalProps> = ({
 
   const [formData, setFormData] = useState(emptyForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Clear the form whenever the modal closes so it reopens empty.
+  useEffect(() => {
+    if (!isOpen) setFormData(emptyForm);
+  }, [isOpen]);
 
   const sectionOptions = formData.classId ? getSections(formData.classId) : [];
 
@@ -271,10 +276,14 @@ export const AddStudentModal: React.FC<AddStudentModalProps> = ({
               </span>
             </div>
           </div>
+          <p className="text-[11px] text-slate-400 -mt-1">
+            Emails are unique per school — if a student with the same name exists, a
+            number is appended automatically (e.g. {studentEmail.replace("@", "1@")}).
+          </p>
 
           <Input
             label="Portal Password * (used for both student & parent)"
-            type="text"
+            type="password"
             placeholder="Min. 6 characters"
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}

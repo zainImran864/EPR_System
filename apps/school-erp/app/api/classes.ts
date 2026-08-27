@@ -5,4 +5,6 @@ export const classesApi = {
   listWithSections: api.classes.listClassesWithSections,
   create: api.classes.createClass,
   addSection: api.classes.addSection,
+  updateClass: api.classes.updateClass,
+  updateSection: api.classes.updateSection,
 };

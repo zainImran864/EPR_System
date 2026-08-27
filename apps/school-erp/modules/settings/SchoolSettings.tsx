@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Settings, Save, Palette, Check, ImageUp, SendHorizonal } from "lucide-react";
+import { Settings, Save, ImageUp, SendHorizonal } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -11,15 +11,6 @@ import { schoolsApi } from "@/app/api/schools";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useAccount } from "@/app/hooks/useAccount";
 import { useToast } from "@/app/hooks/useToast";
-
-const THEME_COLORS = [
-  { name: "Teal", hex: "#0D9488" },
-  { name: "Royal Blue", hex: "#2563EB" },
-  { name: "Indigo", hex: "#4F46E5" },
-  { name: "Emerald", hex: "#059669" },
-  { name: "Crimson", hex: "#DC2626" },
-  { name: "Violet", hex: "#7C3AED" },
-];
 
 export const SchoolSettings: React.FC = () => {
   const { user } = useAuth();
@@ -34,7 +25,6 @@ export const SchoolSettings: React.FC = () => {
     email: "",
     phone: "",
     address: "",
-    primaryColor: "#0D9488",
     activeYear: "",
   });
   const [saving, setSaving] = useState(false);
@@ -48,7 +38,6 @@ export const SchoolSettings: React.FC = () => {
         email: school.email ?? "",
         phone: school.phone ?? "",
         address: school.address ?? "",
-        primaryColor: school.primaryColor ?? "#0D9488",
         activeYear: school.activeYear ?? "",
       });
     }
@@ -94,7 +83,6 @@ export const SchoolSettings: React.FC = () => {
         email: form.email || undefined,
         phone: form.phone || undefined,
         address: form.address || undefined,
-        primaryColor: form.primaryColor,
         activeYear: form.activeYear || undefined,
       });
       success("Settings saved.");
@@ -259,48 +247,6 @@ export const SchoolSettings: React.FC = () => {
                 onChange={handleLogo}
                 className="hidden"
               />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Theme */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Palette className="w-4 h-4 text-[#0D9488]" />
-            School Theme & Branding Colors
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <span className="text-xs font-semibold text-slate-700 block mb-2">
-              Primary Brand Accent
-            </span>
-            <div className="flex flex-wrap gap-3">
-              {THEME_COLORS.map((color) => {
-                const isSelected = form.primaryColor === color.hex;
-                return (
-                  <button
-                    key={color.hex}
-                    type="button"
-                    onClick={() => setForm({ ...form, primaryColor: color.hex })}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-all ${
-                      isSelected
-                        ? "border-slate-800 bg-slate-50 shadow-xs ring-2 ring-slate-800/10"
-                        : "border-slate-200 hover:bg-slate-50"
-                    }`}
-                  >
-                    <span
-                      className="w-4 h-4 rounded-full shadow-2xs shrink-0 flex items-center justify-center text-white"
-                      style={{ backgroundColor: color.hex }}
-                    >
-                      {isSelected && <Check className="w-2.5 h-2.5" />}
-                    </span>
-                    <span>{color.name}</span>
-                  </button>
-                );
-              })}
             </div>
           </div>
         </CardContent>

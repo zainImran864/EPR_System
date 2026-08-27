@@ -7,4 +7,5 @@ export const notificationsApi = {
   broadcast: api.notifications.broadcast,
   markRead: api.notifications.markRead,
   markAllRead: api.notifications.markAllRead,
+  clearAll: api.notifications.clearAll,
 };

@@ -4,6 +4,27 @@ import { internal } from "./_generated/api";
 import { hashPassword } from "./lib/hash";
 import { buildEmail } from "./lib/identity";
 
+// Extract a school's SMTP config into the shape the email actions expect.
+function smtpFromSchool(school: {
+  smtpHost?: string;
+  smtpPort?: number;
+  smtpUser?: string;
+  smtpPass?: string;
+  smtpFrom?: string;
+  smtpSecure?: boolean;
+  smtpEnabled?: boolean;
+}) {
+  return {
+    host: school.smtpHost,
+    port: school.smtpPort,
+    user: school.smtpUser,
+    pass: school.smtpPass,
+    from: school.smtpFrom,
+    secure: school.smtpSecure,
+    enabled: school.smtpEnabled,
+  };
+}
+
 // ─── List Students ────────────────────────────────────────────────────────────
 
 export const listStudents = query({
@@ -271,6 +292,46 @@ export const createStudent = mutation({
   },
 });
 
+// ─── Delete Student (removes the profile + student & parent logins) ───────────
+
+export const deleteStudent = mutation({
+  args: { studentId: v.id("students") },
+  handler: async (ctx, args) => {
+    const student = await ctx.db.get(args.studentId);
+    if (!student) return { ok: true };
+
+    const wipeLogin = async (userId: any) => {
+      const sessions = await ctx.db
+        .query("sessions")
+        .withIndex("by_userId", (q) => q.eq("userId", userId))
+        .collect();
+      for (const s of sessions) await ctx.db.delete(s._id);
+      const devices = await ctx.db
+        .query("trustedDevices")
+        .withIndex("by_userId", (q) => q.eq("userId", userId))
+        .collect();
+      for (const d of devices) await ctx.db.delete(d._id);
+      await ctx.db.delete(userId);
+    };
+
+    // Student login (role student, linkedStudentId)
+    const studentUsers = await ctx.db
+      .query("users")
+      .withIndex("by_schoolId_and_role", (q) =>
+        q.eq("schoolId", student.schoolId).eq("role", "student")
+      )
+      .collect();
+    const studentUser = studentUsers.find((u) => u.linkedStudentId === args.studentId);
+    if (studentUser) await wipeLogin(studentUser._id);
+
+    // Parent login (linkedParentUserId)
+    if (student.linkedParentUserId) await wipeLogin(student.linkedParentUserId);
+
+    await ctx.db.delete(args.studentId);
+    return { ok: true };
+  },
+});
+
 // ─── Update Student Status ────────────────────────────────────────────────────
 
 export const updateStudentStatus = mutation({
@@ -314,6 +375,22 @@ export const updateStudent = mutation({
       Object.entries(fields).filter(([, v]) => v !== undefined)
     );
     await ctx.db.patch(studentId, patch);
+
+    // Keep the linked student login's display name in sync with the profile.
+    if (fields.firstName !== undefined || fields.lastName !== undefined) {
+      const student = await ctx.db.get(studentId);
+      if (student) {
+        const fullName = `${student.firstName} ${student.lastName}`;
+        const studentUser = await ctx.db
+          .query("users")
+          .withIndex("by_schoolId_and_role", (q) =>
+            q.eq("schoolId", student.schoolId).eq("role", "student")
+          )
+          .collect();
+        const linked = studentUser.find((u) => u.linkedStudentId === studentId);
+        if (linked) await ctx.db.patch(linked._id, { name: fullName });
+      }
+    }
     return await ctx.db.get(studentId);
   },
 });

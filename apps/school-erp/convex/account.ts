@@ -25,9 +25,45 @@ export const updateProfile = mutation({
   handler: async (ctx, args) => {
     const user = await requireUser(ctx, args.token);
     const patch: Record<string, unknown> = {};
+    const nameChanged = Boolean(
+      args.name && args.name.trim() && args.name.trim() !== user.name
+    );
     if (args.name && args.name.trim()) patch.name = args.name.trim();
     if (args.phone !== undefined) patch.phone = args.phone;
     await ctx.db.patch(user._id, patch);
+
+    // Keep the linked teacher/student profile row + admin roster in sync.
+    if (nameChanged) {
+      const newName = args.name!.trim();
+      const [first, ...rest] = newName.split(/\s+/);
+      const last = rest.join(" ");
+
+      if (user.linkedTeacherId) {
+        await ctx.db.patch(user.linkedTeacherId, {
+          firstName: first,
+          lastName: last,
+        });
+      }
+      if (user.linkedStudentId) {
+        await ctx.db.patch(user.linkedStudentId, {
+          firstName: first,
+          lastName: last,
+        });
+      }
+
+      // Notify the school's admins that a user updated their profile (real-time).
+      if (user.schoolId && user.role !== "admin" && user.role !== "superadmin") {
+        await ctx.db.insert("notifications", {
+          schoolId: user.schoolId,
+          title: "Profile updated",
+          body: `${newName} (${user.role}) updated their profile.`,
+          audienceRole: "admin",
+          kind: "info",
+          createdBy: user._id,
+          createdAt: Date.now(),
+        });
+      }
+    }
     return { ok: true };
   },
 });

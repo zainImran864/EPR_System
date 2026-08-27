@@ -1,7 +1,7 @@
 "use client";
 
-import { AttendanceSheet } from "@/modules/attendance/AttendanceSheet";
+import { AdminAttendanceView } from "@/modules/attendance/AdminAttendanceView";
 
 export default function AdminAttendancePage() {
-  return <AttendanceSheet />;
+  return <AdminAttendanceView />;
 }

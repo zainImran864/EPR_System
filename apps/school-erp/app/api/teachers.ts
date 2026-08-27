@@ -4,6 +4,8 @@ import { api } from "@/convex/_generated/api";
 export const teachersApi = {
   list: api.teachers.listTeachers,
   create: api.teachers.createTeacher,
+  update: api.teachers.updateTeacher,
   updateStatus: api.teachers.updateTeacherStatus,
+  remove: api.teachers.deleteTeacher,
   nextEmployeeId: api.teachers.nextEmployeeId,
 };

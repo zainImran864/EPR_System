@@ -22,7 +22,9 @@ export const listForUser = query({
       .withIndex("by_targetUser", (q) => q.eq("targetUserId", args.userId))
       .collect();
 
+    const clearedAt = user.notificationsClearedAt ?? 0;
     const merged = [...schoolNotifs, ...direct].filter((n) => {
+      if (n.createdAt <= clearedAt) return false;
       if (n.targetUserId) return n.targetUserId === args.userId;
       const aud = n.audienceRole ?? "all";
       return aud === "all" || aud === user.role;
@@ -60,7 +62,9 @@ export const unreadCount = query({
       .withIndex("by_targetUser", (q) => q.eq("targetUserId", args.userId))
       .collect();
 
+    const clearedAt = user.notificationsClearedAt ?? 0;
     const merged = [...schoolNotifs, ...direct].filter((n) => {
+      if (n.createdAt <= clearedAt) return false;
       if (n.targetUserId) return n.targetUserId === args.userId;
       const aud = n.audienceRole ?? "all";
       return aud === "all" || aud === user.role;
@@ -131,6 +135,15 @@ export const markRead = mutation({
         readAt: Date.now(),
       });
     }
+  },
+});
+
+// Per-user "delete all" — hides everything up to now (doesn't affect others).
+export const clearAll = mutation({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.userId, { notificationsClearedAt: Date.now() });
+    return { ok: true };
   },
 });
 

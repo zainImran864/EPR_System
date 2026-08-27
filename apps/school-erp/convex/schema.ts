@@ -54,6 +54,7 @@ export default defineSchema({
     twoFactorEnabled: v.optional(v.boolean()),
     twoFactorSecret: v.optional(v.string()),
     notificationsEnabled: v.optional(v.boolean()),
+    notificationsClearedAt: v.optional(v.number()), // hide notifications before this
     themeColor: v.optional(v.string()), // per-user sidebar accent (hex)
     createdAt: v.number(),
   })

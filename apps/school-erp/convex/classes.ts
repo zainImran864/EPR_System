@@ -78,6 +78,56 @@ export const createClass = mutation({
   },
 });
 
+// Edit a class (name / grade / academic year)
+export const updateClass = mutation({
+  args: {
+    classId: v.id("classes"),
+    name: v.optional(v.string()),
+    numericGrade: v.optional(v.number()),
+    academicYear: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const { classId, ...fields } = args;
+    const patch = Object.fromEntries(
+      Object.entries(fields).filter(([, v]) => v !== undefined)
+    );
+    await ctx.db.patch(classId, patch);
+    return await ctx.db.get(classId);
+  },
+});
+
+// Edit a section (name / room / class teacher). Section name unique within class.
+export const updateSection = mutation({
+  args: {
+    sectionId: v.id("sections"),
+    name: v.optional(v.string()),
+    roomNumber: v.optional(v.string()),
+    classTeacherId: v.optional(v.id("teachers")),
+  },
+  handler: async (ctx, args) => {
+    const { sectionId, name, ...rest } = args;
+    const section = await ctx.db.get(sectionId);
+    if (!section) throw new Error("Section not found");
+
+    if (name && name.trim()) {
+      const siblings = await ctx.db
+        .query("sections")
+        .withIndex("by_classId", (q) => q.eq("classId", section.classId))
+        .collect();
+      const clash = siblings.some(
+        (s) => s._id !== sectionId && s.name.trim().toLowerCase() === name.trim().toLowerCase()
+      );
+      if (clash) throw new Error("A section with this name already exists in this class");
+    }
+
+    const patch = Object.fromEntries(
+      Object.entries({ name: name?.trim(), ...rest }).filter(([, v]) => v !== undefined)
+    );
+    await ctx.db.patch(sectionId, patch);
+    return await ctx.db.get(sectionId);
+  },
+});
+
 // Add a section to an existing class
 export const addSection = mutation({
   args: {

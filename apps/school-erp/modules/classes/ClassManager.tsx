@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { BookOpen, Plus, DoorClosed } from "lucide-react";
+import { BookOpen, Plus, DoorClosed, Pencil } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -77,16 +77,28 @@ const ClassCardSkeleton: React.FC = () => (
 // Per-section card (no teacher name — only room + studentCount + badge)
 // ---------------------------------------------------------------------------
 
-const SectionCard: React.FC<{ section: Section }> = ({ section }) => (
+const SectionCard: React.FC<{ section: Section; onEdit: () => void }> = ({
+  section,
+  onEdit,
+}) => (
   <div className="p-4 rounded-xl border border-slate-200/80 bg-white hover:border-[#0D9488]/40 hover:shadow-xs transition-all duration-150 flex flex-col justify-between space-y-3">
     <div className="flex items-center justify-between">
       <span className="font-bold text-sm text-slate-900">{section.name}</span>
-      {section.roomNumber && (
-        <span className="text-xs text-slate-500 flex items-center gap-1 font-mono-data">
-          <DoorClosed className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
-          {section.roomNumber}
-        </span>
-      )}
+      <div className="flex items-center gap-2">
+        {section.roomNumber && (
+          <span className="text-xs text-slate-500 flex items-center gap-1 font-mono-data">
+            <DoorClosed className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
+            {section.roomNumber}
+          </span>
+        )}
+        <button
+          onClick={onEdit}
+          title="Edit section"
+          className="p-1 rounded text-slate-400 hover:text-[#0D9488] hover:bg-slate-50"
+        >
+          <Pencil className="w-3.5 h-3.5" />
+        </button>
+      </div>
     </div>
 
     <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
@@ -193,10 +205,54 @@ const AddSectionModal: React.FC<AddSectionModalProps> = ({
 interface ClassCardProps {
   cls: ClassRecord;
   addSection: AddSectionModalProps["addSection"];
+  editClass: (
+    classId: string,
+    fields: { name?: string; numericGrade?: number }
+  ) => Promise<unknown> | undefined;
+  editSection: (
+    sectionId: string,
+    fields: { name?: string; roomNumber?: string }
+  ) => Promise<unknown> | undefined;
 }
 
-const ClassCard: React.FC<ClassCardProps> = ({ cls, addSection }) => {
+const ClassCard: React.FC<ClassCardProps> = ({
+  cls,
+  addSection,
+  editClass,
+  editSection,
+}) => {
   const [isSectionModalOpen, setIsSectionModalOpen] = useState(false);
+  const [editingClass, setEditingClass] = useState(false);
+  const [editSectionTarget, setEditSectionTarget] = useState<Section | null>(null);
+
+  const [clsForm, setClsForm] = useState({ name: cls.name, grade: String(cls.numericGrade) });
+  const [secForm, setSecForm] = useState({ name: "", roomNumber: "" });
+
+  const openClassEdit = () => {
+    setClsForm({ name: cls.name, grade: String(cls.numericGrade) });
+    setEditingClass(true);
+  };
+  const openSectionEdit = (sec: Section) => {
+    setSecForm({ name: sec.name, roomNumber: sec.roomNumber ?? "" });
+    setEditSectionTarget(sec);
+  };
+
+  const saveClass = async () => {
+    if (!clsForm.name.trim()) return;
+    await editClass(cls._id, {
+      name: clsForm.name.trim(),
+      numericGrade: parseInt(clsForm.grade) || cls.numericGrade,
+    });
+    setEditingClass(false);
+  };
+  const saveSection = async () => {
+    if (!editSectionTarget || !secForm.name.trim()) return;
+    await editSection(editSectionTarget._id, {
+      name: secForm.name.trim(),
+      roomNumber: secForm.roomNumber.trim() || undefined,
+    });
+    setEditSectionTarget(null);
+  };
 
   return (
     <>
@@ -210,7 +266,16 @@ const ClassCard: React.FC<ClassCardProps> = ({ cls, addSection }) => {
               {cls.numericGrade}
             </div>
             <div>
-              <CardTitle className="text-base">{cls.name}</CardTitle>
+              <CardTitle className="text-base flex items-center gap-1.5">
+                {cls.name}
+                <button
+                  onClick={openClassEdit}
+                  title="Edit class"
+                  className="p-0.5 rounded text-slate-400 hover:text-[#0D9488]"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
+              </CardTitle>
               <span className="text-xs text-slate-500">
                 Session: {cls.academicYear}
               </span>
@@ -245,7 +310,11 @@ const ClassCard: React.FC<ClassCardProps> = ({ cls, addSection }) => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {cls.sections.map((sec) => (
-                <SectionCard key={sec._id} section={sec} />
+                <SectionCard
+                  key={sec._id}
+                  section={sec}
+                  onEdit={() => openSectionEdit(sec)}
+                />
               ))}
             </div>
           )}
@@ -259,6 +328,82 @@ const ClassCard: React.FC<ClassCardProps> = ({ cls, addSection }) => {
         onClose={() => setIsSectionModalOpen(false)}
         addSection={addSection}
       />
+
+      {/* Edit Class */}
+      <Modal
+        isOpen={editingClass}
+        onClose={() => setEditingClass(false)}
+        title={`Edit ${cls.name}`}
+        description="Update the class name and grade level."
+        size="sm"
+        footer={
+          <>
+            <Button variant="outline" size="sm" onClick={() => setEditingClass(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={saveClass}
+              disabled={!clsForm.name.trim()}
+            >
+              Save
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <Input
+            label="Class / Grade Name *"
+            value={clsForm.name}
+            onChange={(e) => setClsForm({ ...clsForm, name: e.target.value })}
+          />
+          <Input
+            label="Numeric Grade Level *"
+            type="number"
+            min={0}
+            value={clsForm.grade}
+            onChange={(e) => setClsForm({ ...clsForm, grade: e.target.value })}
+          />
+        </div>
+      </Modal>
+
+      {/* Edit Section */}
+      <Modal
+        isOpen={Boolean(editSectionTarget)}
+        onClose={() => setEditSectionTarget(null)}
+        title="Edit Section"
+        description="Rename the section or change its room."
+        size="sm"
+        footer={
+          <>
+            <Button variant="outline" size="sm" onClick={() => setEditSectionTarget(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={saveSection}
+              disabled={!secForm.name.trim()}
+            >
+              Save
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <Input
+            label="Section Name *"
+            value={secForm.name}
+            onChange={(e) => setSecForm({ ...secForm, name: e.target.value })}
+          />
+          <Input
+            label="Room Number"
+            value={secForm.roomNumber}
+            onChange={(e) => setSecForm({ ...secForm, roomNumber: e.target.value })}
+          />
+        </div>
+      </Modal>
     </>
   );
 };
@@ -268,7 +413,8 @@ const ClassCard: React.FC<ClassCardProps> = ({ cls, addSection }) => {
 // ---------------------------------------------------------------------------
 
 export const ClassManager: React.FC = () => {
-  const { classes, isLoading, addClass, addSection } = useClasses();
+  const { classes, isLoading, addClass, addSection, editClass, editSection } =
+    useClasses();
 
   const [isAddClassOpen, setIsAddClassOpen] = useState(false);
   const [newClassName, setNewClassName] = useState("");
@@ -349,7 +495,13 @@ export const ClassManager: React.FC = () => {
       {!isLoading && classes.length > 0 && (
         <div className="space-y-6">
           {(classes as ClassRecord[]).map((cls) => (
-            <ClassCard key={cls._id} cls={cls} addSection={addSection} />
+            <ClassCard
+              key={cls._id}
+              cls={cls}
+              addSection={addSection}
+              editClass={editClass}
+              editSection={editSection}
+            />
           ))}
         </div>
       )}
