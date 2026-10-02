@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
 import { ROLE_HOME } from "@/components/auth/RoleGate";
@@ -13,15 +13,20 @@ import { Spinner } from "@/components/ui/Spinner";
 export default function Home() {
   const { user, role, isLoading } = useAuth();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (isLoading) return;
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted || isLoading) return;
     if (!user) {
       router.replace("/login");
       return;
     }
     if (role) router.replace(ROLE_HOME[role]);
-  }, [isLoading, user, role, router]);
+  }, [mounted, isLoading, user, role, router]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-[#F8FAFC]">
