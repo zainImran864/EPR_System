@@ -12,14 +12,16 @@ export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   @Get('admin')
   async getAdminStats(
     @CurrentUser() user: CurrentUserPayload,
     @Query('fresh') fresh?: string,
+    @Query('schoolId') schoolId?: string,
   ) {
     const isFresh = fresh === 'true' || fresh === '1';
-    return this.dashboardService.getAdminStats(user.schoolId!, isFresh);
+    const targetSchoolId = schoolId || user.schoolId;
+    return this.dashboardService.getAdminStats(targetSchoolId, isFresh);
   }
 
   @UseGuards(RolesGuard)

@@ -236,38 +236,41 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {stats.recentAdmissions.map((s) => (
-                      <TableRow key={s._id}>
-                        <TableCell>
-                          <div className="flex items-center gap-2.5">
-                            <Avatar name={`${s.firstName} ${s.lastName}`} size="xs" />
-                            <span className="font-semibold text-slate-800">
-                              {s.firstName} {s.lastName}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="neutral" size="sm" isMono>
-                            {s.rollNumber}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-slate-600 text-xs">
-                          {s.className} {s.sectionName ? `· ${s.sectionName}` : ""}
-                        </TableCell>
-                        <TableCell className="text-slate-500 text-xs">
-                          {s.guardianName}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={s.status === "active" ? "success" : "neutral"}
-                            size="sm"
-                            dot
-                          >
-                            {s.status}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {stats.recentAdmissions.map((s: any) => {
+                      const studentName = s.fullName || `${s.firstName || ""} ${s.lastName || ""}`.trim() || "Student";
+                      return (
+                        <TableRow key={s._id || s.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-2.5">
+                              <Avatar name={studentName} size="xs" />
+                              <span className="font-semibold text-slate-800">
+                                {studentName}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="neutral" size="sm" isMono>
+                              {s.rollNumber}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-slate-600 text-xs">
+                            {s.className} {s.sectionName ? `· ${s.sectionName}` : ""}
+                          </TableCell>
+                          <TableCell className="text-slate-500 text-xs">
+                            {s.guardianName}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={s.status === "active" ? "success" : "neutral"}
+                              size="sm"
+                              dot
+                            >
+                              {s.status}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               ) : (

@@ -59,12 +59,6 @@ async function request<T>(
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {
-      if (response.status === 401 && typeof window !== 'undefined') {
-        localStorage.removeItem('erp_session_token');
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('erp_session_user');
-      }
-
       const errorMsg =
         data?.error?.message ||
         data?.message ||

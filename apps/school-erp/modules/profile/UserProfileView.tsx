@@ -109,7 +109,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
       {/* Main Tab Content */}
       {activeTab === "overview" && (
         <div className="pt-2">
-          <AccountSettings />
+          <AccountSettings showProfileSection={true} />
         </div>
       )}
 

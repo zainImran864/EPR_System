@@ -28,8 +28,14 @@ import { useToast } from "@/app/hooks/useToast";
 import { THEME_OPTIONS, DEFAULT_THEME } from "@/app/lib/theme";
 import { TwoFactorModal } from "./TwoFactorModal";
 
+export interface AccountSettingsProps {
+  showProfileSection?: boolean;
+}
+
 /** Universal per-user settings — used by every role's /settings route. */
-export const AccountSettings: React.FC = () => {
+export const AccountSettings: React.FC<AccountSettingsProps> = ({
+  showProfileSection = false,
+}) => {
   const { user } = useAuth();
   const { token } = useAuthStore();
   const {
@@ -152,64 +158,66 @@ export const AccountSettings: React.FC = () => {
         </p>
       </div>
 
-      {/* Profile + avatar */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Avatar name={user?.name ?? "User"} src={user?.avatarUrl ?? undefined} size="xl" />
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#0D9488] text-white flex items-center justify-center shadow-md hover:bg-[#0B7A70] transition-colors"
-                title="Change picture"
-                disabled={uploading}
-              >
-                <Camera className="w-3.5 h-3.5" />
-              </button>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                onChange={handleAvatar}
-                className="hidden"
+      {/* Profile + avatar (only when enabled, e.g. on Profile page) */}
+      {showProfileSection && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Profile Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <Avatar name={user?.name ?? "User"} src={user?.avatarUrl ?? undefined} size="xl" />
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#0D9488] text-white flex items-center justify-center shadow-md hover:bg-[#0B7A70] transition-colors"
+                  title="Change picture"
+                  disabled={uploading}
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                </button>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatar}
+                  className="hidden"
+                />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-900">{user?.email}</p>
+                <p className="text-xs text-slate-500 capitalize">{user?.role}</p>
+                {uploading && <p className="text-[11px] text-teal-600 mt-0.5">Uploading…</p>}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Full Name"
+                value={profile.name}
+                onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+              />
+              <PhoneInput
+                label="Phone (WhatsApp / Mobile)"
+                value={profile.phone}
+                onChange={(full) => setProfile({ ...profile, phone: full })}
               />
             </div>
-            <div>
-              <p className="text-sm font-semibold text-slate-900">{user?.email}</p>
-              <p className="text-xs text-slate-500 capitalize">{user?.role}</p>
-              {uploading && <p className="text-[11px] text-teal-600 mt-0.5">Uploading…</p>}
+            <div className="flex justify-end">
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleProfile}
+                isLoading={savingProfile}
+                leftIcon={<Save className="w-4 h-4" />}
+              >
+                Save Profile
+              </Button>
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input
-              label="Full Name"
-              value={profile.name}
-              onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-            />
-            <PhoneInput
-              label="Phone (WhatsApp / Mobile)"
-              value={profile.phone}
-              onChange={(full) => setProfile({ ...profile, phone: full })}
-            />
-          </div>
-          <div className="flex justify-end">
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleProfile}
-              isLoading={savingProfile}
-              leftIcon={<Save className="w-4 h-4" />}
-            >
-              Save Profile
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Password */}
       <Card>

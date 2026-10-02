@@ -25,13 +25,12 @@ export class AuthController {
     return this.authService.refreshTokens(dto);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post('logout')
   async logout(
-    @CurrentUser() user: CurrentUserPayload,
+    @CurrentUser() user?: CurrentUserPayload,
     @Headers('authorization') authHeader?: string,
   ) {
-    return this.authService.logout(user.userId, authHeader);
+    return this.authService.logout(user?.userId, authHeader);
   }
 
   @UseGuards(JwtAuthGuard)

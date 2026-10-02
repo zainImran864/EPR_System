@@ -191,16 +191,32 @@ export class AuthService {
     };
   }
 
-  async logout(userId: string, rawToken?: string) {
-    this.logger.log(`🚪 [AuthService] Logging out user "${userId}" - invalidating Redis sessions`);
-    await this.redisService.del(`session:${userId}`);
-    await this.redisService.del(`session:${userId}:refresh`);
+  async logout(userId?: string, rawToken?: string) {
+    let resolvedUserId = userId;
+    let cleanToken: string | undefined;
 
     if (rawToken) {
-      const cleanToken = rawToken.replace(/^Bearer\s+/i, '').trim();
+      cleanToken = rawToken.replace(/^Bearer\s+/i, '').trim();
+      if (!resolvedUserId && cleanToken) {
+        try {
+          const decoded: any = this.jwtService.decode(cleanToken);
+          if (decoded && decoded.sub) {
+            resolvedUserId = decoded.sub;
+          }
+        } catch {}
+      }
+    }
+
+    if (resolvedUserId) {
+      this.logger.log(`🚪 [AuthService] Logging out user "${resolvedUserId}" - invalidating Redis sessions`);
+      await this.redisService.del(`session:${resolvedUserId}`);
+      await this.redisService.del(`session:${resolvedUserId}:refresh`);
+    }
+
+    if (cleanToken) {
       // Blacklist token in Redis for 11 hours (39600s)
       await this.redisService.set(`blacklist:token:${cleanToken}`, 'revoked', 11 * 3600);
-      this.logger.log(`🚫 [AuthService] Blacklisted token for user "${userId}"`);
+      this.logger.log(`🚫 [AuthService] Blacklisted token`);
     }
 
     return { success: true, message: 'Logged out successfully. Tokens and session invalidated.' };
