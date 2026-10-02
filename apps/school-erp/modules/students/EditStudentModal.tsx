@@ -5,6 +5,7 @@ import { Save, Camera, Percent, DollarSign } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 import { Select } from "@/components/ui/Select";
 
 export interface EditStudentRow {
@@ -274,10 +275,10 @@ export const EditStudentModal: React.FC<EditStudentModalProps> = ({
             onChange={(e) => setForm({ ...form, guardianName: e.target.value })}
             required
           />
-          <Input
+          <PhoneInput
             label="Guardian Phone *"
             value={form.guardianPhone}
-            onChange={(e) => setForm({ ...form, guardianPhone: e.target.value })}
+            onChange={(full) => setForm({ ...form, guardianPhone: full })}
             required
           />
           <Input

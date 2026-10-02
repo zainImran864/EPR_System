@@ -269,6 +269,20 @@ export const notificationsRestApi = {
   broadcast: (data: any) => apiClient.post<any>('/notifications/broadcast', data),
 };
 
+export const whatsappRestApi = {
+  getRecipients: (search?: string) =>
+    apiClient.get<any>('/whatsapp/recipients', search ? { search } : undefined),
+  getTemplates: () => apiClient.get<any[]>('/whatsapp/templates'),
+  sendDirect: (data: any) => apiClient.post<any>('/whatsapp/send-direct', data),
+  sendBatch: (data: any) => apiClient.post<any>('/whatsapp/send-batch', data),
+  sendReportCard: (data: { studentId: string; examTermId?: string; customRemarks?: string }) =>
+    apiClient.post<any>('/whatsapp/send-report-card', data),
+  sendFeeReminder: (data: { challanId: string }) =>
+    apiClient.post<any>('/whatsapp/send-fee-reminder', data),
+  sendAttendanceAlert: (data: { studentId: string; date: string; status?: string }) =>
+    apiClient.post<any>('/whatsapp/send-attendance-alert', data),
+};
+
 export const dashboardRestApi = {
   getStats: () => apiClient.get<any>('/dashboard/stats'),
 };

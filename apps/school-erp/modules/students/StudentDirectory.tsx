@@ -13,6 +13,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Sparkles,
+  MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -120,6 +121,16 @@ export const StudentDirectory: React.FC = () => {
       }
     );
 
+  const handleOpenWhatsApp = (s: StudentRow) => {
+    if (!s.guardianPhone) return;
+    const cleanPhone = s.guardianPhone.replace(/\D/g, "");
+    const formattedPhone = cleanPhone.startsWith("0") ? `92${cleanPhone.slice(1)}` : cleanPhone;
+    const text = encodeURIComponent(
+      `Dear ${s.guardianName || "Parent"}, this is an update regarding student ${s.firstName} ${s.lastName} (Roll No: ${s.rollNumber || "N/A"}) from the school administration.`
+    );
+    window.open(`https://wa.me/${formattedPhone}?text=${text}`, "_blank");
+  };
+
   const columns: Column<StudentRow>[] = [
     {
       key: "name",
@@ -168,10 +179,22 @@ export const StudentDirectory: React.FC = () => {
       render: (s) => (
         <div className="flex flex-col text-xs">
           <span className="font-medium text-slate-800">{s.guardianName}</span>
-          <span className="text-slate-500 text-[11px] flex items-center gap-1 mt-0.5">
-            <Phone className="w-3 h-3 text-slate-400" />
-            {s.guardianPhone}
-          </span>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <span className="text-slate-500 text-[11px] flex items-center gap-1">
+              <Phone className="w-3 h-3 text-slate-400" />
+              {s.guardianPhone}
+            </span>
+            {s.guardianPhone && (
+              <button
+                type="button"
+                onClick={() => handleOpenWhatsApp(s)}
+                title={`Send WhatsApp message to ${s.guardianName}`}
+                className="p-0.5 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 rounded transition-colors"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </div>
       ),
     },

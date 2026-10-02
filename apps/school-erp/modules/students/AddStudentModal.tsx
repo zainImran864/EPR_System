@@ -6,6 +6,7 @@ import { Mail, Hash, KeyRound, Send, Camera, Percent, DollarSign, Image } from "
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 import { Select } from "@/components/ui/Select";
 import { previewEmail } from "@/app/lib/emailPreview";
 import { studentsApi } from "@/app/api/students";
@@ -302,12 +303,11 @@ export const AddStudentModal: React.FC<AddStudentModalProps> = ({
               }
               required
             />
-            <Input
+            <PhoneInput
               label="Guardian Phone *"
-              placeholder="e.g. +1 555-444-1104"
               value={formData.guardianPhone}
-              onChange={(e) =>
-                setFormData({ ...formData, guardianPhone: e.target.value })
+              onChange={(full) =>
+                setFormData({ ...formData, guardianPhone: full })
               }
               required
             />
