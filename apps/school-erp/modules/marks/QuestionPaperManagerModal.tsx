@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { marksRestApi } from "@/app/api/client";
 import { useToast } from "@/app/hooks/useToast";
+import { useConfirmDialog } from "@/app/hooks/useConfirmDialog";
 
 interface QuestionPaperManagerModalProps {
   isOpen: boolean;
@@ -53,6 +54,7 @@ export const QuestionPaperManagerModal: React.FC<QuestionPaperManagerModalProps>
   isTeacher,
 }) => {
   const { success, error } = useToast();
+  const { confirm, ConfirmDialog } = useConfirmDialog();
   const [papers, setPapers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -109,7 +111,14 @@ export const QuestionPaperManagerModal: React.FC<QuestionPaperManagerModalProps>
   };
 
   const handleDelete = async (paperId: string) => {
-    if (!confirm("Are you sure you want to delete this question paper version?")) return;
+    const ok = await confirm({
+      title: "Delete Question Paper",
+      message: "Are you sure you want to delete this question paper version? This action cannot be undone.",
+      variant: "danger",
+      confirmText: "Delete Paper",
+    });
+    if (!ok) return;
+
     try {
       await marksRestApi.deleteQuestionPaper(paperId);
       success("Question paper deleted.");
@@ -469,6 +478,9 @@ export const QuestionPaperManagerModal: React.FC<QuestionPaperManagerModalProps>
           </form>
         )}
       </div>
+
+      {/* Reusable Confirmation Dialog */}
+      <ConfirmDialog />
     </Modal>
   );
 };

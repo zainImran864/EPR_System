@@ -13,6 +13,7 @@ import { EditTeacherModal, type EditTeacherRow } from "./EditTeacherModal";
 import { useTeachers } from "@/app/hooks/useTeachers";
 import { useActiveSchool } from "@/app/hooks/useActiveSchool";
 import { useToast } from "@/app/hooks/useToast";
+import { useConfirmDialog } from "@/app/hooks/useConfirmDialog";
 import { exportToExcel } from "@/app/lib/exportExcel";
 
 type TeacherRow = {
@@ -42,6 +43,7 @@ export const StaffDirectory: React.FC = () => {
   } = useTeachers();
   const { school } = useActiveSchool();
   const { success, error } = useToast();
+  const { confirm, ConfirmDialog } = useConfirmDialog();
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editing, setEditing] = useState<EditTeacherRow | null>(null);
 
@@ -59,12 +61,14 @@ export const StaffDirectory: React.FC = () => {
   };
 
   const handleDelete = async (t: TeacherRow) => {
-    if (
-      !window.confirm(
-        `Delete ${t.firstName} ${t.lastName}? This permanently removes their profile and login (${t.email}) — they will lose dashboard access.`
-      )
-    )
-      return;
+    const ok = await confirm({
+      title: "Remove Faculty Member",
+      message: `Are you sure you want to delete ${t.firstName} ${t.lastName}?\n\nThis permanently removes their profile and system login (${t.email}).`,
+      variant: "danger",
+      confirmText: "Delete Faculty",
+    });
+    if (!ok) return;
+
     try {
       await removeTeacher(t._id);
       success("Faculty member deleted.");
@@ -307,6 +311,9 @@ export const StaffDirectory: React.FC = () => {
         onClose={() => setEditing(null)}
         onSubmit={handleEdit}
       />
+
+      {/* Reusable Confirmation Dialog */}
+      <ConfirmDialog />
     </div>
   );
 };

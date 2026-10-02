@@ -1,11 +1,17 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { RedisService } from '../../database/redis.service';
 import { CreateChallanDto, PayChallanDto, GenerateBulkChallansDto, SetStudentDiscountDto } from './dto/fees.dto';
 import { FeeStatus } from '@prisma/client';
 
 @Injectable()
 export class FeesService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(FeesService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly redisService: RedisService,
+  ) {}
 
   async listChallans(
     schoolId: string,
@@ -69,7 +75,7 @@ export class FeesService {
 
     const finalPayable = Math.max(0, baseAmount - discountAmount);
 
-    return this.prisma.feeChallan.create({
+    const createdChallan = await this.prisma.feeChallan.create({
       data: {
         schoolId,
         studentId: dto.studentId,
@@ -86,6 +92,9 @@ export class FeesService {
       },
       include: { student: { include: { class: true, section: true } } },
     });
+
+    await this.redisService.del(`dashboard:stats:${schoolId}`);
+    return createdChallan;
   }
 
   async setStudentDiscount(schoolId: string, studentId: string, dto: SetStudentDiscountDto) {
@@ -149,6 +158,8 @@ export class FeesService {
       }),
     );
 
+    await this.redisService.del(`dashboard:stats:${schoolId}`);
+
     return {
       success: true,
       count: created.length,
@@ -170,7 +181,7 @@ export class FeesService {
       status = FeeStatus.PAID;
     }
 
-    return this.prisma.feeChallan.update({
+    const updated = await this.prisma.feeChallan.update({
       where: { id },
       data: {
         paidAmount: newPaidAmount,
@@ -179,6 +190,9 @@ export class FeesService {
         paymentMethod: dto.paymentMethod || 'Cash',
       },
     });
+
+    await this.redisService.del(`dashboard:stats:${schoolId}`);
+    return updated;
   }
 
   async getStudentLedger(schoolId: string, studentId: string) {

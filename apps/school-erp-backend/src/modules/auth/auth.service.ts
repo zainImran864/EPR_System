@@ -4,6 +4,7 @@ import {
   BadRequestException,
   ConflictException,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -15,6 +16,8 @@ import { Role, UserStatus, RequestStatus } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
@@ -32,7 +35,8 @@ export class AuthService {
     };
 
     const jwtSecret = this.configService.get<string>('JWT_SECRET') || 'default_jwt_secret';
-    const jwtExpiresIn = this.configService.get<string>('JWT_EXPIRES_IN') || '15m';
+    // Session time configured to 11 hours
+    const jwtExpiresIn = this.configService.get<string>('JWT_EXPIRES_IN') || '11h';
     const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET') || 'default_refresh_secret';
     const refreshExpiresIn = this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
 
@@ -51,8 +55,14 @@ export class AuthService {
 
     // Save one-time active refresh token in Redis (7 days = 604800s)
     await this.redisService.set(`session:${user.id}:refresh`, refreshToken, 86400 * 7);
-    // Cache user session in Redis for instant authorization lookup
-    await this.redisService.set(`session:${user.id}`, { token: accessToken, role: user.role, schoolId: user.schoolId }, 86400 * 7);
+    // Cache user session in Redis for 11 hours (39600s)
+    await this.redisService.set(
+      `session:${user.id}`,
+      { token: accessToken, role: user.role, schoolId: user.schoolId, userId: user.id, email: user.email },
+      11 * 3600,
+    );
+
+    this.logger.log(`🔑 [AuthService] Generated 11-hour session tokens for user "${user.email}" (ID: ${user.id})`);
 
     return {
       token: accessToken,
@@ -181,9 +191,18 @@ export class AuthService {
     };
   }
 
-  async logout(userId: string) {
+  async logout(userId: string, rawToken?: string) {
+    this.logger.log(`🚪 [AuthService] Logging out user "${userId}" - invalidating Redis sessions`);
     await this.redisService.del(`session:${userId}`);
     await this.redisService.del(`session:${userId}:refresh`);
+
+    if (rawToken) {
+      const cleanToken = rawToken.replace(/^Bearer\s+/i, '').trim();
+      // Blacklist token in Redis for 11 hours (39600s)
+      await this.redisService.set(`blacklist:token:${cleanToken}`, 'revoked', 11 * 3600);
+      this.logger.log(`🚫 [AuthService] Blacklisted token for user "${userId}"`);
+    }
+
     return { success: true, message: 'Logged out successfully. Tokens and session invalidated.' };
   }
 

@@ -17,10 +17,12 @@ import { Badge } from "@/components/ui/Badge";
 import { PhoneInput } from "@/components/ui/PhoneInput";
 import { useToast } from "@/app/hooks/useToast";
 import { useAuth } from "@/app/hooks/useAuth";
+import { useConfirmDialog } from "@/app/hooks/useConfirmDialog";
 
 export const WhatsAppIntegrationSettings: React.FC = () => {
   const { user, role } = useAuth();
   const { success, error, info } = useToast();
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
   const storageKey = `whatsapp_config_${user?._id || role || "user"}`;
 
@@ -69,10 +71,15 @@ export const WhatsAppIntegrationSettings: React.FC = () => {
     }
   };
 
-  const handleDisconnect = () => {
-    if (!window.confirm("Disconnect your WhatsApp number? WhatsApp messaging will be disabled until reconnected.")) {
-      return;
-    }
+  const handleDisconnect = async () => {
+    const ok = await confirm({
+      title: "Disconnect WhatsApp Number",
+      message: "Are you sure you want to disconnect your WhatsApp number?\n\nWhatsApp broadcast and instant notification features will be paused until reconnected.",
+      variant: "warning",
+      confirmText: "Disconnect",
+    });
+    if (!ok) return;
+
     try {
       localStorage.removeItem(storageKey);
       setIsConnected(false);
@@ -194,6 +201,9 @@ export const WhatsAppIntegrationSettings: React.FC = () => {
           </div>
         )}
       </CardContent>
+
+      {/* Reusable Confirmation Dialog */}
+      <ConfirmDialog />
     </Card>
   );
 };

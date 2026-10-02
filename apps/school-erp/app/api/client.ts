@@ -28,7 +28,9 @@ export class ApiError extends Error {
 function getAuthHeader(): Record<string, string> {
   if (typeof window === 'undefined') return {};
   try {
-    const token = localStorage.getItem('auth_token');
+    const token =
+      localStorage.getItem('erp_session_token') ||
+      localStorage.getItem('auth_token');
     if (token) {
       return { Authorization: `Bearer ${token}` };
     }
@@ -57,6 +59,12 @@ async function request<T>(
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {
+      if (response.status === 401 && typeof window !== 'undefined') {
+        localStorage.removeItem('erp_session_token');
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('erp_session_user');
+      }
+
       const errorMsg =
         data?.error?.message ||
         data?.message ||
@@ -284,11 +292,15 @@ export const whatsappRestApi = {
 };
 
 export const dashboardRestApi = {
-  getStats: () => apiClient.get<any>('/dashboard/stats'),
+  getAdminStats: () => apiClient.get<any>('/dashboard/admin'),
+  getTeacherStats: () => apiClient.get<any>('/dashboard/teacher'),
+  getStudentStats: () => apiClient.get<any>('/dashboard/student'),
+  getSuperAdminStats: () => apiClient.get<any>('/dashboard/superadmin'),
+  getStats: () => apiClient.get<any>('/dashboard/admin'),
 };
 
 export const superAdminRestApi = {
-  getStats: () => apiClient.get<any>('/superadmin/stats'),
+  getStats: () => apiClient.get<any>('/dashboard/superadmin'),
   getSchools: () => apiClient.get<any[]>('/schools/superadmin/all'),
   getPendingRequests: () => apiClient.get<any[]>('/schools/superadmin/pending-requests'),
   approveRequest: (id: string) =>

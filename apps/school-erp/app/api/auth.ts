@@ -14,6 +14,8 @@ export const authApi = {
 export const authRestApi = {
   login: (data: { email: string; password: string; twoFactorCode?: string }) =>
     apiClient.post<any>('auth/login', data),
+  logout: () =>
+    apiClient.post<{ success: boolean; message: string }>('auth/logout'),
   registerSchool: (data: any) =>
     apiClient.post<any>('auth/register-school', data),
   getProfile: () =>

@@ -43,8 +43,13 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
   hydrated: false,
   setAuth: (token, user) => {
     if (typeof window !== "undefined") {
-      if (token) localStorage.setItem(TOKEN_KEY, token);
-      else localStorage.removeItem(TOKEN_KEY);
+      if (token) {
+        localStorage.setItem(TOKEN_KEY, token);
+        localStorage.setItem("auth_token", token);
+      } else {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem("auth_token");
+      }
 
       if (user) localStorage.setItem(USER_KEY, JSON.stringify(user));
       else localStorage.removeItem(USER_KEY);
@@ -53,8 +58,13 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
   },
   setToken: (token) => {
     if (typeof window !== "undefined") {
-      if (token) localStorage.setItem(TOKEN_KEY, token);
-      else localStorage.removeItem(TOKEN_KEY);
+      if (token) {
+        localStorage.setItem(TOKEN_KEY, token);
+        localStorage.setItem("auth_token", token);
+      } else {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem("auth_token");
+      }
     }
     set({ token });
   },

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { authApi, authRestApi } from "@/app/api/auth";
-import { useAuthStore } from "@/app/store/useAuthStore";
+import { useAuthStore, StoredUser } from "@/app/store/useAuthStore";
 import {
   getDeviceToken,
   setDeviceToken,
@@ -167,6 +167,16 @@ export function useAuth() {
   };
 
   const logout = async () => {
+    try {
+      await authRestApi.logout();
+    } catch (e) {
+      console.warn("Backend logout notification:", e);
+    }
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("erp_session_token");
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("erp_session_user");
+    }
     setAuth(null, null);
     setUser(null);
   };

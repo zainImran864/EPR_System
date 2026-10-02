@@ -1,19 +1,27 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { RedisService } from '../../database/redis.service';
 
 @Injectable()
 export class DashboardService {
+  private readonly logger = new Logger(DashboardService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly redisService: RedisService,
   ) {}
 
-  async getAdminStats(schoolId: string) {
+  async getAdminStats(schoolId: string, forceFresh: boolean = false) {
     const cacheKey = `dashboard:stats:${schoolId}`;
-    const cached = await this.redisService.get(cacheKey);
-    if (cached) return cached;
+    if (!forceFresh) {
+      const cached = await this.redisService.get(cacheKey);
+      if (cached) {
+        this.logger.debug(`📊 [DashboardService] Returning cached admin stats for school "${schoolId}"`);
+        return cached;
+      }
+    }
 
+    this.logger.log(`📊 [DashboardService] ${forceFresh ? 'Force re-fetching (cache bypassed)' : 'Computing fresh'} admin stats for school "${schoolId}"`);
     const [totalStudents, totalTeachers, totalClasses, activeStudents] = await Promise.all([
       this.prisma.student.count({ where: { schoolId } }),
       this.prisma.teacher.count({ where: { schoolId } }),
@@ -56,8 +64,8 @@ export class DashboardService {
       },
     };
 
-    // Cache for 10 minutes
-    await this.redisService.set(cacheKey, stats, 600);
+    // Cache for 30 seconds for optimal live updates
+    await this.redisService.set(cacheKey, stats, 30);
     return stats;
   }
 

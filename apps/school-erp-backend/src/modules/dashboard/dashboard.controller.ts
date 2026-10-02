@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards, Query } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -14,8 +14,12 @@ export class DashboardController {
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
   @Get('admin')
-  async getAdminStats(@CurrentUser() user: CurrentUserPayload) {
-    return this.dashboardService.getAdminStats(user.schoolId!);
+  async getAdminStats(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query('fresh') fresh?: string,
+  ) {
+    const isFresh = fresh === 'true' || fresh === '1';
+    return this.dashboardService.getAdminStats(user.schoolId!, isFresh);
   }
 
   @UseGuards(RolesGuard)

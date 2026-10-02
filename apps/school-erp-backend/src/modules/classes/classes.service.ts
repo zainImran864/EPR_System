@@ -1,10 +1,16 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { RedisService } from '../../database/redis.service';
 import { CreateClassDto, CreateSectionDto, CreateSubjectDto } from './dto/class.dto';
 
 @Injectable()
 export class ClassesService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(ClassesService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly redisService: RedisService,
+  ) {}
 
   async listClasses(schoolId: string) {
     return this.prisma.class.findMany({
@@ -49,6 +55,9 @@ export class ClassesService {
         capacity: 40,
       },
     });
+
+    await this.redisService.del(`dashboard:stats:${schoolId}`);
+    await this.redisService.delPattern(`school:code:*`);
 
     return createdClass;
   }

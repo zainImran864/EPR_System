@@ -20,6 +20,7 @@ import { DataGrid, type Column } from "@/components/ui/DataGrid";
 import { useClasses } from "@/app/hooks/useClasses";
 import { useFees } from "@/app/hooks/useFees";
 import { useToast } from "@/app/hooks/useToast";
+import { useConfirmDialog } from "@/app/hooks/useConfirmDialog";
 
 type BillRow = {
   _id: string;
@@ -47,6 +48,7 @@ export const FeeManager: React.FC = () => {
     recordPayment,
   } = useFees();
   const { success, error } = useToast();
+  const { prompt, ConfirmDialog } = useConfirmDialog();
 
   const sections = classId ? sectionOptions(classId) : [];
 
@@ -93,10 +95,15 @@ export const FeeManager: React.FC = () => {
 
   const handlePay = async (b: BillRow) => {
     const remaining = b.totalAmount - b.paidAmount;
-    const input = window.prompt(
-      `Record payment for ${b.studentName} (remaining ${remaining}):`,
-      String(remaining)
-    );
+    const input = await prompt({
+      title: "Record Fee Payment",
+      message: `Enter collected payment amount for student ${b.studentName} (${b.className} ${b.sectionName}).\nRemaining balance due: PKR ${remaining.toLocaleString()}`,
+      defaultValue: String(remaining),
+      placeholder: "e.g. 5000",
+      label: "Collected Amount (PKR)",
+      variant: "prompt",
+      confirmText: "Record Payment",
+    });
     if (input == null) return;
     const amount = Math.max(0, Number(input) || 0);
     if (!amount) return;
@@ -365,6 +372,9 @@ export const FeeManager: React.FC = () => {
         emptyTitle="No fee bills"
         emptyDescription="Generate bills for a class/section above to get started."
       />
+
+      {/* Reusable Confirmation Dialog */}
+      <ConfirmDialog />
     </div>
   );
 };
