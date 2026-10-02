@@ -6,14 +6,10 @@
     "dev": "next dev -H 127.0.0.1",
     "build": "next build",
     "start": "next start -H 127.0.0.1",
-    "lint": "eslint",
-    "convex": "convex dev",
-    "seed:superadmin": "convex run superadmin:seedDefaultSuperAdmin",
-    "seed:demo": "convex run seed:seedSchool"
+    "lint": "eslint"
   },
   "dependencies": {
     "clsx": "^2.1.1",
-    "convex": "^1.45.0",
     "crypto": "^1.0.1",
     "exceljs": "^4.4.0",
     "lucide-react": "^1.34.0",
@@ -34,7 +30,6 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "convex-test": "^0.0.56",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",

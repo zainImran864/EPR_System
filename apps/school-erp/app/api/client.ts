@@ -125,6 +125,15 @@ export const authRestApi = {
     apiClient.post<{ accessToken: string; user: any }>('/auth/login', credentials),
   me: () => apiClient.get<any>('/auth/me'),
   logout: () => apiClient.post<{ success: boolean }>('/auth/logout'),
+  registerSchool: (data: any) =>
+    apiClient.post<{ message: string; schoolId: string; adminEmail: string }>('/auth/register-school', data),
+  changePassword: (data: { oldPassword?: string; newPassword?: string }) =>
+    apiClient.post<{ success: boolean }>('/auth/change-password', data),
+  updateTheme: (themeColor: string) =>
+    apiClient.patch<{ success: boolean }>('/auth/theme', { themeColor }),
+  generate2FA: () => apiClient.post<{ secret: string; otpauthUrl: string; qrCodeUri?: string }>('/auth/2fa/generate'),
+  enable2FA: (code: string) => apiClient.post<{ success: boolean }>('/auth/2fa/enable', { code }),
+  disable2FA: (code: string) => apiClient.post<{ success: boolean }>('/auth/2fa/disable', { code }),
 };
 
 export const timetableRestApi = {

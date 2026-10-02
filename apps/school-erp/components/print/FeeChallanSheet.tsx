@@ -4,13 +4,14 @@ import React from "react";
 import { AcademiXMark } from "@/components/brand/AcademiXLogo";
 
 export interface ChallanData {
-  school: { name: string; logoUrl?: string | null; address?: string } | null;
+  school: { name: string; logoUrl?: string | null; address?: string; phone?: string; email?: string } | null;
   student: {
     name: string;
     admissionNumber: string;
     rollNumber: string;
     className?: string;
     sectionName?: string;
+    [key: string]: any;
   } | null;
   bill: {
     title: string;
@@ -20,6 +21,9 @@ export interface ChallanData {
     issueDate: string;
     dueDate: string;
     status: string;
+    _id?: string;
+    id?: string;
+    [key: string]: any;
   };
 }
 

@@ -6,7 +6,7 @@ import { School } from "@/app/types/school";
 type AppState = {
   isSidebarOpen: boolean;
   activeSession: string;
-  /** Real Convex schools _id for the active tenant (set by useActiveSchool). */
+  /** Active school ID for the tenant (set by useActiveSchool). */
   schoolId: string | null;
   activeSchool: School | null;
   toggleSidebar: () => void;

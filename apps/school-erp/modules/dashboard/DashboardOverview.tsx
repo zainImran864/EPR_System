@@ -338,7 +338,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                   {stats.classCount} classes · {stats.sectionCount} sections
                 </div>
                 <div className="text-[11px] text-slate-500">
-                  Live multi-tenant Convex backend
+                  Live multi-tenant ERP backend
                 </div>
               </div>
             </CardContent>

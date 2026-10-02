@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { authApi, authRestApi } from "@/app/api/auth";
+import { authRestApi } from "@/app/api/auth";
 import { useAuthStore, StoredUser } from "@/app/store/useAuthStore";
 import {
   getDeviceToken,
@@ -96,18 +95,8 @@ export function useAuth() {
     }
   }, [storeUser, token, setAuth]);
 
-  let convexUser: any = undefined;
-  try {
-    convexUser = useQuery(
-      authApi.currentUser,
-      hydrated && token ? { token } : "skip"
-    );
-  } catch {
-    convexUser = null;
-  }
-
-  const activeUser = convexUser ?? user;
-  const isLoading = !hydrated || (Boolean(token) && !activeUser);
+  const activeUser = user;
+  const isLoading = !hydrated;
 
   const login = async (email: string, password: string) => {
     const normalizedEmail = email.trim().toLowerCase();
@@ -128,23 +117,26 @@ export function useAuth() {
 
     // 2. Try NestJS REST backend API
     try {
-      const restRes = await authRestApi.login({
+      const restRes: any = await authRestApi.login({
         email: normalizedEmail,
         password,
       });
-      if (restRes?.token && restRes?.user) {
+      const token = restRes?.accessToken || restRes?.token;
+      if (token && restRes?.user) {
         const role = restRes.user.role?.toLowerCase() as Role;
         const u: StoredUser = {
-          _id: restRes.user.id,
+          _id: restRes.user.id || restRes.user._id,
+          id: restRes.user.id || restRes.user._id,
           name: restRes.user.name,
           email: restRes.user.email,
           role,
           status: "active",
+          schoolId: restRes.user.schoolId || restRes.user.school?.id,
           school: restRes.user.school || { name: "Oakridge International School", code: "OAK-RIDGE" },
         };
-        setAuth(restRes.token, u);
+        setAuth(token, u);
         setUser(u);
-        return { ok: true, token: restRes.token, role, user: u };
+        return { ok: true, token, role, user: u };
       }
     } catch (e) {
       console.warn("Backend REST login fallback:", e);

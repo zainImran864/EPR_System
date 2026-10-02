@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { ConvexClientProvider } from "./ConvexClientProvider";
 import { Toaster } from "@/components/ui/Toast";
 import { PWARegister } from "@/components/pwa/PWARegister";
 import { ThemeSync } from "@/components/theme/ThemeSync";
@@ -41,12 +40,10 @@ export default function RootLayout({
       >
         {/* Applies the cached sidebar colour before first paint (no flash). */}
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
-        <ConvexClientProvider>
-          {children}
-          <Toaster />
-          <PWARegister />
-          <ThemeSync />
-        </ConvexClientProvider>
+        {children}
+        <Toaster />
+        <PWARegister />
+        <ThemeSync />
       </body>
     </html>
   );

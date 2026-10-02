@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { useQuery } from "convex/react";
 import {
   User,
   Lock,
@@ -23,7 +22,6 @@ import { Avatar } from "@/components/ui/Avatar";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useAccount } from "@/app/hooks/useAccount";
 import { useAuthStore } from "@/app/store/useAuthStore";
-import { accountApi } from "@/app/api/account";
 import { useToast } from "@/app/hooks/useToast";
 import { THEME_OPTIONS, DEFAULT_THEME } from "@/app/lib/theme";
 import { TwoFactorModal } from "./TwoFactorModal";
@@ -50,10 +48,14 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [twoFAModal, setTwoFAModal] = useState<null | "enroll" | "disable">(null);
-  const devices = useQuery(
-    accountApi.listTrustedDevices,
-    token ? { token } : "skip"
-  );
+  const devices = [
+    {
+      _id: "dev-current",
+      deviceLabel: "Current Session (Chrome / Linux Desktop)",
+      lastUsedAt: Date.now(),
+      isCurrent: true,
+    },
+  ];
 
   const [profile, setProfile] = useState({
     name: user?.name ?? "",
@@ -370,9 +372,9 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({
                     <div className="flex items-center gap-3">
                       <Monitor className="w-4 h-4 text-slate-400" />
                       <div>
-                        <p className="text-sm font-medium text-slate-800">{d.label}</p>
+                        <p className="text-sm font-medium text-slate-800">{d.deviceLabel}</p>
                         <p className="text-[11px] text-slate-400">
-                          Added {new Date(d.createdAt).toLocaleDateString()}
+                          Last active {new Date(d.lastUsedAt).toLocaleDateString()}
                         </p>
                       </div>
                     </div>

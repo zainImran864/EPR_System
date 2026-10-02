@@ -31,7 +31,7 @@ export const MyResultsView: React.FC<MyResultsViewProps> = ({ title, subtitle })
         <p className="text-xs sm:text-sm text-slate-500 mt-0.5">{subtitle}</p>
         {ctx && (
           <p className="text-xs text-teal-600 mt-1 font-medium">
-            {ctx.firstName} {ctx.lastName} · {ctx.className} · {ctx.sectionName}
+            {(ctx as any).firstName || ""} {(ctx as any).lastName || ""} · {ctx.className} · {ctx.sectionName}
           </p>
         )}
       </div>
@@ -95,7 +95,7 @@ export const MyResultsView: React.FC<MyResultsViewProps> = ({ title, subtitle })
                     </tr>
                   </thead>
                   <tbody>
-                    {exam.subjects.map((s, i) => (
+                    {exam.subjects.map((s: any, i: number) => (
                       <tr key={i} className="border-b border-slate-50">
                         <td className="py-2 font-medium text-slate-700">
                           {s.subjectName}

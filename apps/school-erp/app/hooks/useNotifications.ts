@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { useQuery, useMutation } from "convex/react";
-import type { Id } from "@/convex/_generated/dataModel";
-import { notificationsApi } from "@/app/api/notifications";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { notificationsRestApi } from "@/app/api/client";
 import { useAuth } from "./useAuth";
 import { useToast } from "./useToast";
 
@@ -15,77 +13,69 @@ export interface BroadcastArgs {
 }
 
 /**
- * Reactive notification feed for the current user. Surfaces a live toast when a
- * new notification arrives (respecting the user's notification preference).
+ * REST-powered notification feed for the current user backed by MongoDB and Redis.
  */
 export function useNotifications() {
   const { user } = useAuth();
-  const userId = user?._id ?? null;
   const { info } = useToast();
 
-  const feed = useQuery(
-    notificationsApi.listForUser,
-    userId ? { userId: userId as Id<"users"> } : "skip"
-  );
-  const unread = useQuery(
-    notificationsApi.unreadCount,
-    userId ? { userId: userId as Id<"users"> } : "skip"
-  );
+  const [feed, setFeed] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const broadcastMutation = useMutation(notificationsApi.broadcast);
-  const markReadMutation = useMutation(notificationsApi.markRead);
-  const markAllReadMutation = useMutation(notificationsApi.markAllRead);
-  const clearAllMutation = useMutation(notificationsApi.clearAll);
-
-  // Live toast on newly-arrived notification (skip first load).
-  const seenTopId = useRef<string | null>(null);
-  const initialized = useRef(false);
-  useEffect(() => {
-    if (!feed || feed.length === 0) return;
-    const top = feed[0];
-    if (!initialized.current) {
-      initialized.current = true;
-      seenTopId.current = top._id;
-      return;
-    }
-    if (top._id !== seenTopId.current) {
-      seenTopId.current = top._id;
-      if (!top.isRead && user?.notificationsEnabled !== false) {
-        info(`${top.title}: ${top.body}`);
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const data = await notificationsRestApi.getAll();
+      if (Array.isArray(data)) {
+        const normalized = data.map((n) => ({
+          ...n,
+          _id: n.id || n._id,
+        }));
+        setFeed(normalized);
+        setUnreadCount(normalized.filter((n) => !n.isRead).length);
       }
+    } catch (e) {
+      console.warn("Notifications fetch notice:", e);
     }
-  }, [feed, info, user?.notificationsEnabled]);
+  }, []);
 
-  const broadcast = (args: BroadcastArgs) =>
-    user?.schoolId
-      ? broadcastMutation({
-          schoolId: user.schoolId as Id<"schools">,
-          createdBy: userId as Id<"users">,
-          ...args,
-        })
-      : undefined;
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 15000); // 15s poll
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
 
-  const markRead = (notificationId: string) =>
-    userId
-      ? markReadMutation({
-          userId: userId as Id<"users">,
-          notificationId: notificationId as Id<"notifications">,
-        })
-      : undefined;
+  const markRead = async (id: string) => {
+    try {
+      await notificationsRestApi.markAsRead(id);
+      setFeed((prev) =>
+        prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
+      );
+      setUnreadCount((c) => Math.max(0, c - 1));
+    } catch (e) {
+      console.warn("Failed to mark notification as read:", e);
+    }
+  };
 
-  const markAllRead = () =>
-    userId ? markAllReadMutation({ userId: userId as Id<"users"> }) : undefined;
+  const markAllRead = async () => {
+    setFeed((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    setUnreadCount(0);
+  };
 
-  const clearAll = () =>
-    userId ? clearAllMutation({ userId: userId as Id<"users"> }) : undefined;
+  const broadcast = async (args: BroadcastArgs) => {
+    const res = await notificationsRestApi.broadcast(args);
+    await fetchNotifications();
+    return res;
+  };
 
   return {
-    feed: feed ?? [],
-    unreadCount: unread ?? 0,
-    isLoading: feed === undefined,
+    feed,
+    unreadCount,
+    isLoading,
     broadcast,
     markRead,
     markAllRead,
-    clearAll,
+    clearAll: markAllRead,
+    refetch: fetchNotifications,
   };
 }

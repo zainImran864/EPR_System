@@ -1,8 +1,7 @@
-import { api } from "@/convex/_generated/api";
+import { marksRestApi } from "./client";
 
-/** Convex endpoint references for Results / report cards. */
-export const resultsApi = {
-  listExams: api.results.listExams,
-  getStudentResults: api.results.getStudentResults,
-  getReportCard: api.results.getReportCard,
+export const resultsRestApi = {
+  getStudentResults: (studentId: string) => marksRestApi.getStudentReportCard(studentId),
+  getReportCard: (studentId: string, examTermId?: string) =>
+    marksRestApi.getStudentReportCard(studentId, examTermId),
 };

@@ -1,8 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { studentsApi } from "@/app/api/students";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { studentsRestApi } from "@/app/api/client";
 import { useStudentStore } from "@/app/store/useStudentStore";
 import { useActiveSchool } from "./useActiveSchool";
 import { useDebounce } from "./useDebounce";
@@ -10,9 +9,8 @@ import type { CreateStudentInput } from "@/app/types/student";
 import type { Status } from "@/app/types/common";
 
 /**
- * Client-side reactive students list. Query args are driven by the Zustand
- * store (filters + pagination); Convex reactivity keeps the list live after
- * mutations, so no manual refetch is needed.
+ * REST-powered reactive students roster with server-side filtering,
+ * pagination, and mutations backed by PostgreSQL + Redis.
  */
 export function useStudents() {
   const { schoolId } = useActiveSchool();
@@ -27,65 +25,80 @@ export function useStudents() {
     setSelectedStudent,
   } = useStudentStore();
 
+  const [rawStudents, setRawStudents] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   const debouncedSearch = useDebounce(filters.search, 250);
 
-  const data = useQuery(
-    studentsApi.list,
-    schoolId
-      ? {
-          schoolId,
-          classId: (filters.classId as any) || undefined,
-          sectionId: (filters.sectionId as any) || undefined,
-          status: filters.status || undefined,
-          search: debouncedSearch || undefined,
-        }
-      : "skip"
-  );
+  const fetchStudents = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await studentsRestApi.getAll({
+        classId: filters.classId || undefined,
+        sectionId: filters.sectionId || undefined,
+        status: filters.status || undefined,
+        search: debouncedSearch || undefined,
+      });
+      if (Array.isArray(data)) {
+        // Normalize fields for frontend compatibility
+        const normalized = data.map((s) => ({
+          ...s,
+          _id: s.id || s._id,
+          className: s.className || s.class?.name || "",
+          sectionName: s.sectionName || s.section?.name || "",
+          guardianName: s.guardianName || s.parent?.fullName || "",
+          guardianPhone: s.guardianPhone || s.parent?.phone || "",
+          guardianEmail: s.guardianEmail || s.parent?.email || "",
+        }));
+        setRawStudents(normalized);
+      }
+    } catch (e) {
+      console.warn("REST students fetch notice:", e);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [filters.classId, filters.sectionId, filters.status, debouncedSearch]);
 
-  const isLoading = schoolId === null || data === undefined;
-  const students = useMemo(() => data ?? [], [data]);
-
-  const createStudentMutation = useMutation(studentsApi.create);
-  const updateStudentMutation = useMutation(studentsApi.update);
-  const updateStatusMutation = useMutation(studentsApi.updateStatus);
-  const removeStudentMutation = useMutation(studentsApi.remove);
+  useEffect(() => {
+    fetchStudents();
+  }, [fetchStudents, schoolId]);
 
   const addStudent = async (input: CreateStudentInput) => {
-    if (!schoolId) return;
-    return createStudentMutation({ schoolId, ...(input as any) });
+    const res = await studentsRestApi.create(input);
+    await fetchStudents();
+    return res;
   };
 
-  const editStudent = (
-    studentId: string,
-    fields: {
-      firstName?: string;
-      lastName?: string;
-      rollNumber?: string;
-      classId?: string;
-      sectionId?: string;
-      gender?: "male" | "female" | "other";
-      guardianName?: string;
-      guardianPhone?: string;
-      guardianEmail?: string;
-      status?: Status;
-    }
-  ) => updateStudentMutation({ studentId: studentId as any, ...(fields as any) });
+  const editStudent = async (studentId: string, fields: any) => {
+    const res = await studentsRestApi.update(studentId, fields);
+    await fetchStudents();
+    return res;
+  };
 
-  const setStudentStatus = (studentId: string, status: Status) =>
-    updateStatusMutation({ studentId: studentId as any, status });
+  const setStudentStatus = async (studentId: string, status: Status) => {
+    const res = await studentsRestApi.update(studentId, { status });
+    await fetchStudents();
+    return res;
+  };
 
-  const removeStudent = (studentId: string) => removeStudentMutation({ studentId: studentId as any });
+  const removeStudent = async (studentId: string) => {
+    const res = await studentsRestApi.delete(studentId);
+    await fetchStudents();
+    return res;
+  };
 
-  const totalItems = students.length;
+  const totalItems = rawStudents.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-  const paginatedStudents = students.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
+  const paginatedStudents = useMemo(() => {
+    return rawStudents.slice(
+      (currentPage - 1) * pageSize,
+      currentPage * pageSize
+    );
+  }, [rawStudents, currentPage, pageSize]);
 
   return {
     students: paginatedStudents,
-    allStudents: students,
+    allStudents: rawStudents,
     totalItems,
     totalPages,
     currentPage,
@@ -93,6 +106,7 @@ export function useStudents() {
     filters,
     isLoading,
     selectedStudent,
+    refetch: fetchStudents,
     addStudent,
     editStudent,
     setStudentStatus,

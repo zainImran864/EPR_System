@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { attendanceApi } from "@/app/api/attendance";
+import { useEffect, useState, useCallback } from "react";
+import { attendanceRestApi, studentsRestApi } from "@/app/api/client";
 import { useAttendanceStore } from "@/app/store/useAttendanceStore";
 import { useActiveSchool } from "./useActiveSchool";
 
 /**
- * Loads a section's roster + existing attendance for a date into an editable
- * Zustand copy. Edits stay local until `saveRoster` upserts them; Convex
- * reactivity then reloads the fresh server state.
+ * REST-powered attendance roster manager. Loads existing attendance or
+ * generates active students roster for the chosen class/section & date.
  */
 export function useAttendance() {
   const { schoolId } = useActiveSchool();
@@ -31,48 +29,74 @@ export function useAttendance() {
     setHasUnsavedChanges,
   } = useAttendanceStore();
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const ready = Boolean(
     schoolId && selectedClassId && selectedSectionId && selectedDate
   );
 
-  const data = useQuery(
-    attendanceApi.sectionRoster,
-    ready
-      ? {
-          schoolId: schoolId!,
-          classId: selectedClassId as any,
-          sectionId: selectedSectionId as any,
-          date: selectedDate,
-        }
-      : "skip"
-  );
+  const fetchRoster = useCallback(async () => {
+    if (!ready || !selectedSectionId) return;
+    setIsLoading(true);
+    try {
+      // 1. Fetch attendance recorded for this section & date
+      const attendance = await attendanceRestApi.getByDate(selectedDate, selectedSectionId);
+      // 2. Fetch active students in this section
+      const students = await studentsRestApi.getAll({
+        sectionId: selectedSectionId,
+        status: "active",
+      });
 
-  const isLoading = ready && data === undefined;
+      const recordsMap = new Map<string, any>();
+      if (Array.isArray(attendance)) {
+        attendance.forEach((a) => {
+          recordsMap.set(a.studentId, a);
+        });
+      }
 
-  // Hydrate the editable roster whenever the server roster changes.
+      const mergedRoster = (students || []).map((s: any) => {
+        const studentId = s.id || s._id;
+        const existing = recordsMap.get(studentId);
+        return {
+          studentId,
+          firstName: s.firstName || (s.fullName || "").split(" ")[0] || "Student",
+          lastName: s.lastName || (s.fullName || "").split(" ").slice(1).join(" ") || "",
+          rollNumber: s.rollNumber || "",
+          status: (existing?.status?.toLowerCase() || "present") as "present" | "absent" | "late" | "excused",
+          remarks: existing?.remarks || "",
+        };
+      });
+
+      setRoster(mergedRoster);
+    } catch (e) {
+      console.warn("Attendance roster fetch notice:", e);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [ready, selectedSectionId, selectedDate, setRoster]);
+
   useEffect(() => {
-    if (data) setRoster(data.map((r) => ({ ...r })));
-  }, [data, setRoster]);
-
-  const saveMutation = useMutation(attendanceApi.save);
+    fetchRoster();
+  }, [fetchRoster]);
 
   const saveRoster = async () => {
-    if (!ready) return false;
+    if (!ready || !selectedSectionId) return false;
     setIsSaving(true);
     try {
-      await saveMutation({
-        schoolId: schoolId!,
-        classId: selectedClassId as any,
-        sectionId: selectedSectionId as any,
+      await attendanceRestApi.recordBulk({
+        sectionId: selectedSectionId,
         date: selectedDate,
         records: roster.map((r) => ({
-          studentId: r.studentId as any,
-          status: r.status,
+          studentId: r.studentId,
+          status: r.status.toUpperCase(),
           remarks: r.remarks,
         })),
-      } as any);
+      });
       setHasUnsavedChanges(false);
       return true;
+    } catch (err) {
+      console.error("Failed to save attendance:", err);
+      return false;
     } finally {
       setIsSaving(false);
     }
@@ -103,5 +127,6 @@ export function useAttendance() {
     markAll,
     updateRemarks,
     saveRoster,
+    refetch: fetchRoster,
   };
 }

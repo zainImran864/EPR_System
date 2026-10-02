@@ -1,11 +1,9 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useQuery } from "convex/react";
-import type { Id } from "@/convex/_generated/dataModel";
 import { Printer, ArrowLeft } from "lucide-react";
-import { feesApi } from "@/app/api/fees";
+import { feesRestApi } from "@/app/api/client";
 import { useActiveSchool } from "@/app/hooks/useActiveSchool";
 import { FeeChallanSheet, type ChallanData } from "@/components/print/FeeChallanSheet";
 import { Spinner } from "@/components/ui/Spinner";
@@ -48,42 +46,120 @@ function PrintStyles() {
 }
 
 function SingleChallan({ billId }: { billId: string }) {
-  const data = useQuery(feesApi.getChallan, { billId: billId as Id<"feeBills"> });
-  if (data === undefined)
-    return <Centered><Spinner size="lg" /></Centered>;
+  const { school } = useActiveSchool();
+  const [data, setData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    feesRestApi
+      .getChallans({ id: billId })
+      .then((res) => {
+        if (!mounted) return;
+        const item = Array.isArray(res) ? res[0] : res;
+        if (item) {
+          setData({
+            school: {
+              name: school?.name || "Oakridge International School",
+              address: school?.address || "123 Education Lane",
+              phone: school?.phone || "+1 (555) 234-5678",
+              logoUrl: school?.logoUrl,
+            },
+            student: item.student || {
+              firstName: item.studentName || "Student",
+              lastName: "",
+              rollNumber: item.rollNumber || "",
+              className: item.className || "",
+              sectionName: item.sectionName || "",
+            },
+            bill: {
+              _id: item.id || item._id,
+              challanNumber: item.challanNumber || `CHL-${item.id?.slice(0, 6) || "001"}`,
+              title: item.title || "Monthly Tuition Fee",
+              month: item.month || "October",
+              academicYear: item.academicYear || "2024-2025",
+              issueDate: item.createdAt || new Date().toISOString(),
+              dueDate: item.dueDate || new Date().toISOString(),
+              totalAmount: item.amount || 0,
+              paidAmount: item.paidAmount || 0,
+              status: item.status || "UNPAID",
+              heads: item.heads || [{ name: "Tuition Fee", amount: item.amount || 0 }],
+            },
+          });
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (mounted) setIsLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [billId, school]);
+
+  if (isLoading) return <Centered><Spinner size="lg" /></Centered>;
   if (!data) return <Centered>Challan not found.</Centered>;
   return <FeeChallanSheet data={data as ChallanData} lastPage />;
 }
 
 function BulkChallans({ classId, sectionId }: { classId: string; sectionId: string }) {
-  const { schoolId } = useActiveSchool();
-  const data = useQuery(
-    feesApi.getSectionChallans,
-    schoolId
-      ? {
-          schoolId,
-          classId: classId as Id<"classes">,
-          sectionId: sectionId as Id<"sections">,
-        }
-      : "skip"
-  );
-  if (data === undefined) return <Centered><Spinner size="lg" /></Centered>;
-  if (!data || data.challans.length === 0)
+  const { school } = useActiveSchool();
+  const [challans, setChallans] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    feesRestApi
+      .getChallans({ classId, sectionId })
+      .then((res) => {
+        if (!mounted) return;
+        if (Array.isArray(res)) setChallans(res);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (mounted) setIsLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [classId, sectionId]);
+
+  if (isLoading) return <Centered><Spinner size="lg" /></Centered>;
+  if (challans.length === 0)
     return <Centered>No bills found for this section.</Centered>;
 
   return (
     <>
-      {data.challans.map((c, i) => (
+      {challans.map((c, i) => (
         <FeeChallanSheet
-          key={c.bill._id}
+          key={c.id || c._id}
           data={{
-            school: data.school,
+            school: {
+              name: school?.name || "Oakridge International School",
+              address: school?.address || "123 Education Lane",
+              phone: school?.phone || "+1 (555) 234-5678",
+              logoUrl: school?.logoUrl,
+            },
             student: c.student
-              ? { ...c.student, className: data.className, sectionName: data.sectionName }
+              ? { ...c.student, className: c.student?.class?.name, sectionName: c.student?.section?.name }
               : null,
-            bill: c.bill,
+            bill: {
+              _id: c.id || c._id,
+              challanNumber: c.challanNumber || `CHL-${c.id?.slice(0, 6) || "001"}`,
+              title: c.title || "Monthly Tuition Fee",
+              month: c.month || "October",
+              academicYear: c.academicYear || "2024-2025",
+              issueDate: c.createdAt || new Date().toISOString(),
+              dueDate: c.dueDate || new Date().toISOString(),
+              totalAmount: c.amount || 0,
+              paidAmount: c.paidAmount || 0,
+              status: c.status || "UNPAID",
+              heads: c.heads || [{ name: "Tuition Fee", amount: c.amount || 0 }],
+            },
           }}
-          lastPage={i === data.challans.length - 1}
+          lastPage={i === challans.length - 1}
         />
       ))}
     </>

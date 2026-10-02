@@ -93,19 +93,10 @@ export default function RegisterPage() {
     };
 
     try {
-      // 1. Try REST API first (NestJS backend)
       let generatedEmail = emailPreview;
-      try {
-        const restRes = await authRestApi.registerSchool(payload);
-        if (restRes?.adminEmail) {
-          generatedEmail = restRes.adminEmail;
-        }
-      } catch {
-        // Fallback to Convex mutation if available
-        const convexRes = await register(payload as any);
-        if (convexRes?.adminEmail) {
-          generatedEmail = convexRes.adminEmail;
-        }
+      const restRes = await authRestApi.registerSchool(payload);
+      if (restRes?.adminEmail) {
+        generatedEmail = restRes.adminEmail;
       }
 
       setDone({ email: generatedEmail });

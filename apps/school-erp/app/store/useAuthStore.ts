@@ -7,11 +7,15 @@ const USER_KEY = "erp_session_user";
 
 export interface StoredUser {
   _id: string;
+  id?: string;
   name: string;
   email: string;
   role: string;
   status: string;
+  schoolId?: string;
   school?: {
+    id?: string;
+    _id?: string;
     name: string;
     code: string;
     logoUrl?: string | null;
@@ -21,6 +25,20 @@ export interface StoredUser {
   twoFactorEnabled?: boolean;
   notificationsEnabled?: boolean;
   avatarUrl?: string | null;
+  linkedTeacherId?: string;
+  linkedStudentId?: string;
+  studentContext?: {
+    studentId: string;
+    classId: string;
+    sectionId: string;
+    firstName?: string;
+    lastName?: string;
+    fullName?: string;
+    className?: string;
+    sectionName?: string;
+    admissionNumber?: string;
+    rollNumber?: string;
+  };
 }
 
 interface AuthStoreState {

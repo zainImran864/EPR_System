@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
-import type { Id } from "@/convex/_generated/dataModel";
-import { feesApi } from "@/app/api/fees";
+import { useState, useEffect, useCallback } from "react";
+import { feesRestApi } from "@/app/api/client";
 import { useActiveSchool } from "./useActiveSchool";
 
 export interface FeeHead {
@@ -12,54 +10,89 @@ export interface FeeHead {
 }
 
 export interface GenerateBillsArgs {
-  classId: string;
+  classId?: string;
   sectionId?: string;
   title: string;
-  heads: FeeHead[];
-  issueDate: string;
+  heads?: FeeHead[];
+  month?: string;
+  academicYear?: string;
+  issueDate?: string;
   dueDate: string;
+  amount?: number;
 }
 
-/** Admin fee management: filtered bill list + generate + record payment. */
+/** Admin fee management: filtered bill/challan list + generate + record payment. */
 export function useFees() {
   const { schoolId } = useActiveSchool();
   const [classId, setClassId] = useState("");
   const [sectionId, setSectionId] = useState("");
+  const [bills, setBills] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const bills = useQuery(
-    feesApi.list,
-    schoolId
-      ? {
-          schoolId,
-          classId: classId ? (classId as Id<"classes">) : undefined,
-          sectionId: sectionId ? (sectionId as Id<"sections">) : undefined,
-        }
-      : "skip"
-  );
+  const fetchBills = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await feesRestApi.getChallans({
+        classId: classId || undefined,
+        sectionId: sectionId || undefined,
+      });
+      if (Array.isArray(data)) {
+        const normalized = data.map((b) => ({
+          ...b,
+          _id: b.id || b._id,
+          studentName: b.student?.fullName || b.studentName || "Student",
+          rollNumber: b.student?.rollNumber || b.rollNumber || "",
+          className: b.student?.class?.name || b.className || "",
+          sectionName: b.student?.section?.name || b.sectionName || "",
+          amount: b.amount || 0,
+          paidAmount: b.paidAmount || 0,
+          status: (b.status || "UNPAID").toLowerCase(),
+          dueDate: b.dueDate ? new Date(b.dueDate).toISOString().split("T")[0] : "",
+        }));
+        setBills(normalized);
+      }
+    } catch (e) {
+      console.warn("REST fees fetch notice:", e);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [classId, sectionId]);
 
-  const generateMutation = useMutation(feesApi.generate);
-  const paymentMutation = useMutation(feesApi.recordPayment);
+  useEffect(() => {
+    fetchBills();
+  }, [fetchBills, schoolId]);
 
-  const generateBills = (args: GenerateBillsArgs) =>
-    schoolId
-      ? generateMutation({
-          schoolId,
-          ...args,
-          classId: args.classId as Id<"classes">,
-          sectionId: args.sectionId ? (args.sectionId as Id<"sections">) : undefined,
-        })
-      : undefined;
+  const generateBills = async (args: GenerateBillsArgs) => {
+    const totalHeadAmount = (args.heads || []).reduce((sum, h) => sum + h.amount, 0);
+    const amount = args.amount || totalHeadAmount || 5000;
+    const res = await feesRestApi.generateMonthly({
+      classId: args.classId,
+      sectionId: args.sectionId,
+      title: args.title,
+      month: args.month || new Date().toLocaleString("default", { month: "long" }),
+      academicYear: args.academicYear || "2024-2025",
+      dueDate: args.dueDate || new Date().toISOString(),
+      amount,
+      applyStudentDiscounts: true,
+    });
+    await fetchBills();
+    return res;
+  };
 
-  const recordPayment = (billId: string, amount: number) =>
-    paymentMutation({ billId: billId as Id<"feeBills">, amount });
+  const recordPayment = async (billId: string, amount: number) => {
+    const res = await feesRestApi.payFee(billId, { paidAmount: amount });
+    await fetchBills();
+    return res;
+  };
 
   return {
-    bills: bills ?? [],
-    isLoading: bills === undefined,
+    bills,
+    isLoading,
     classId,
     setClassId,
     sectionId,
     setSectionId,
+    refetch: fetchBills,
     generateBills,
     recordPayment,
   };
@@ -68,11 +101,36 @@ export function useFees() {
 /** A single student's bills (parent/student view). */
 export function useStudentBills(studentId?: string | null) {
   const { schoolId } = useActiveSchool();
-  const bills = useQuery(
-    feesApi.getStudentBills,
-    schoolId && studentId
-      ? { schoolId, studentId: studentId as Id<"students"> }
-      : "skip"
-  );
-  return { bills: bills ?? [], isLoading: bills === undefined && Boolean(studentId) };
+  const [bills, setBills] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!studentId) return;
+    let mounted = true;
+    setIsLoading(true);
+    feesRestApi
+      .getChallans({ studentId })
+      .then((data) => {
+        if (!mounted) return;
+        if (Array.isArray(data)) {
+          setBills(
+            data.map((b) => ({
+              ...b,
+              _id: b.id || b._id,
+              status: (b.status || "UNPAID").toLowerCase(),
+            }))
+          );
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (mounted) setIsLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [studentId, schoolId]);
+
+  return { bills, isLoading };
 }

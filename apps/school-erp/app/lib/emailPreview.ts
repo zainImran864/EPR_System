@@ -1,7 +1,6 @@
 /**
- * Client-side mirror of convex/lib/identity.ts for live email previews in the
- * admin provisioning forms. The server remains the source of truth (it also
- * appends a numeric suffix on collisions); this is preview-only.
+ * Client-side email slug helper for live email previews in the
+ * admin provisioning forms. The backend remains the source of truth; this is preview-only.
  */
 
 export function slugify(name: string): string {
