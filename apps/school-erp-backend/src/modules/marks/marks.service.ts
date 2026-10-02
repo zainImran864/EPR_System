@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { CreateExamTermDto, SaveMarksDto } from './dto/marks.dto';
+import { CreateExamTermDto, SaveMarksDto, SavePaperSchedulesDto } from './dto/marks.dto';
 
 @Injectable()
 export class MarksService {
@@ -18,6 +18,11 @@ export class MarksService {
   async listExamTerms(schoolId: string) {
     return this.prisma.examTerm.findMany({
       where: { schoolId },
+      include: {
+        _count: {
+          select: { marks: true, paperSchedules: true },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -27,12 +32,215 @@ export class MarksService {
       data: {
         schoolId,
         name: dto.name,
+        termType: dto.termType || 'MID_TERM',
         academicYear: dto.academicYear,
         startDate: dto.startDate ? new Date(dto.startDate) : undefined,
         endDate: dto.endDate ? new Date(dto.endDate) : undefined,
       },
     });
   }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Paper Date-Sheet & Exam Timetable
+  // ─────────────────────────────────────────────────────────────────────────
+
+  async savePaperSchedules(schoolId: string, dto: SavePaperSchedulesDto) {
+    const examTerm = await this.prisma.examTerm.findFirst({
+      where: { id: dto.examTermId, schoolId },
+    });
+    if (!examTerm) throw new NotFoundException('Exam term not found');
+
+    // Remove existing schedules for this class & exam term to replace cleanly
+    await this.prisma.examPaperSchedule.deleteMany({
+      where: {
+        examTermId: dto.examTermId,
+        classId: dto.classId,
+      },
+    });
+
+    const created = await this.prisma.$transaction(
+      dto.schedules.map((s) =>
+        this.prisma.examPaperSchedule.create({
+          data: {
+            examTermId: dto.examTermId,
+            classId: dto.classId,
+            subjectId: s.subjectId,
+            examDate: new Date(s.examDate),
+            startTime: s.startTime,
+            endTime: s.endTime,
+            roomNo: s.roomNo || 'Main Examination Hall',
+            totalMarks: s.totalMarks || 100,
+          },
+        }),
+      ),
+    );
+
+    return {
+      success: true,
+      count: created.length,
+      message: `Date sheet saved with ${created.length} paper schedules.`,
+    };
+  }
+
+  async getPaperSchedules(schoolId: string, examTermId: string, classId: string) {
+    return this.prisma.examPaperSchedule.findMany({
+      where: {
+        examTermId,
+        classId,
+        examTerm: { schoolId },
+      },
+      include: {
+        subject: true,
+        class: true,
+      },
+      orderBy: { examDate: 'asc' },
+    });
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Roll Number & Admit Card Slips Generation
+  // ─────────────────────────────────────────────────────────────────────────
+
+  async generateRollNoSlips(
+    schoolId: string,
+    examTermId: string,
+    classId: string,
+    sectionId?: string,
+  ) {
+    const examTerm = await this.prisma.examTerm.findFirst({
+      where: { id: examTermId, schoolId },
+      include: { school: true },
+    });
+    if (!examTerm) throw new NotFoundException('Exam term not found');
+
+    const dateSheet = await this.prisma.examPaperSchedule.findMany({
+      where: { examTermId, classId },
+      include: { subject: true },
+      orderBy: { examDate: 'asc' },
+    });
+
+    const where: any = { schoolId, classId, status: 'active' };
+    if (sectionId) where.sectionId = sectionId;
+
+    const students = await this.prisma.student.findMany({
+      where,
+      include: { class: true, section: true },
+      orderBy: { rollNumber: 'asc' },
+    });
+
+    return students.map((st, idx) => ({
+      slipType: 'STANDARD_EXAM',
+      examTerm: {
+        id: examTerm.id,
+        name: examTerm.name,
+        termType: examTerm.termType,
+        academicYear: examTerm.academicYear,
+      },
+      school: {
+        name: examTerm.school.name,
+        code: examTerm.school.code,
+        logoUrl: examTerm.school.logoUrl,
+        address: examTerm.school.address,
+        phone: examTerm.school.phone,
+      },
+      student: {
+        id: st.id,
+        fullName: st.fullName,
+        admissionNumber: st.admissionNumber,
+        rollNumber: st.rollNumber || String(idx + 1).padStart(3, '0'),
+        photoUrl: st.photoUrl,
+        className: st.class.name,
+        sectionName: st.section.name,
+        seatNumber: `SEAT-${st.class.name.replace(/\s+/g, '')}-${st.rollNumber || idx + 1}`,
+      },
+      dateSheet: dateSheet.map((ds) => ({
+        subjectName: ds.subject.name,
+        code: ds.subject.code,
+        examDate: ds.examDate.toISOString().split('T')[0],
+        dayOfWeek: ds.examDate.toLocaleDateString('en-US', { weekday: 'long' }),
+        timing: `${ds.startTime} – ${ds.endTime}`,
+        roomNo: ds.roomNo,
+        totalMarks: ds.totalMarks,
+      })),
+      instructions: [
+        'Candidates must bring this original Roll Number Slip and school ID to the examination hall.',
+        'Arrival time is strictly 20 minutes prior to the commencement of each paper.',
+        'Electronic devices, smartwatches, and programmable calculators are strictly forbidden.',
+        'Impersonation or unfair means will result in immediate disqualification and cancellation of results.',
+      ],
+    }));
+  }
+
+  async generateSingleRollNoSlip(
+    schoolId: string,
+    examTermId: string,
+    studentId: string,
+    isRetake: boolean = false,
+  ) {
+    const student = await this.prisma.student.findFirst({
+      where: { id: studentId, schoolId },
+      include: { class: true, section: true, school: true },
+    });
+    if (!student) throw new NotFoundException('Student not found');
+
+    const examTerm = await this.prisma.examTerm.findFirst({
+      where: { id: examTermId, schoolId },
+    });
+    if (!examTerm) throw new NotFoundException('Exam term not found');
+
+    const dateSheet = await this.prisma.examPaperSchedule.findMany({
+      where: { examTermId, classId: student.classId },
+      include: { subject: true },
+      orderBy: { examDate: 'asc' },
+    });
+
+    return {
+      slipType: isRetake ? 'RETAKE_SUPPLEMENTARY' : 'SINGLE_CANDIDATE',
+      isRetake,
+      examTerm: {
+        id: examTerm.id,
+        name: isRetake ? `${examTerm.name} (Supplementary / Re-Take)` : examTerm.name,
+        academicYear: examTerm.academicYear,
+      },
+      school: {
+        name: student.school.name,
+        code: student.school.code,
+        logoUrl: student.school.logoUrl,
+        address: student.school.address,
+        phone: student.school.phone,
+      },
+      student: {
+        id: student.id,
+        fullName: student.fullName,
+        admissionNumber: student.admissionNumber,
+        rollNumber: student.rollNumber,
+        photoUrl: student.photoUrl,
+        className: student.class.name,
+        sectionName: student.section.name,
+        seatNumber: `SEAT-${student.class.name.replace(/\s+/g, '')}-${student.rollNumber || '01'}`,
+      },
+      dateSheet: dateSheet.map((ds) => ({
+        subjectName: ds.subject.name,
+        code: ds.subject.code,
+        examDate: ds.examDate.toISOString().split('T')[0],
+        dayOfWeek: ds.examDate.toLocaleDateString('en-US', { weekday: 'long' }),
+        timing: `${ds.startTime} – ${ds.endTime}`,
+        roomNo: ds.roomNo,
+        totalMarks: ds.totalMarks,
+      })),
+      instructions: [
+        isRetake
+          ? 'Special Re-Take / Supplementary Examination Permit. Verify paper code before entry.'
+          : 'Candidate must present this slip for verification at examination entry.',
+        'Reporting time: 20 minutes before scheduled start.',
+        'Unfair means and mobile devices are strictly barred from the examination hall.',
+      ],
+    };
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Marks Roster & Grading
+  // ─────────────────────────────────────────────────────────────────────────
 
   async getSectionMarks(schoolId: string, sectionId: string, examTermId: string, subjectId: string) {
     const students = await this.prisma.student.findMany({
@@ -98,7 +306,7 @@ export class MarksService {
     return { success: true, count: results.length };
   }
 
-  async getStudentReportCard(schoolId: string, studentId: string, examTermId: string) {
+  async getStudentReportCard(schoolId: string, studentId: string, examTermId?: string) {
     const student = await this.prisma.student.findFirst({
       where: { id: studentId, schoolId },
       include: {
@@ -110,34 +318,106 @@ export class MarksService {
 
     if (!student) throw new NotFoundException('Student not found');
 
-    const examTerm = await this.prisma.examTerm.findFirst({
-      where: { id: examTermId, schoolId },
+    // If examTermId is provided, generate Term-Specific Report Card
+    if (examTermId) {
+      const examTerm = await this.prisma.examTerm.findFirst({
+        where: { id: examTermId, schoolId },
+      });
+      if (!examTerm) throw new NotFoundException('Exam term not found');
+
+      const marks = await this.prisma.mark.findMany({
+        where: { schoolId, studentId, examTermId },
+        include: { subject: true },
+      });
+
+      const totalPossible = marks.reduce((sum, m) => sum + m.totalMarks, 0);
+      const totalObtained = marks.reduce((sum, m) => sum + m.obtainedMarks, 0);
+      const overallPercentage = totalPossible > 0 ? (totalObtained / totalPossible) * 100 : 0;
+
+      return {
+        reportType: 'TERM_WISE',
+        student: {
+          id: student.id,
+          fullName: student.fullName,
+          admissionNumber: student.admissionNumber,
+          rollNumber: student.rollNumber,
+          photoUrl: student.photoUrl,
+          className: student.class.name,
+          sectionName: student.section.name,
+        },
+        school: {
+          name: student.school.name,
+          code: student.school.code,
+          logoUrl: student.school.logoUrl,
+          address: student.school.address,
+          phone: student.school.phone,
+          email: student.school.email,
+        },
+        examTerm: {
+          id: examTerm.id,
+          name: examTerm.name,
+          termType: examTerm.termType,
+          academicYear: examTerm.academicYear,
+        },
+        subjects: marks.map((m) => ({
+          subjectName: m.subject.name,
+          code: m.subject.code,
+          totalMarks: m.totalMarks,
+          obtainedMarks: m.obtainedMarks,
+          percentage: (m.obtainedMarks / m.totalMarks) * 100,
+          grade: m.grade,
+          comments: m.comments,
+        })),
+        summary: {
+          totalPossible,
+          totalObtained,
+          overallPercentage: Math.round(overallPercentage * 10) / 10,
+          overallGrade: this.calculateGrade(overallPercentage),
+        },
+      };
+    }
+
+    // Otherwise, generate Comprehensive Full-Year Cumulative Report Card across all terms
+    const allMarks = await this.prisma.mark.findMany({
+      where: { schoolId, studentId },
+      include: { subject: true, examTerm: true },
+      orderBy: { examTerm: { createdAt: 'asc' } },
     });
 
-    if (!examTerm) throw new NotFoundException('Exam term not found');
+    const termsMap: Record<string, { termName: string; marks: any[]; totalPossible: number; totalObtained: number }> = {};
 
-    const marks = await this.prisma.mark.findMany({
-      where: {
-        schoolId,
-        studentId,
-        examTermId,
-      },
-      include: {
-        subject: true,
-      },
+    allMarks.forEach((m) => {
+      const termName = m.examTerm.name;
+      if (!termsMap[termName]) {
+        termsMap[termName] = {
+          termName,
+          marks: [],
+          totalPossible: 0,
+          totalObtained: 0,
+        };
+      }
+      termsMap[termName].marks.push({
+        subjectName: m.subject.name,
+        totalMarks: m.totalMarks,
+        obtainedMarks: m.obtainedMarks,
+        grade: m.grade,
+      });
+      termsMap[termName].totalPossible += m.totalMarks;
+      termsMap[termName].totalObtained += m.obtainedMarks;
     });
 
-    const totalPossible = marks.reduce((sum, m) => sum + m.totalMarks, 0);
-    const totalObtained = marks.reduce((sum, m) => sum + m.obtainedMarks, 0);
-    const overallPercentage = totalPossible > 0 ? (totalObtained / totalPossible) * 100 : 0;
-    const overallGrade = this.calculateGrade(overallPercentage);
+    const grandPossible = allMarks.reduce((sum, m) => sum + m.totalMarks, 0);
+    const grandObtained = allMarks.reduce((sum, m) => sum + m.obtainedMarks, 0);
+    const grandPercentage = grandPossible > 0 ? (grandObtained / grandPossible) * 100 : 0;
 
     return {
+      reportType: 'FULL_YEAR_CUMULATIVE',
       student: {
         id: student.id,
         fullName: student.fullName,
         admissionNumber: student.admissionNumber,
         rollNumber: student.rollNumber,
+        photoUrl: student.photoUrl,
         className: student.class.name,
         sectionName: student.section.name,
       },
@@ -149,25 +429,18 @@ export class MarksService {
         phone: student.school.phone,
         email: student.school.email,
       },
-      examTerm: {
-        id: examTerm.id,
-        name: examTerm.name,
-        academicYear: examTerm.academicYear,
-      },
-      subjects: marks.map((m) => ({
-        subjectName: m.subject.name,
-        code: m.subject.code,
-        totalMarks: m.totalMarks,
-        obtainedMarks: m.obtainedMarks,
-        percentage: (m.obtainedMarks / m.totalMarks) * 100,
-        grade: m.grade,
-        comments: m.comments,
+      academicYear: '2026-2027',
+      terms: Object.values(termsMap).map((t) => ({
+        ...t,
+        percentage: t.totalPossible > 0 ? Math.round((t.totalObtained / t.totalPossible) * 1000) / 10 : 0,
+        grade: this.calculateGrade(t.totalPossible > 0 ? (t.totalObtained / t.totalPossible) * 100 : 0),
       })),
       summary: {
-        totalPossible,
-        totalObtained,
-        overallPercentage: Math.round(overallPercentage * 10) / 10,
-        overallGrade,
+        grandPossible,
+        grandObtained,
+        grandPercentage: Math.round(grandPercentage * 10) / 10,
+        grandGrade: this.calculateGrade(grandPercentage),
+        status: grandPercentage >= 40 ? 'PROMOTED' : 'NEEDS_IMPROVEMENT',
       },
     };
   }
@@ -186,10 +459,7 @@ export class MarksService {
       },
       include: {
         student: {
-          include: {
-            class: true,
-            section: true,
-          },
+          include: { class: true, section: true },
         },
         subject: true,
       },
@@ -207,14 +477,12 @@ export class MarksService {
       };
     }
 
-    // 1. Grade distribution
     const gradeCounts: Record<string, number> = { 'A+': 0, A: 0, B: 0, C: 0, D: 0, F: 0 };
     marks.forEach((m) => {
       const g = m.grade || 'F';
       if (gradeCounts[g] !== undefined) gradeCounts[g]++;
     });
 
-    // 2. Aggregate per student
     const studentAggregates: Record<
       string,
       {
@@ -260,10 +528,7 @@ export class MarksService {
 
     studentList.sort((a, b) => b.percentage - a.percentage);
 
-    // Top performers (top 3)
     const topPerformers = studentList.slice(0, 3);
-
-    // At-risk students (score < 50% or failing in 1+ subjects)
     const atRiskStudents = studentList
       .filter((s) => s.percentage < 50 || s.failingSubjectsCount > 0)
       .map((s) => ({
@@ -275,7 +540,6 @@ export class MarksService {
             : 'Subject revision session recommended',
       }));
 
-    // 3. Subject-wise performance
     const subjectMap: Record<
       string,
       {
@@ -346,7 +610,6 @@ export class MarksService {
       students.map((s) => this.getStudentReportCard(schoolId, s.id, examTermId)),
     );
 
-    // Rank students by overall percentage
     reportCards.sort((a, b) => b.summary.overallPercentage - a.summary.overallPercentage);
 
     return reportCards.map((rc, index) => ({

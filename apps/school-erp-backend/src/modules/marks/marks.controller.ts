@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { MarksService } from './marks.service';
-import { CreateExamTermDto, SaveMarksDto } from './dto/marks.dto';
+import { CreateExamTermDto, SaveMarksDto, SavePaperSchedulesDto } from './dto/marks.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -25,6 +25,50 @@ export class MarksController {
     @Body() dto: CreateExamTermDto,
   ) {
     return this.marksService.createExamTerm(user.schoolId!, dto);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @Post('paper-schedules')
+  async savePaperSchedules(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: SavePaperSchedulesDto,
+  ) {
+    return this.marksService.savePaperSchedules(user.schoolId!, dto);
+  }
+
+  @Get('paper-schedules')
+  async getPaperSchedules(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query('examTermId') examTermId: string,
+    @Query('classId') classId: string,
+  ) {
+    return this.marksService.getPaperSchedules(user.schoolId!, examTermId, classId);
+  }
+
+  @Get('roll-no-slips')
+  async generateRollNoSlips(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query('examTermId') examTermId: string,
+    @Query('classId') classId: string,
+    @Query('sectionId') sectionId?: string,
+  ) {
+    return this.marksService.generateRollNoSlips(user.schoolId!, examTermId, classId, sectionId);
+  }
+
+  @Get('roll-no-slip/:studentId')
+  async generateSingleRollNoSlip(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('studentId') studentId: string,
+    @Query('examTermId') examTermId: string,
+    @Query('isRetake') isRetake?: string,
+  ) {
+    return this.marksService.generateSingleRollNoSlip(
+      user.schoolId!,
+      examTermId,
+      studentId,
+      isRetake === 'true',
+    );
   }
 
   @Get('section-marks')
@@ -69,7 +113,7 @@ export class MarksController {
   async getReportCard(
     @CurrentUser() user: CurrentUserPayload,
     @Param('studentId') studentId: string,
-    @Query('examTermId') examTermId: string,
+    @Query('examTermId') examTermId?: string,
   ) {
     return this.marksService.getStudentReportCard(user.schoolId!, studentId, examTermId);
   }

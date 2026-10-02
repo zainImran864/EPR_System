@@ -1,7 +1,14 @@
-"use client";
-
 import React, { useState } from "react";
-import { Award, Save, CheckCircle2 } from "lucide-react";
+import Link from "next/link";
+import {
+  Award,
+  Save,
+  CheckCircle2,
+  Calendar,
+  Printer,
+  FileText,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Select } from "@/components/ui/Select";
@@ -19,6 +26,7 @@ import { TableSkeleton } from "@/components/ui/Skeleton";
 import { useMarks } from "@/app/hooks/useMarks";
 import { useClasses } from "@/app/hooks/useClasses";
 import { ExamAnalyticsCard } from "./ExamAnalyticsCard";
+import { ExamScheduleModal } from "./ExamScheduleModal";
 
 // Used only for the class-average badge label — roster rows use pre-computed grade from the store.
 function gradeLabel(pct: number): string {
@@ -59,6 +67,7 @@ export const MarkEntryGrid: React.FC = () => {
   const { classOptions, sectionOptions } = useClasses();
 
   const [savedFlash, setSavedFlash] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
 
   const handleSave = async () => {
     const ok = await saveMarks();
@@ -82,6 +91,9 @@ export const MarkEntryGrid: React.FC = () => {
 
   const currentSectionOptions = selectedClassId ? sectionOptions(selectedClassId) : [];
 
+  const selectedExamName = exams.find((e) => e._id === selectedExamId)?.name || "Exam Term";
+  const selectedClassName = classOptions.find((c) => c.value === selectedClassId)?.label || "Class";
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -89,24 +101,60 @@ export const MarkEntryGrid: React.FC = () => {
         <div>
           <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <Award className="w-5 h-5 text-[#0D9488]" aria-hidden="true" />
-            Examinations & Mark Entry
+            Examinations &amp; Mark Entry
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Record term marks, compute automatic grading scales, and review subject performances
+            Configure paper date-sheets, record term marks, print student Roll No Slips &amp; Transcripts
           </p>
         </div>
 
-        <Button
-          variant={savedFlash ? "success" : "primary"}
-          size="sm"
-          onClick={handleSave}
-          isLoading={isSaving}
-          disabled={!allSelected || marksRoster.length === 0}
-          leftIcon={savedFlash ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-          className="text-xs"
-        >
-          {savedFlash ? "Scores Published!" : "Save Gradebook"}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          {selectedClassId && selectedExamId && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsScheduleModalOpen(true)}
+                leftIcon={<Calendar className="w-3.5 h-3.5 text-[#0D9488]" />}
+                className="text-xs"
+              >
+                Date-Sheet
+              </Button>
+
+              <Link
+                href={`/print/roll-no-slip?examTermId=${selectedExamId}&classId=${selectedClassId}`}
+                target="_blank"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 shadow-xs"
+              >
+                <Printer className="w-3.5 h-3.5 text-slate-500" />
+                Roll No Slips
+              </Link>
+
+              {selectedSectionId && (
+                <Link
+                  href={`/print/report-card?examTermId=${selectedExamId}&sectionId=${selectedSectionId}`}
+                  target="_blank"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-teal-300 bg-teal-50 text-teal-800 hover:bg-teal-100 shadow-xs"
+                >
+                  <FileText className="w-3.5 h-3.5 text-teal-600" />
+                  Report Cards
+                </Link>
+              )}
+            </>
+          )}
+
+          <Button
+            variant={savedFlash ? "success" : "primary"}
+            size="sm"
+            onClick={handleSave}
+            isLoading={isSaving}
+            disabled={!allSelected || marksRoster.length === 0}
+            leftIcon={savedFlash ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+            className="text-xs"
+          >
+            {savedFlash ? "Scores Published!" : "Save Gradebook"}
+          </Button>
+        </div>
       </div>
 
       {/* Filter Toolbar */}
@@ -213,6 +261,7 @@ export const MarkEntryGrid: React.FC = () => {
               <TableHead>Obtained Marks</TableHead>
               <TableHead>Percentage</TableHead>
               <TableHead>Grade</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -273,11 +322,49 @@ export const MarkEntryGrid: React.FC = () => {
                       {row.grade}
                     </Badge>
                   </TableCell>
+
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      {selectedExamId && (
+                        <>
+                          <Link
+                            href={`/print/roll-no-slip?studentId=${row.studentId}&examTermId=${selectedExamId}`}
+                            target="_blank"
+                            title="Print candidate Roll No Slip (Admit Card)"
+                            className="p-1.5 text-slate-400 hover:text-slate-700 rounded-md hover:bg-slate-100 transition-colors"
+                          >
+                            <Printer className="w-4 h-4" />
+                          </Link>
+                          <Link
+                            href={`/print/report-card?studentId=${row.studentId}&examTermId=${selectedExamId}`}
+                            target="_blank"
+                            title="Print Term Transcript"
+                            className="p-1.5 text-teal-600 hover:text-teal-800 rounded-md hover:bg-teal-50 transition-colors"
+                          >
+                            <FileText className="w-4 h-4" />
+                          </Link>
+                        </>
+                      )}
+                    </div>
+                  </TableCell>
                 </TableRow>
               );
             })}
           </TableBody>
         </Table>
+      )}
+
+      {/* Date-Sheet Modal */}
+      {selectedExamId && selectedClassId && (
+        <ExamScheduleModal
+          isOpen={isScheduleModalOpen}
+          onClose={() => setIsScheduleModalOpen(false)}
+          examTermId={selectedExamId}
+          examTermName={selectedExamName}
+          classId={selectedClassId}
+          className={selectedClassName}
+          subjects={subjects}
+        />
       )}
     </div>
   );
