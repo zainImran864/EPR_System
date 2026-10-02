@@ -34,6 +34,10 @@ The **Students & Parents Module** handles student lifecycle management, admissio
   - `id`: UUID (Primary Key)
   - `admissionNo`: Unique string index (e.g. `ADM-2026-001`)
   - `rollNo`: Class section roll number
+  - `photoUrl`: Candidate portrait photo URL (printed on Roll No Slips and Report Cards)
+  - `discountPercentage`: Fee scholarship/discount % (e.g., 25% discount)
+  - `customMonthlyFee`: Custom monthly fee override
+  - `discountReason`: Concession justification (e.g., Merit Scholarship, Sibling Concession)
   - `schoolId`, `classId`, `sectionId`, `userId`, `parentId`
   - `emergencyContact`, `medicalNotes`
 - **`Parent`**:
@@ -42,7 +46,7 @@ The **Students & Parents Module** handles student lifecycle management, admissio
   - 1-to-many relationship with `Student` records
 
 ### MongoDB
-- **`AuditLog`**: Logs all student admission approvals, section transfers, and medical updates.
+- **`AuditLog`**: Logs all student admission approvals, section transfers, promotions, demotions, and academic year auto-progression events.
 
 ### Redis Cache
 - `school:{schoolId}:students`: Cached student list for active academic session (TTL: 300s, invalidated on create/update).
@@ -55,6 +59,10 @@ The **Students & Parents Module** handles student lifecycle management, admissio
 | :--- | :--- | :--- | :--- |
 | `GET` | `/api/students` | `SUPER_ADMIN`, `ADMIN`, `TEACHER` | List students with optional `classId` / `sectionId` filters |
 | `GET` | `/api/students/:id` | `SUPER_ADMIN`, `ADMIN`, `TEACHER`, `STUDENT`, `PARENT` | Get complete student profile with attendance & marks summary |
-| `POST` | `/api/students` | `SUPER_ADMIN`, `ADMIN` | Register new student and create linked user/parent records |
-| `PATCH` | `/api/students/:id` | `SUPER_ADMIN`, `ADMIN` | Update student profile and section assignments |
+| `POST` | `/api/students` | `SUPER_ADMIN`, `ADMIN` | Register new student with optional photo, fee discounts, and linked accounts |
+| `PATCH` | `/api/students/:id` | `SUPER_ADMIN`, `ADMIN` | Update student profile, photo, discounts, and section assignments |
 | `DELETE` | `/api/students/:id` | `SUPER_ADMIN`, `ADMIN` | Soft delete / archive student record |
+| `POST` | `/api/students/:id/promote` | `SUPER_ADMIN`, `ADMIN` | Directly promote student to next sequential grade class |
+| `POST` | `/api/students/:id/demote` | `SUPER_ADMIN`, `ADMIN` | Directly demote student to previous grade class |
+| `POST` | `/api/students/auto-progress` | `SUPER_ADMIN`, `ADMIN` | Automated academic year progression engine: analyzes final exam scores, auto-promotes eligible students, and flags at-risk students for manual intervention |
+| `POST` | `/api/students/apply-progression-decisions` | `SUPER_ADMIN`, `ADMIN` | Applies bulk manual actions (`RETAIN`, `PROMOTE_WITH_GRACE`, `DEMOTE`) to flagged students |

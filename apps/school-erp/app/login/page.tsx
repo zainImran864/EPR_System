@@ -194,7 +194,60 @@ export default function LoginPage() {
         </Button>
       </form>
 
-      <div className="mt-6 pt-5 border-t border-slate-100 text-center">
+      {/* Quick Demo Credentials for evaluation */}
+      <div className="mt-5 pt-4 border-t border-slate-100">
+        <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-400 block mb-2">
+          Demo Quick Sign-In
+        </span>
+        <div className="grid grid-cols-2 gap-1.5 text-xs">
+          <button
+            type="button"
+            onClick={() => {
+              setEmail("superadmin@eprsystem.com");
+              setPassword("Admin@12345");
+            }}
+            className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 hover:border-teal-300 hover:text-teal-900 transition-colors text-slate-700 text-left"
+          >
+            <div className="font-medium text-[11px]">Super Admin</div>
+            <div className="text-[10px] text-slate-400 truncate">superadmin@...</div>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setEmail("admin@greenwood.edu");
+              setPassword("Admin@12345");
+            }}
+            className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 hover:border-teal-300 hover:text-teal-900 transition-colors text-slate-700 text-left"
+          >
+            <div className="font-medium text-[11px]">Principal / Admin</div>
+            <div className="text-[10px] text-slate-400 truncate">admin@greenwood...</div>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setEmail("teacher.sarah@greenwood.edu");
+              setPassword("Teacher@12345");
+            }}
+            className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 hover:border-teal-300 hover:text-teal-900 transition-colors text-slate-700 text-left"
+          >
+            <div className="font-medium text-[11px]">Teacher</div>
+            <div className="text-[10px] text-slate-400 truncate">teacher.sarah@...</div>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setEmail("student.liam@greenwood.edu");
+              setPassword("Student@12345");
+            }}
+            className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 hover:border-teal-300 hover:text-teal-900 transition-colors text-slate-700 text-left"
+          >
+            <div className="font-medium text-[11px]">Student</div>
+            <div className="text-[10px] text-slate-400 truncate">student.liam@...</div>
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-5 pt-4 border-t border-slate-100 text-center">
         <p className="text-xs text-slate-500">
           Want to bring your school onboard?{" "}
           <Link

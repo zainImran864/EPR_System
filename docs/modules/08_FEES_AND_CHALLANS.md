@@ -38,14 +38,14 @@ The **Fees & Challan Management Module** handles fee head definitions (Tuition, 
 - **`FeeChallan`**:
   - `id`: UUID (Primary Key)
   - `challanNo`: Unique index (e.g. `CHL-2026-00452`)
-  - `studentId`, `amount`, `dueDate`, `fineAmount`
-  - `status`: `PENDING`, `PAID`, `PARTIALLY_PAID`, `OVERDUE`
+  - `studentId`, `amount`, `discountAmount`, `customNotes`, `dueDate`, `fineAmount`
+  - `status`: `UNPAID`, `PARTIAL`, `PAID`, `OVERDUE`
 - **`FeePayment`**:
   - `id`: UUID (Primary Key)
   - `challanId`, `amountPaid`, `paymentMethod` (`CASH`, `BANK_TRANSFER`, `ONLINE`), `transactionRef`
 
 ### MongoDB
-- **`AuditLog`**: Logs manual fee waivers, discount overrides, and payment status transactions.
+- **`AuditLog`**: Logs manual fee waivers, discount overrides, scholarship approvals, and payment status transactions.
 
 ---
 
@@ -56,6 +56,8 @@ The **Fees & Challan Management Module** handles fee head definitions (Tuition, 
 | `GET` | `/api/fees/structures` | `SUPER_ADMIN`, `ADMIN` | List fee schedules by class |
 | `POST` | `/api/fees/structures` | `SUPER_ADMIN`, `ADMIN` | Define new fee structure |
 | `GET` | `/api/fees/challans` | `SUPER_ADMIN`, `ADMIN` | Query challans by status, class, and due month |
-| `POST` | `/api/fees/generate-monthly` | `SUPER_ADMIN`, `ADMIN` | Batch generate monthly challans for enrolled students |
+| `POST` | `/api/fees/generate-monthly` | `SUPER_ADMIN`, `ADMIN` | Batch generate class-wide monthly challans with automatic scholarship/discount deductions |
+| `POST` | `/api/fees/create-challan` | `SUPER_ADMIN`, `ADMIN` | Create custom individual student fee challan |
+| `POST` | `/api/fees/set-discount` | `SUPER_ADMIN`, `ADMIN` | Configure student-specific scholarship discount %, custom monthly fee override, and reason |
 | `POST` | `/api/fees/pay` | `SUPER_ADMIN`, `ADMIN` | Record fee collection transaction and generate receipt |
 | `GET` | `/api/fees/student/:studentId` | `SUPER_ADMIN`, `ADMIN`, `STUDENT`, `PARENT` | Retrieve student ledger and unpaid challans |
