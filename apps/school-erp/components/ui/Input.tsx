@@ -3,6 +3,7 @@
 import React, { InputHTMLAttributes, forwardRef, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { cn } from "@/app/lib/utils";
+import { preventNegativeKey } from "@/app/lib/positiveNumber";
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -10,6 +11,7 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  allowNegative?: boolean;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -23,12 +25,22 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       leftIcon,
       rightIcon,
       disabled,
+      allowNegative = false,
+      onKeyDown,
       id,
+      min,
       ...props
     },
     ref
   ) => {
     const inputId = id || (label ? label.toLowerCase().replace(/\s+/g, "-") : undefined);
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (type === "number" && !allowNegative) {
+        preventNegativeKey(e);
+      }
+      if (onKeyDown) onKeyDown(e);
+    };
 
     // Password fields get a built-in show/hide eye toggle (unless a custom
     // rightIcon was supplied). The effective input type flips with the toggle.
@@ -58,6 +70,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             type={effectiveType}
             ref={ref}
             disabled={disabled}
+            min={type === "number" && !allowNegative ? (min ?? 0) : min}
+            onKeyDown={handleKeyDown}
             className={cn(
               "w-full rounded-lg border bg-white px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 transition-all duration-150",
               "border-slate-300 hover:border-slate-400 focus:border-[#0D9488] focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20",

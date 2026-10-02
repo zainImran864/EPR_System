@@ -1,6 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300..800&family=Fira+Code:wght@400..700&display=swap');
 @import "tailwindcss";
 
 :root {
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'Fira Code', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
   /* Per-user sidebar accent (overridden at runtime; defaults to brand teal) */
   --sidebar-accent: #0D9488;
 
@@ -75,8 +79,8 @@
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0/.10), 0 8px 10px -6px rgb(0 0 0/.05);
 
   /* Fonts */
-  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'Fira Code', 'JetBrains Mono', monospace;
 
   /* Type Scale */
   --text-xs:   11px; --text-sm:  13px; --text-base:14px;

@@ -20,9 +20,9 @@ export class RegisterSchoolDto {
   @IsNotEmpty()
   schoolName: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  schoolSlug: string;
+  schoolSlug?: string;
 
   @IsEmail()
   @IsNotEmpty()

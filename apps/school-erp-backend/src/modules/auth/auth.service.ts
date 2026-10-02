@@ -248,34 +248,38 @@ export class AuthService {
   }
 
   async registerSchool(dto: RegisterSchoolDto) {
+    const rawSlug = dto.schoolSlug || dto.schoolName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const slug = (rawSlug || 'school').toLowerCase().trim();
+
     const existingReq = await this.prisma.registrationRequest.findUnique({
-      where: { schoolSlug: dto.schoolSlug.toLowerCase().trim() },
+      where: { schoolSlug: slug },
     });
 
     if (existingReq) {
-      throw new ConflictException('A school with this slug is already registered or requested');
+      throw new ConflictException('A school with this name or code is already registered or pending review.');
     }
 
     const existingSchool = await this.prisma.school.findUnique({
-      where: { code: dto.schoolSlug.toUpperCase().trim() },
+      where: { code: slug.toUpperCase().trim() },
     });
 
     if (existingSchool) {
-      throw new ConflictException('A school with this code already exists');
+      throw new ConflictException('A school with this code already exists.');
     }
 
     const adminPasswordHash = await bcrypt.hash(dto.adminPassword, 10);
+    const adminEmail = `admin@${slug}.com`;
 
     const request = await this.prisma.registrationRequest.create({
       data: {
         schoolName: dto.schoolName,
-        schoolSlug: dto.schoolSlug.toLowerCase().trim(),
+        schoolSlug: slug,
         contactEmail: dto.contactEmail,
         phone: dto.phone,
         address: dto.address,
         classesOffered: JSON.stringify(dto.classesOffered),
         adminName: dto.adminName,
-        adminEmail: `admin@${dto.schoolSlug.toLowerCase()}.com`,
+        adminEmail,
         adminPasswordHash,
         status: RequestStatus.PENDING,
       },
@@ -285,6 +289,7 @@ export class AuthService {
       success: true,
       message: 'School registration request submitted successfully. It is under superadmin review.',
       requestId: request.id,
+      adminEmail,
     };
   }
 
