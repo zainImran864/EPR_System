@@ -143,11 +143,22 @@ export default function LoginPage() {
     }
   };
 
-  const selectDemoRole = (demo: (typeof DEMO_ACCOUNTS)[number]) => {
+  const selectDemoRole = async (demo: (typeof DEMO_ACCOUNTS)[number]) => {
     setEmail(demo.email);
     setPassword(demo.pass);
     setSelectedRole(demo.role);
     setError(null);
+    setSubmitting(true);
+    try {
+      const res = await login(demo.email, demo.pass);
+      if (res.ok && res.role) {
+        router.replace(ROLE_HOME[res.role]);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // ── Two-factor challenge step ──
