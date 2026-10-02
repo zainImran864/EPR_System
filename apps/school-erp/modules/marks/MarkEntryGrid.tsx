@@ -12,6 +12,7 @@ import {
   ShieldAlert,
   UserCheck,
   FileSpreadsheet,
+  MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -423,6 +424,23 @@ export const MarkEntryGrid: React.FC = () => {
                     <div className="flex items-center justify-end gap-1.5">
                       {selectedExamId && (
                         <>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const pctScore =
+                                row.totalMarks > 0
+                                  ? ((row.obtainedMarks / row.totalMarks) * 100).toFixed(0)
+                                  : "0";
+                              const text = encodeURIComponent(
+                                `*Academic Result Notification*\nDear Parent, here are the examination marks for *${fullName}* (Roll No: *${row.rollNumber}*):\n\nExam: *${selectedExamName}*\nSubject: *${selectedSubjectName}*\nObtained Marks: *${row.obtainedMarks} / ${row.totalMarks}* (${pctScore}%)\nGrade: *${row.grade}*\n\nThank you!`
+                              );
+                              window.open(`https://wa.me/?text=${text}`, "_blank");
+                            }}
+                            title="Share result summary via WhatsApp"
+                            className="p-1.5 text-emerald-600 hover:text-emerald-800 rounded-md hover:bg-emerald-50 transition-colors"
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                          </button>
                           <Link
                             href={`/print/roll-no-slip?studentId=${row.studentId}&examTermId=${selectedExamId}`}
                             target="_blank"

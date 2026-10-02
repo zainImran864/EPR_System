@@ -9,6 +9,7 @@ import {
   FileText,
   Printer,
   DollarSign,
+  MessageCircle,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -149,29 +150,50 @@ export const FeeManager: React.FC = () => {
       key: "actions",
       header: "Actions",
       align: "right",
-      render: (b) => (
-        <div className="flex items-center justify-end gap-1">
-          {b.status !== "paid" && (
-            <Button
-              variant="ghost"
-              size="xs"
-              onClick={() => handlePay(b)}
-              title="Record payment"
-              className="p-1 text-slate-400 hover:text-emerald-600"
+      render: (b) => {
+        const remaining = Math.max(0, b.totalAmount - b.paidAmount);
+        const handleWhatsApp = () => {
+          const msg = encodeURIComponent(
+            `*Fee Reminder Notification*\nDear Parent, this is a reminder regarding the fee challan for *${b.studentName}* (${b.className} - ${b.sectionName}).\n\nTitle: ${b.title}\nOutstanding Balance: *Rs. ${remaining.toLocaleString()}*\nDue Date: *${b.dueDate}*\n\nPlease clear the dues at your earliest convenience to avoid late surcharges. Thank you!`
+          );
+          window.open(`https://wa.me/?text=${msg}`, "_blank");
+        };
+
+        return (
+          <div className="flex items-center justify-end gap-1">
+            {b.status !== "paid" && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  onClick={handleWhatsApp}
+                  title="Send Fee Reminder via WhatsApp"
+                  className="p-1 text-slate-400 hover:text-emerald-600"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  onClick={() => handlePay(b)}
+                  title="Record payment"
+                  className="p-1 text-slate-400 hover:text-emerald-600"
+                >
+                  <DollarSign className="w-4 h-4" />
+                </Button>
+              </>
+            )}
+            <Link
+              href={`/print/fee-challan?bill=${b._id}`}
+              target="_blank"
+              title="Print challan"
+              className="p-1 text-slate-400 hover:text-slate-700"
             >
-              <DollarSign className="w-4 h-4" />
-            </Button>
-          )}
-          <Link
-            href={`/print/fee-challan?bill=${b._id}`}
-            target="_blank"
-            title="Print challan"
-            className="p-1 text-slate-400 hover:text-slate-700"
-          >
-            <FileText className="w-4 h-4" />
-          </Link>
-        </div>
-      ),
+              <FileText className="w-4 h-4" />
+            </Link>
+          </div>
+        );
+      },
     },
   ];
 

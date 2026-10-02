@@ -17,6 +17,7 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 import { Switch } from "@/components/ui/Switch";
 import { Avatar } from "@/components/ui/Avatar";
 import { useAuth } from "@/app/hooks/useAuth";
@@ -190,10 +191,10 @@ export const AccountSettings: React.FC = () => {
               value={profile.name}
               onChange={(e) => setProfile({ ...profile, name: e.target.value })}
             />
-            <Input
-              label="Phone"
+            <PhoneInput
+              label="Phone (WhatsApp / Mobile)"
               value={profile.phone}
-              onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+              onChange={(full) => setProfile({ ...profile, phone: full })}
             />
           </div>
           <div className="flex justify-end">
