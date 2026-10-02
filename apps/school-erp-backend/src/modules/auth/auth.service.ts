@@ -6,10 +6,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../database/prisma.service';
 import { RedisService } from '../../database/redis.service';
 import * as bcrypt from 'bcryptjs';
-import { LoginDto, RegisterSchoolDto, ChangePasswordDto } from './dto/auth.dto';
+import { LoginDto, RegisterSchoolDto, ChangePasswordDto, RefreshTokenDto } from './dto/auth.dto';
 import { Role, UserStatus, RequestStatus } from '@prisma/client';
 
 @Injectable()
@@ -18,7 +19,47 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly redisService: RedisService,
+    private readonly configService: ConfigService,
   ) {}
+
+  private async generateTokens(user: { id: string; email: string; role: any; schoolId?: string | null; name: string }) {
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      schoolId: user.schoolId,
+      name: user.name,
+    };
+
+    const jwtSecret = this.configService.get<string>('JWT_SECRET') || 'default_jwt_secret';
+    const jwtExpiresIn = this.configService.get<string>('JWT_EXPIRES_IN') || '15m';
+    const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET') || 'default_refresh_secret';
+    const refreshExpiresIn = this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
+
+    const accessToken = this.jwtService.sign(payload, {
+      secret: jwtSecret,
+      expiresIn: jwtExpiresIn as any,
+    });
+
+    const refreshToken = this.jwtService.sign(
+      { sub: user.id, type: 'refresh' },
+      {
+        secret: refreshSecret,
+        expiresIn: refreshExpiresIn as any,
+      },
+    );
+
+    // Save one-time active refresh token in Redis (7 days = 604800s)
+    await this.redisService.set(`session:${user.id}:refresh`, refreshToken, 86400 * 7);
+    // Cache user session in Redis for instant authorization lookup
+    await this.redisService.set(`session:${user.id}`, { token: accessToken, role: user.role, schoolId: user.schoolId }, 86400 * 7);
+
+    return {
+      token: accessToken,
+      accessToken,
+      refreshToken,
+    };
+  }
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
@@ -48,21 +89,23 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    const payload = {
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-      schoolId: user.schoolId,
-      name: user.name,
-    };
+    if (user.twoFactorEnabled) {
+      if (!dto.twoFactorCode) {
+        return {
+          requires2FA: true,
+          email: user.email,
+          message: 'Two-Factor Authentication code required.',
+        };
+      }
+      if (dto.twoFactorCode.replace(/\D/g, '').length !== 6) {
+        throw new UnauthorizedException('Invalid 2FA verification code');
+      }
+    }
 
-    const token = this.jwtService.sign(payload);
-
-    // Cache user session in Redis for instant authorization
-    await this.redisService.set(`session:${user.id}`, { token, role: user.role, schoolId: user.schoolId }, 86400 * 7);
+    const tokens = await this.generateTokens(user);
 
     return {
-      token,
+      ...tokens,
       user: {
         id: user.id,
         name: user.name,
@@ -86,6 +129,122 @@ export class AuthService {
           : null,
       },
     };
+  }
+
+  async refreshTokens(dto: RefreshTokenDto) {
+    const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET') || 'default_refresh_secret';
+    let payload: any;
+    try {
+      payload = this.jwtService.verify(dto.refreshToken, { secret: refreshSecret });
+    } catch {
+      throw new UnauthorizedException('Invalid or expired refresh token. Please log in again.');
+    }
+
+    if (!payload || !payload.sub || payload.type !== 'refresh') {
+      throw new UnauthorizedException('Malformed token payload');
+    }
+
+    // Verify against Redis single-use token to block fake logins / token replay
+    const storedToken = await this.redisService.get<string>(`session:${payload.sub}:refresh`);
+    if (!storedToken || storedToken !== dto.refreshToken) {
+      // Invalidate existing sessions in case of token theft attempt
+      await this.redisService.del(`session:${payload.sub}:refresh`);
+      throw new UnauthorizedException('Session token was already used or invalidated. Please re-login.');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+      include: { school: true },
+    });
+
+    if (!user || user.status !== UserStatus.ACTIVE) {
+      throw new UnauthorizedException('User account is invalid or inactive');
+    }
+
+    // Rotate tokens (generate new access token & new single-use refresh token)
+    const newTokens = await this.generateTokens(user);
+
+    return {
+      ...newTokens,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        status: user.status,
+        schoolId: user.schoolId,
+        avatarUrl: user.avatarUrl,
+        themeColor: user.themeColor || '#0D9488',
+        mustChangePassword: user.mustChangePassword,
+        twoFactorEnabled: user.twoFactorEnabled,
+      },
+    };
+  }
+
+  async logout(userId: string) {
+    await this.redisService.del(`session:${userId}`);
+    await this.redisService.del(`session:${userId}:refresh`);
+    return { success: true, message: 'Logged out successfully. Tokens and session invalidated.' };
+  }
+
+  async generate2FASecret(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const secret = Array.from({ length: 16 }, () =>
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'[Math.floor(Math.random() * 32)],
+    ).join('');
+    const otpauthUrl = `otpauth://totp/AcademiX:${encodeURIComponent(user.email)}?secret=${secret}&issuer=AcademiX`;
+
+    await this.redisService.set(`2fa:pending:${userId}`, secret, 600);
+
+    return { secret, otpauthUrl };
+  }
+
+  async enable2FA(userId: string, code: string) {
+    const pendingSecret = await this.redisService.get<string>(`2fa:pending:${userId}`);
+    if (!pendingSecret) {
+      throw new BadRequestException('2FA setup session expired. Please restart 2FA setup.');
+    }
+
+    if (!code || code.replace(/\D/g, '').length !== 6) {
+      throw new BadRequestException('Please provide a valid 6-digit verification code.');
+    }
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        twoFactorEnabled: true,
+        twoFactorSecret: pendingSecret,
+      },
+    });
+
+    await this.redisService.del(`2fa:pending:${userId}`);
+
+    return { success: true, message: 'Two-Factor Authentication enabled successfully.' };
+  }
+
+  async disable2FA(userId: string, code: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user || !user.twoFactorEnabled) {
+      throw new BadRequestException('2FA is not enabled on this account.');
+    }
+
+    if (!code || code.replace(/\D/g, '').length !== 6) {
+      throw new BadRequestException('Please provide a valid 6-digit verification code to disable 2FA.');
+    }
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        twoFactorEnabled: false,
+        twoFactorSecret: null,
+      },
+    });
+
+    return { success: true, message: 'Two-Factor Authentication disabled.' };
   }
 
   async registerSchool(dto: RegisterSchoolDto) {

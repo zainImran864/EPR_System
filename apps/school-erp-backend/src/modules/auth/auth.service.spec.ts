@@ -6,15 +6,12 @@ import { RedisService } from '../../database/redis.service';
 import { UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 
+import { ConfigService } from '@nestjs/config';
+
 jest.mock('@nestjs/jwt', () => ({
   JwtService: jest.fn().mockImplementation(() => ({
     sign: jest.fn().mockReturnValue('mock_jwt_token_123'),
-  })),
-}));
-
-jest.mock('@nestjs/config', () => ({
-  ConfigService: jest.fn().mockImplementation(() => ({
-    get: jest.fn().mockReturnValue('mock_jwt_secret'),
+    verify: jest.fn().mockReturnValue({ sub: 'usr_1', type: 'refresh' }),
   })),
 }));
 
@@ -40,11 +37,21 @@ describe('AuthService', () => {
 
   const mockJwt = {
     sign: jest.fn().mockReturnValue('mock_jwt_token_123'),
+    verify: jest.fn().mockReturnValue({ sub: 'usr_1', type: 'refresh' }),
   };
 
   const mockRedis = {
     set: jest.fn().mockResolvedValue(undefined),
     get: jest.fn().mockResolvedValue(null),
+    del: jest.fn().mockResolvedValue(undefined),
+  };
+
+  const mockConfig = {
+    get: jest.fn().mockImplementation((key: string) => {
+      if (key === 'JWT_SECRET') return 'test_secret';
+      if (key === 'JWT_REFRESH_SECRET') return 'test_refresh_secret';
+      return '15m';
+    }),
   };
 
   beforeEach(async () => {
@@ -54,6 +61,7 @@ describe('AuthService', () => {
         { provide: PrismaService, useValue: mockPrisma },
         { provide: JwtService, useValue: mockJwt },
         { provide: RedisService, useValue: mockRedis },
+        { provide: ConfigService, useValue: mockConfig },
       ],
     }).compile();
 

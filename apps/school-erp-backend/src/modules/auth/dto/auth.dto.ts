@@ -65,3 +65,15 @@ export class UpdateThemeDto {
   @IsNotEmpty()
   themeColor: string;
 }
+
+export class RefreshTokenDto {
+  @IsString()
+  @IsNotEmpty()
+  refreshToken: string;
+}
+
+export class TwoFactorVerifyDto {
+  @IsString()
+  @IsNotEmpty()
+  code: string;
+}
