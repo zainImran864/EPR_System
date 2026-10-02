@@ -40,8 +40,8 @@ export function useAttendance() {
     ready
       ? {
           schoolId: schoolId!,
-          classId: selectedClassId,
-          sectionId: selectedSectionId,
+          classId: selectedClassId as any,
+          sectionId: selectedSectionId as any,
           date: selectedDate,
         }
       : "skip"
@@ -62,15 +62,15 @@ export function useAttendance() {
     try {
       await saveMutation({
         schoolId: schoolId!,
-        classId: selectedClassId,
-        sectionId: selectedSectionId,
+        classId: selectedClassId as any,
+        sectionId: selectedSectionId as any,
         date: selectedDate,
         records: roster.map((r) => ({
-          studentId: r.studentId,
+          studentId: r.studentId as any,
           status: r.status,
           remarks: r.remarks,
         })),
-      });
+      } as any);
       setHasUnsavedChanges(false);
       return true;
     } finally {

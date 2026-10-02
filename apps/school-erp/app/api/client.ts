@@ -1,10 +1,252 @@
 /**
- * Typed client API requester with simulated network delay capability for CSR testing
+ * Typed client API requester for AcademiX School ERP.
+ * Connects directly to the NestJS backend and handles auth tokens & JSON serialization.
  */
-export async function mockFetch<T>(data: T, delayMs: number = 200): Promise<T> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(data);
-    }, delayMs);
-  });
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
+
+export interface ApiResponse<T = any> {
+  statusCode: number;
+  success: boolean;
+  data: T;
+  timestamp: string;
 }
+
+export class ApiError extends Error {
+  statusCode: number;
+  data: any;
+
+  constructor(message: string, statusCode: number, data?: any) {
+    super(message);
+    this.name = 'ApiError';
+    this.statusCode = statusCode;
+    this.data = data;
+  }
+}
+
+function getAuthHeader(): Record<string, string> {
+  if (typeof window === 'undefined') return {};
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      return { Authorization: `Bearer ${token}` };
+    }
+  } catch {}
+  return {};
+}
+
+async function request<T>(
+  endpoint: string,
+  options: RequestInit = {},
+): Promise<T> {
+  const url = `${API_BASE_URL.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...getAuthHeader(),
+    ...(options.headers as Record<string, string>),
+  };
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      const errorMsg =
+        data?.error?.message ||
+        data?.message ||
+        `Request failed with status ${response.status}`;
+      throw new ApiError(
+        typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg),
+        response.status,
+        data,
+      );
+    }
+
+    // Unpack TransformInterceptor envelope if present
+    if (data && typeof data === 'object' && 'data' in data && 'success' in data) {
+      return data.data as T;
+    }
+
+    return data as T;
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError((error as Error).message || 'Network error', 500);
+  }
+}
+
+export const apiClient = {
+  get: <T>(endpoint: string, params?: Record<string, any>) => {
+    let url = endpoint;
+    if (params) {
+      const query = new URLSearchParams();
+      for (const [k, v] of Object.entries(params)) {
+        if (v !== undefined && v !== null && v !== '') {
+          query.append(k, String(v));
+        }
+      }
+      const qs = query.toString();
+      if (qs) url += `?${qs}`;
+    }
+    return request<T>(url, { method: 'GET' });
+  },
+
+  post: <T>(endpoint: string, body?: any) =>
+    request<T>(endpoint, {
+      method: 'POST',
+      body: body ? JSON.stringify(body) : undefined,
+    }),
+
+  patch: <T>(endpoint: string, body?: any) =>
+    request<T>(endpoint, {
+      method: 'PATCH',
+      body: body ? JSON.stringify(body) : undefined,
+    }),
+
+  delete: <T>(endpoint: string) =>
+    request<T>(endpoint, { method: 'DELETE' }),
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Typed REST Domain Services
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const authRestApi = {
+  login: (credentials: { email: string; password: string; schoolCode?: string }) =>
+    apiClient.post<{ accessToken: string; user: any }>('/auth/login', credentials),
+  me: () => apiClient.get<any>('/auth/me'),
+  logout: () => apiClient.post<{ success: boolean }>('/auth/logout'),
+};
+
+export const timetableRestApi = {
+  getMyTimetable: () => apiClient.get<any>('/timetable/my'),
+  getSectionTimetable: (sectionId: string) =>
+    apiClient.get<any[]>(`/timetable/section/${sectionId}`),
+  getTeacherTimetable: (teacherId: string) =>
+    apiClient.get<any[]>(`/timetable/teacher/${teacherId}`),
+  getStudentTimetable: (studentId: string) =>
+    apiClient.get<any>(`/timetable/student/${studentId}`),
+  createEntry: (data: {
+    sectionId: string;
+    subjectId: string;
+    teacherId: string;
+    dayOfWeek: string;
+    periodNumber: number;
+    startTime: string;
+    endTime: string;
+    room?: string;
+    allowCombinedClass?: boolean;
+    allowSharedRoom?: boolean;
+  }) => apiClient.post<any>('/timetable/entry', data),
+  deleteEntry: (id: string) => apiClient.delete<{ success: boolean }>(`/timetable/entry/${id}`),
+};
+
+export const schoolsRestApi = {
+  getCurrentSchool: () => apiClient.get<any>('/schools/current'),
+  updateSchool: (data: any) => apiClient.patch<any>('/schools/current', data),
+  getSmtpSettings: () => apiClient.get<any>('/schools/current/smtp'),
+  updateSmtpSettings: (data: {
+    smtpHost?: string;
+    smtpPort?: number;
+    smtpUser?: string;
+    smtpPass?: string;
+    smtpFrom?: string;
+    smtpSecure?: boolean;
+    smtpEnabled?: boolean;
+  }) => apiClient.patch<{ success: boolean; message: string }>('/schools/current/smtp', data),
+  testSmtp: (data: {
+    toEmail: string;
+    smtpHost?: string;
+    smtpPort?: number;
+    smtpUser?: string;
+    smtpPass?: string;
+    smtpFrom?: string;
+    smtpSecure?: boolean;
+  }) => apiClient.post<{ success: boolean; message: string }>('/schools/current/smtp/test', data),
+};
+
+export const studentsRestApi = {
+  getAll: (params?: { classId?: string; sectionId?: string }) =>
+    apiClient.get<any[]>('/students', params),
+  getById: (id: string) => apiClient.get<any>(`/students/${id}`),
+  create: (data: any) => apiClient.post<any>('/students', data),
+  update: (id: string, data: any) => apiClient.patch<any>(`/students/${id}`, data),
+  delete: (id: string) => apiClient.delete<any>(`/students/${id}`),
+};
+
+export const teachersRestApi = {
+  getAll: () => apiClient.get<any[]>('/teachers'),
+  getById: (id: string) => apiClient.get<any>(`/teachers/${id}`),
+  create: (data: any) => apiClient.post<any>('/teachers', data),
+  update: (id: string, data: any) => apiClient.patch<any>(`/teachers/${id}`, data),
+  delete: (id: string) => apiClient.delete<any>(`/teachers/${id}`),
+};
+
+export const classesRestApi = {
+  getAll: () => apiClient.get<any[]>('/classes'),
+  createClass: (data: any) => apiClient.post<any>('/classes', data),
+  createSection: (classId: string, data: any) =>
+    apiClient.post<any>(`/classes/${classId}/sections`, data),
+  createSubject: (data: any) => apiClient.post<any>('/classes/subjects', data),
+};
+
+export const attendanceRestApi = {
+  getByDate: (date: string, sectionId?: string) =>
+    apiClient.get<any[]>('/attendance', { date, sectionId }),
+  recordBulk: (data: { sectionId: string; date: string; records: any[] }) =>
+    apiClient.post<any>('/attendance/bulk', data),
+  getStudentHistory: (studentId: string) =>
+    apiClient.get<any>(`/attendance/student/${studentId}`),
+};
+
+export const marksRestApi = {
+  getExams: () => apiClient.get<any[]>('/marks/exams'),
+  createExam: (data: any) => apiClient.post<any>('/marks/exams', data),
+  getMarks: (examId: string, subjectId?: string, classId?: string) =>
+    apiClient.get<any[]>('/marks', { examId, subjectId, classId }),
+  submitBulk: (data: { examId: string; subjectId: string; results: any[] }) =>
+    apiClient.post<any>('/marks/bulk', data),
+  getStudentReportCard: (studentId: string, examId?: string) =>
+    apiClient.get<any>(`/marks/student/${studentId}`, { examId }),
+};
+
+export const feesRestApi = {
+  getStructures: () => apiClient.get<any[]>('/fees/structures'),
+  createStructure: (data: any) => apiClient.post<any>('/fees/structures', data),
+  getChallans: (params?: any) => apiClient.get<any[]>('/fees/challans', params),
+  generateMonthly: (data: any) => apiClient.post<any>('/fees/generate-monthly', data),
+  payFee: (data: any) => apiClient.post<any>('/fees/pay', data),
+  getStudentLedger: (studentId: string) =>
+    apiClient.get<any>(`/fees/student/${studentId}`),
+};
+
+export const notificationsRestApi = {
+  getAll: () => apiClient.get<any[]>('/notifications'),
+  markAsRead: (id: string) => apiClient.patch<any>(`/notifications/${id}/read`),
+  broadcast: (data: any) => apiClient.post<any>('/notifications/broadcast', data),
+};
+
+export const dashboardRestApi = {
+  getStats: () => apiClient.get<any>('/dashboard/stats'),
+};
+
+export const superAdminRestApi = {
+  getStats: () => apiClient.get<any>('/superadmin/stats'),
+  getSchools: () => apiClient.get<any[]>('/schools/superadmin/all'),
+  getPendingRequests: () => apiClient.get<any[]>('/schools/superadmin/pending-requests'),
+  approveRequest: (id: string) =>
+    apiClient.post<any>(`/schools/superadmin/requests/${id}/approve`),
+  rejectRequest: (id: string, reason?: string) =>
+    apiClient.post<any>(`/schools/superadmin/requests/${id}/reject`, { reason }),
+};
+
+export const seedApi = {
+  seedDemoData: () => apiClient.post<any>('/seed/demo'),
+};

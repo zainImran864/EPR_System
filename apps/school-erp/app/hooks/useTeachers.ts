@@ -60,12 +60,12 @@ export function useTeachers() {
       department?: string;
       status?: "active" | "inactive";
     }
-  ) => updateMutation({ teacherId, ...args });
+  ) => updateMutation({ teacherId: teacherId as any, ...(args as any) });
 
   const setTeacherStatus = (teacherId: string, next: "active" | "inactive") =>
-    updateStatusMutation({ teacherId, status: next });
+    updateStatusMutation({ teacherId: teacherId as any, status: next });
 
-  const removeTeacher = (teacherId: string) => removeMutation({ teacherId });
+  const removeTeacher = (teacherId: string) => removeMutation({ teacherId: teacherId as any });
 
   return {
     teachers,

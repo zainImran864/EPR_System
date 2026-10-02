@@ -49,17 +49,17 @@ export function useClasses() {
     schoolId ? createClassMutation({ schoolId, ...args }) : undefined;
 
   const addSection = (args: AddSectionArgs) =>
-    schoolId ? addSectionMutation({ schoolId, ...args }) : undefined;
+    schoolId ? addSectionMutation({ schoolId, ...(args as any) }) : undefined;
 
   const editClass = (
     classId: string,
     fields: { name?: string; numericGrade?: number; academicYear?: string }
-  ) => updateClassMutation({ classId, ...fields });
+  ) => updateClassMutation({ classId: classId as any, ...fields });
 
   const editSection = (
     sectionId: string,
     fields: { name?: string; roomNumber?: string; classTeacherId?: string }
-  ) => updateSectionMutation({ sectionId, ...fields });
+  ) => updateSectionMutation({ sectionId: sectionId as any, ...(fields as any) });
 
   return {
     classes,

@@ -43,10 +43,10 @@ export function useMarks() {
     ready
       ? {
           schoolId: schoolId!,
-          examId: selectedExamId,
-          classId: selectedClassId,
-          sectionId: selectedSectionId,
-          subjectId: selectedSubjectId || undefined,
+          examId: selectedExamId as any,
+          classId: selectedClassId as any,
+          sectionId: selectedSectionId as any,
+          subjectId: (selectedSubjectId as any) || undefined,
         }
       : "skip"
   );
@@ -78,17 +78,17 @@ export function useMarks() {
     try {
       await saveMutation({
         schoolId: schoolId!,
-        examId: selectedExamId,
-        classId: selectedClassId,
-        sectionId: selectedSectionId,
-        subjectId: selectedSubjectId,
+        examId: selectedExamId as any,
+        classId: selectedClassId as any,
+        sectionId: selectedSectionId as any,
+        subjectId: selectedSubjectId as any,
         entries: marksRoster.map((r) => ({
-          studentId: r.studentId,
+          studentId: r.studentId as any,
           obtainedMarks: r.obtainedMarks,
           totalMarks: r.totalMarks,
           grade: r.grade,
         })),
-      });
+      } as any);
       return true;
     } finally {
       setIsSaving(false);

@@ -34,10 +34,10 @@ export function useRegistrations() {
     statusFilter,
     setStatusFilter,
     approveRequest: (requestId: string, reviewNote?: string) =>
-      approveMutation({ requestId, reviewNote }),
+      approveMutation({ requestId: requestId as any, reviewNote }),
     rejectRequest: (requestId: string, reviewNote?: string) =>
-      rejectMutation({ requestId, reviewNote }),
+      rejectMutation({ requestId: requestId as any, reviewNote }),
     resolveChangeRequest: (requestId: string, approve: boolean) =>
-      resolveChangeMutation({ requestId, approve }),
+      resolveChangeMutation({ requestId: requestId as any, approve }),
   };
 }

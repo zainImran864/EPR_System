@@ -34,8 +34,8 @@ export function useStudents() {
     schoolId
       ? {
           schoolId,
-          classId: filters.classId || undefined,
-          sectionId: filters.sectionId || undefined,
+          classId: (filters.classId as any) || undefined,
+          sectionId: (filters.sectionId as any) || undefined,
           status: filters.status || undefined,
           search: debouncedSearch || undefined,
         }
@@ -52,7 +52,7 @@ export function useStudents() {
 
   const addStudent = async (input: CreateStudentInput) => {
     if (!schoolId) return;
-    return createStudentMutation({ schoolId, ...input });
+    return createStudentMutation({ schoolId, ...(input as any) });
   };
 
   const editStudent = (
@@ -69,12 +69,12 @@ export function useStudents() {
       guardianEmail?: string;
       status?: Status;
     }
-  ) => updateStudentMutation({ studentId, ...fields });
+  ) => updateStudentMutation({ studentId: studentId as any, ...(fields as any) });
 
   const setStudentStatus = (studentId: string, status: Status) =>
-    updateStatusMutation({ studentId, status });
+    updateStatusMutation({ studentId: studentId as any, status });
 
-  const removeStudent = (studentId: string) => removeStudentMutation({ studentId });
+  const removeStudent = (studentId: string) => removeStudentMutation({ studentId: studentId as any });
 
   const totalItems = students.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
