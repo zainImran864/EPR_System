@@ -62,14 +62,6 @@ export class ClassesService {
       throw new NotFoundException('Class not found in this school');
     }
 
-    const existing = await this.prisma.section.findUnique({
-      where: { classId_name: { classId: dto.classId, name: dto.name } },
-    });
-
-    if (existing) {
-      throw new ConflictException(`Section ${dto.name} already exists for this class`);
-    }
-
     return this.prisma.section.create({
       data: {
         classId: dto.classId,

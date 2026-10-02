@@ -20,9 +20,9 @@ export class RegisterSchoolDto {
   @IsNotEmpty()
   schoolName: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  schoolSlug: string;
+  schoolSlug?: string;
 
   @IsEmail()
   @IsNotEmpty()
@@ -64,4 +64,16 @@ export class UpdateThemeDto {
   @IsString()
   @IsNotEmpty()
   themeColor: string;
+}
+
+export class RefreshTokenDto {
+  @IsString()
+  @IsNotEmpty()
+  refreshToken: string;
+}
+
+export class TwoFactorVerifyDto {
+  @IsString()
+  @IsNotEmpty()
+  code: string;
 }

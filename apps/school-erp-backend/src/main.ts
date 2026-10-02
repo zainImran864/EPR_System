@@ -32,8 +32,8 @@ async function bootstrap() {
   app.useGlobalInterceptors(new TransformInterceptor());
 
   const port = process.env.PORT || 3001;
-  await app.listen(port);
-  logger.log(`🚀 AcademiX School ERP Backend running on: http://localhost:${port}/api`);
+  await app.listen(port, '127.0.0.1');
+  logger.log(`🚀 AcademiX School ERP Backend running locally on: http://127.0.0.1:${port}/api`);
 }
 
 bootstrap();

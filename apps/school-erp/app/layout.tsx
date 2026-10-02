@@ -1,23 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ConvexClientProvider } from "./ConvexClientProvider";
 import { Toaster } from "@/components/ui/Toast";
 import { PWARegister } from "@/components/pwa/PWARegister";
 import { ThemeSync } from "@/components/theme/ThemeSync";
 import { THEME_BOOT_SCRIPT } from "@/app/lib/theme";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "AcademiX — School Management Platform",
@@ -45,9 +32,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className="h-full antialiased"
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-[#F8FAFC] text-[#0F172A]">
+      <body
+        className="min-h-full flex flex-col bg-[#F8FAFC] text-[#0F172A] font-sans"
+        suppressHydrationWarning
+      >
         {/* Applies the cached sidebar colour before first paint (no flash). */}
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <ConvexClientProvider>

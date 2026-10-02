@@ -80,17 +80,20 @@ export class SeedService {
       classMap[grade] = cls;
 
       for (const sName of ['A', 'B']) {
-        const sec = await this.prisma.section.upsert({
-          where: { classId_name: { classId: cls.id, name: sName } },
-          update: {},
-          create: {
-            classId: cls.id,
-            schoolId: school.id,
-            name: sName,
-            capacity: 35,
-            room: `Room ${grade}0${sName === 'A' ? '1' : '2'}`,
-          },
+        let sec = await this.prisma.section.findFirst({
+          where: { classId: cls.id, name: sName },
         });
+        if (!sec) {
+          sec = await this.prisma.section.create({
+            data: {
+              classId: cls.id,
+              schoolId: school.id,
+              name: sName,
+              capacity: 35,
+              room: `Room ${grade}0${sName === 'A' ? '1' : '2'}`,
+            },
+          });
+        }
         sectionMap[`${grade}-${sName}`] = sec;
       }
     }

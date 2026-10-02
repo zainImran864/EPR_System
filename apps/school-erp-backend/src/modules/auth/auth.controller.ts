@@ -1,6 +1,13 @@
 import { Controller, Post, Body, Get, UseGuards, Patch } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginDto, RegisterSchoolDto, ChangePasswordDto, UpdateThemeDto } from './dto/auth.dto';
+import {
+  LoginDto,
+  RegisterSchoolDto,
+  ChangePasswordDto,
+  UpdateThemeDto,
+  RefreshTokenDto,
+  TwoFactorVerifyDto,
+} from './dto/auth.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser, CurrentUserPayload } from '../../common/decorators/current-user.decorator';
 
@@ -11,6 +18,41 @@ export class AuthController {
   @Post('login')
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
+  }
+
+  @Post('refresh')
+  async refresh(@Body() dto: RefreshTokenDto) {
+    return this.authService.refreshTokens(dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  async logout(@CurrentUser() user: CurrentUserPayload) {
+    return this.authService.logout(user.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('2fa/generate')
+  async generate2FA(@CurrentUser() user: CurrentUserPayload) {
+    return this.authService.generate2FASecret(user.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('2fa/enable')
+  async enable2FA(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: TwoFactorVerifyDto,
+  ) {
+    return this.authService.enable2FA(user.userId, dto.code);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('2fa/disable')
+  async disable2FA(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: TwoFactorVerifyDto,
+  ) {
+    return this.authService.disable2FA(user.userId, dto.code);
   }
 
   @Post('register-school')

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth, type Role } from "@/app/hooks/useAuth";
 import { Spinner } from "@/components/ui/Spinner";
@@ -35,9 +35,14 @@ export function RoleGate({
 }) {
   const { user, role, isLoading } = useAuth();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (isLoading) return;
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted || isLoading) return;
     if (!user) {
       router.replace("/login");
       return;
@@ -45,9 +50,9 @@ export function RoleGate({
     if (role && !allow.includes(role)) {
       router.replace(ROLE_HOME[role]);
     }
-  }, [isLoading, user, role, allow, router]);
+  }, [mounted, isLoading, user, role, allow, router]);
 
-  if (isLoading || !user || (role && !allow.includes(role))) {
+  if (!mounted || isLoading || !user || (role && !allow.includes(role))) {
     return <FullPageLoader />;
   }
 

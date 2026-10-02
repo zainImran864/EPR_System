@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # 1. PostgreSQL (Relational Data Store)
   postgres:
@@ -11,7 +9,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: school_erp
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -26,7 +24,7 @@ services:
     container_name: academix_mongodb
     restart: always
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"
     volumes:
       - mongo_data:/data/db
     healthcheck:
@@ -41,7 +39,7 @@ services:
     container_name: academix_redis
     restart: always
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:

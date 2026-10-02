@@ -200,7 +200,7 @@ model Section {
   timetables     TimetableEntry[]
   attendances    Attendance[]
 
-  @@unique([classId, name])
+  @@index([classId])
   @@index([schoolId])
   @@map("sections")
 }

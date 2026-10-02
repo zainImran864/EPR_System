@@ -50,6 +50,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             id={selectId}
             ref={ref}
             disabled={disabled}
+            defaultValue={props.value !== undefined ? undefined : (props.defaultValue ?? (placeholder ? "" : undefined))}
             className={cn(
               "w-full appearance-none rounded-lg border bg-white pl-3.5 pr-10 py-2 text-sm text-slate-900 transition-all duration-150 cursor-pointer",
               "border-slate-300 hover:border-slate-400 focus:border-[#0D9488] focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20",
@@ -60,7 +61,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             {...props}
           >
             {placeholder && (
-              <option value="" disabled selected>
+              <option value="" disabled>
                 {placeholder}
               </option>
             )}

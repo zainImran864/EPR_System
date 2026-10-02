@@ -61,12 +61,9 @@ export const createClass = mutation({
       academicYear: args.academicYear,
     });
 
-    // De-dupe section names within this class (case-insensitive).
-    const seen = new Set<string>();
+    // Create sections for this class (allowing multiple sections per grade)
     for (const sectionName of args.sections) {
-      const key = sectionName.trim().toLowerCase();
-      if (!key || seen.has(key)) continue;
-      seen.add(key);
+      if (!sectionName || !sectionName.trim()) continue;
       await ctx.db.insert("sections", {
         schoolId: args.schoolId,
         classId,
@@ -96,7 +93,7 @@ export const updateClass = mutation({
   },
 });
 
-// Edit a section (name / room / class teacher). Section name unique within class.
+// Edit a section (name / room / class teacher)
 export const updateSection = mutation({
   args: {
     sectionId: v.id("sections"),
@@ -108,17 +105,6 @@ export const updateSection = mutation({
     const { sectionId, name, ...rest } = args;
     const section = await ctx.db.get(sectionId);
     if (!section) throw new Error("Section not found");
-
-    if (name && name.trim()) {
-      const siblings = await ctx.db
-        .query("sections")
-        .withIndex("by_classId", (q) => q.eq("classId", section.classId))
-        .collect();
-      const clash = siblings.some(
-        (s) => s._id !== sectionId && s.name.trim().toLowerCase() === name.trim().toLowerCase()
-      );
-      if (clash) throw new Error("A section with this name already exists in this class");
-    }
 
     const patch = Object.fromEntries(
       Object.entries({ name: name?.trim(), ...rest }).filter(([, v]) => v !== undefined)
