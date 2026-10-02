@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Save } from "lucide-react";
+import { Save, Camera, Percent, DollarSign } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -20,6 +20,10 @@ export interface EditStudentRow {
   guardianPhone: string;
   guardianEmail?: string;
   status: "active" | "inactive" | "transferred";
+  photoUrl?: string;
+  discountPercentage?: number;
+  customMonthlyFee?: number;
+  discountReason?: string;
 }
 
 export interface EditStudentModalProps {
@@ -48,6 +52,10 @@ export const EditStudentModal: React.FC<EditStudentModalProps> = ({
     guardianPhone: "",
     guardianEmail: "",
     status: "active" as "active" | "inactive" | "transferred",
+    photoUrl: "",
+    discountPercentage: 0,
+    customMonthlyFee: "",
+    discountReason: "",
   });
   const [saving, setSaving] = useState(false);
 
@@ -64,6 +72,10 @@ export const EditStudentModal: React.FC<EditStudentModalProps> = ({
         guardianPhone: student.guardianPhone,
         guardianEmail: student.guardianEmail ?? "",
         status: student.status,
+        photoUrl: student.photoUrl ?? "",
+        discountPercentage: student.discountPercentage ?? 0,
+        customMonthlyFee: student.customMonthlyFee ? String(student.customMonthlyFee) : "",
+        discountReason: student.discountReason ?? "",
       });
     }
   }, [student]);
@@ -94,6 +106,10 @@ export const EditStudentModal: React.FC<EditStudentModalProps> = ({
         guardianPhone: form.guardianPhone,
         guardianEmail: form.guardianEmail || undefined,
         status: form.status,
+        photoUrl: form.photoUrl || undefined,
+        discountPercentage: form.discountPercentage ? Number(form.discountPercentage) : 0,
+        customMonthlyFee: form.customMonthlyFee ? Number(form.customMonthlyFee) : undefined,
+        discountReason: form.discountReason || undefined,
       });
       onClose();
     } finally {
@@ -193,6 +209,58 @@ export const EditStudentModal: React.FC<EditStudentModalProps> = ({
             options={sectionOptions}
           />
         </div>
+
+        {/* Student Photo & Concession */}
+        <div className="pt-2 border-t border-slate-100">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            Student Photo &amp; Fee Scholarship
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Input
+            label="Student Photo URL"
+            placeholder="https://images.unsplash.com/... or /avatars/..."
+            value={form.photoUrl}
+            onChange={(e) => setForm({ ...form, photoUrl: e.target.value })}
+            leftIcon={<Camera className="w-4 h-4 text-slate-400" />}
+            helperText="Used on official Roll Number Slips &amp; Transcripts"
+          />
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              label="Fee Discount (%)"
+              type="number"
+              min="0"
+              max="100"
+              placeholder="0"
+              value={form.discountPercentage || ""}
+              onChange={(e) =>
+                setForm({ ...form, discountPercentage: Number(e.target.value) || 0 })
+              }
+              leftIcon={<Percent className="w-3.5 h-3.5 text-slate-400" />}
+            />
+            <Input
+              label="Custom Fee ($)"
+              type="number"
+              min="0"
+              placeholder="Override"
+              value={form.customMonthlyFee}
+              onChange={(e) =>
+                setForm({ ...form, customMonthlyFee: e.target.value })
+              }
+              leftIcon={<DollarSign className="w-3.5 h-3.5 text-slate-400" />}
+            />
+          </div>
+        </div>
+
+        {Number(form.discountPercentage) > 0 && (
+          <Input
+            label="Scholarship / Discount Reason"
+            placeholder="e.g. Merit Scholarship, Sibling Discount"
+            value={form.discountReason}
+            onChange={(e) => setForm({ ...form, discountReason: e.target.value })}
+          />
+        )}
 
         <div className="pt-2 border-t border-slate-100">
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">

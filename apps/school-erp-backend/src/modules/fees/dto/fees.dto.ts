@@ -1,5 +1,4 @@
-import { IsDateString, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
-import { FeeStatus } from '@prisma/client';
+import { IsBoolean, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateChallanDto {
   @IsString()
@@ -26,7 +25,15 @@ export class CreateChallanDto {
 
   @IsOptional()
   @IsNumber()
+  discountAmount?: number;
+
+  @IsOptional()
+  @IsNumber()
   fineAmount?: number;
+
+  @IsOptional()
+  @IsString()
+  customNotes?: string;
 }
 
 export class PayChallanDto {
@@ -42,6 +49,10 @@ export class GenerateBulkChallansDto {
   @IsOptional()
   @IsString()
   classId?: string;
+
+  @IsOptional()
+  @IsString()
+  sectionId?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -60,4 +71,22 @@ export class GenerateBulkChallansDto {
 
   @IsNumber()
   amount: number;
+
+  @IsOptional()
+  @IsBoolean()
+  applyStudentDiscounts?: boolean;
+}
+
+export class SetStudentDiscountDto {
+  @IsOptional()
+  @IsNumber()
+  discountPercentage?: number;
+
+  @IsOptional()
+  @IsNumber()
+  customMonthlyFee?: number;
+
+  @IsOptional()
+  @IsString()
+  discountReason?: string;
 }

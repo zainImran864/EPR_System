@@ -1,6 +1,6 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { FeesService } from './fees.service';
-import { CreateChallanDto, PayChallanDto, GenerateBulkChallansDto } from './dto/fees.dto';
+import { CreateChallanDto, PayChallanDto, GenerateBulkChallansDto, SetStudentDiscountDto } from './dto/fees.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -43,6 +43,17 @@ export class FeesController {
 
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
+  @Patch('student-discount/:studentId')
+  async setStudentDiscount(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('studentId') studentId: string,
+    @Body() dto: SetStudentDiscountDto,
+  ) {
+    return this.feesService.setStudentDiscount(user.schoolId!, studentId, dto);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @Post('challans/bulk')
   async generateBulkChallans(
     @CurrentUser() user: CurrentUserPayload,
@@ -60,5 +71,13 @@ export class FeesController {
     @Body() dto: PayChallanDto,
   ) {
     return this.feesService.payChallan(user.schoolId!, id, dto);
+  }
+
+  @Get('student/:studentId/ledger')
+  async getStudentLedger(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('studentId') studentId: string,
+  ) {
+    return this.feesService.getStudentLedger(user.schoolId!, studentId);
   }
 }

@@ -10,6 +10,9 @@ import {
   Power,
   Pencil,
   Trash2,
+  ArrowUpRight,
+  ArrowDownRight,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -20,11 +23,13 @@ import { DataGrid, type Column } from "@/components/ui/DataGrid";
 import { Pagination } from "@/components/ui/Pagination";
 import { AddStudentModal } from "./AddStudentModal";
 import { EditStudentModal, type EditStudentRow } from "./EditStudentModal";
+import { ProgressionModal } from "./ProgressionModal";
 import { useStudents } from "@/app/hooks/useStudents";
 import { useClasses } from "@/app/hooks/useClasses";
 import { useActiveSchool } from "@/app/hooks/useActiveSchool";
 import { useToast } from "@/app/hooks/useToast";
 import { exportToExcel } from "@/app/lib/exportExcel";
+import { studentsRestApi } from "@/app/api/client";
 
 type StudentRow = {
   _id: string;
@@ -62,7 +67,26 @@ export const StudentDirectory: React.FC = () => {
   const { school } = useActiveSchool();
   const { success, error } = useToast();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isProgressionOpen, setIsProgressionOpen] = useState(false);
   const [editing, setEditing] = useState<EditStudentRow | null>(null);
+
+  const handlePromoteSingle = async (s: StudentRow) => {
+    try {
+      const res = await studentsRestApi.promote(s._id);
+      success(res.message || `${s.firstName} promoted successfully.`);
+    } catch (err: any) {
+      error(err.message || "Failed to promote student.");
+    }
+  };
+
+  const handleDemoteSingle = async (s: StudentRow) => {
+    try {
+      const res = await studentsRestApi.demote(s._id);
+      success(res.message || `${s.firstName} demoted.`);
+    } catch (err: any) {
+      error(err.message || "Failed to demote student.");
+    }
+  };
 
   const handleExport = () =>
     exportToExcel(
@@ -179,6 +203,24 @@ export const StudentDirectory: React.FC = () => {
           <Button
             variant="ghost"
             size="xs"
+            onClick={() => handlePromoteSingle(s)}
+            title="Promote to Next Grade"
+            className="p-1 text-slate-400 hover:text-teal-600"
+          >
+            <ArrowUpRight className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="xs"
+            onClick={() => handleDemoteSingle(s)}
+            title="Demote to Previous Grade"
+            className="p-1 text-slate-400 hover:text-rose-600"
+          >
+            <ArrowDownRight className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="xs"
             onClick={() => setEditing(s as unknown as EditStudentRow)}
             title="Edit"
             className="p-1 text-slate-400 hover:text-[#0D9488]"
@@ -250,6 +292,15 @@ export const StudentDirectory: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5">
+          <Button
+            variant="outline"
+            size="sm"
+            leftIcon={<Sparkles className="w-4 h-4 text-amber-500" />}
+            onClick={() => setIsProgressionOpen(true)}
+            className="text-xs border-amber-300 hover:bg-amber-50 text-amber-900"
+          >
+            Academic Progression Engine
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -362,6 +413,15 @@ export const StudentDirectory: React.FC = () => {
         onSubmit={handleEdit}
         classOptions={classOptions}
         getSections={sectionOptions}
+      />
+
+      {/* Academic Progression & Promotion Engine Modal */}
+      <ProgressionModal
+        isOpen={isProgressionOpen}
+        onClose={() => setIsProgressionOpen(false)}
+        onSuccess={() => {
+          // Re-fetch students if needed
+        }}
       />
     </div>
   );

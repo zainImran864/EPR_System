@@ -1,4 +1,4 @@
-import { IsDateString, IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsBoolean } from 'class-validator';
 
 export class CreateStudentDto {
   @IsString()
@@ -22,6 +22,10 @@ export class CreateStudentDto {
   rollNumber?: string;
 
   @IsOptional()
+  @IsString()
+  photoUrl?: string; // Optional student picture for roll number slips and ID cards
+
+  @IsOptional()
   @IsDateString()
   dob?: string;
 
@@ -36,6 +40,18 @@ export class CreateStudentDto {
   @IsOptional()
   @IsString()
   emergencyContact?: string;
+
+  @IsOptional()
+  @IsNumber()
+  discountPercentage?: number;
+
+  @IsOptional()
+  @IsNumber()
+  customMonthlyFee?: number;
+
+  @IsOptional()
+  @IsString()
+  discountReason?: string;
 
   // Parent Information
   @IsString()
@@ -78,6 +94,14 @@ export class UpdateStudentDto {
 
   @IsOptional()
   @IsString()
+  photoUrl?: string;
+
+  @IsOptional()
+  @IsDateString()
+  dob?: string;
+
+  @IsOptional()
+  @IsString()
   gender?: string;
 
   @IsOptional()
@@ -89,16 +113,77 @@ export class UpdateStudentDto {
   emergencyContact?: string;
 
   @IsOptional()
-  @IsString()
-  parentName?: string;
+  @IsNumber()
+  discountPercentage?: number;
+
+  @IsOptional()
+  @IsNumber()
+  customMonthlyFee?: number;
 
   @IsOptional()
   @IsString()
-  parentPhone?: string;
+  discountReason?: string;
 }
 
 export class UpdateStudentStatusDto {
   @IsString()
   @IsNotEmpty()
-  status: string; // 'active', 'inactive', 'alumni'
+  status: string; // active, inactive, alumni
+}
+
+export class PromoteStudentDto {
+  @IsOptional()
+  @IsString()
+  targetClassId?: string;
+
+  @IsOptional()
+  @IsString()
+  targetSectionId?: string;
+}
+
+export class DemoteStudentDto {
+  @IsOptional()
+  @IsString()
+  targetClassId?: string;
+
+  @IsOptional()
+  @IsString()
+  targetSectionId?: string;
+}
+
+export class AutoProgressionDto {
+  @IsString()
+  @IsNotEmpty()
+  finalExamTermId: string;
+
+  @IsOptional()
+  @IsNumber()
+  passingThreshold?: number; // default 40%
+
+  @IsOptional()
+  @IsBoolean()
+  autoPromotePassing?: boolean; // default true
+}
+
+export enum ProgressionAction {
+  PROMOTE = 'PROMOTE',
+  RETAIN = 'RETAIN',
+  DEMOTE = 'DEMOTE',
+}
+
+export class ProgressionDecisionDto {
+  @IsString()
+  @IsNotEmpty()
+  studentId: string;
+
+  @IsEnum(ProgressionAction)
+  action: ProgressionAction;
+
+  @IsOptional()
+  @IsString()
+  targetClassId?: string;
+
+  @IsOptional()
+  @IsString()
+  targetSectionId?: string;
 }

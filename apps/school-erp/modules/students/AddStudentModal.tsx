@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "convex/react";
-import { Mail, Hash, KeyRound, Send } from "lucide-react";
+import { Mail, Hash, KeyRound, Send, Camera, Percent, DollarSign, Image } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -23,6 +23,10 @@ export interface AddStudentSubmit {
   guardianEmail?: string;
   studentContactEmail?: string;
   password?: string;
+  photoUrl?: string;
+  discountPercentage?: number;
+  customMonthlyFee?: number;
+  discountReason?: string;
 }
 
 export interface AddStudentModalProps {
@@ -46,6 +50,10 @@ const emptyForm = {
   guardianEmail: "",
   studentContactEmail: "",
   password: "",
+  photoUrl: "",
+  discountPercentage: 0,
+  customMonthlyFee: "",
+  discountReason: "",
 };
 
 export const AddStudentModal: React.FC<AddStudentModalProps> = ({
@@ -109,6 +117,10 @@ export const AddStudentModal: React.FC<AddStudentModalProps> = ({
         guardianEmail: formData.guardianEmail || undefined,
         studentContactEmail: formData.studentContactEmail || undefined,
         password: formData.password,
+        photoUrl: formData.photoUrl || undefined,
+        discountPercentage: formData.discountPercentage ? Number(formData.discountPercentage) : 0,
+        customMonthlyFee: formData.customMonthlyFee ? Number(formData.customMonthlyFee) : undefined,
+        discountReason: formData.discountReason || undefined,
       });
       setFormData(emptyForm);
       onClose();
@@ -221,6 +233,58 @@ export const AddStudentModal: React.FC<AddStudentModalProps> = ({
               options={sectionOptions}
             />
           </div>
+
+          {/* Student Photo & Concession */}
+          <div className="pt-2 border-t border-slate-100">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Student Photo &amp; Fee Scholarship (Optional)
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Student Photo URL"
+              placeholder="https://images.unsplash.com/... or /avatars/..."
+              value={formData.photoUrl}
+              onChange={(e) => setFormData({ ...formData, photoUrl: e.target.value })}
+              leftIcon={<Camera className="w-4 h-4 text-slate-400" />}
+              helperText="Printed on official Roll Number Slips &amp; Report Cards"
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                label="Fee Discount (%)"
+                type="number"
+                min="0"
+                max="100"
+                placeholder="0"
+                value={formData.discountPercentage || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, discountPercentage: Number(e.target.value) || 0 })
+                }
+                leftIcon={<Percent className="w-3.5 h-3.5 text-slate-400" />}
+              />
+              <Input
+                label="Custom Fee ($)"
+                type="number"
+                min="0"
+                placeholder="Override"
+                value={formData.customMonthlyFee}
+                onChange={(e) =>
+                  setFormData({ ...formData, customMonthlyFee: e.target.value })
+                }
+                leftIcon={<DollarSign className="w-3.5 h-3.5 text-slate-400" />}
+              />
+            </div>
+          </div>
+
+          {Number(formData.discountPercentage) > 0 && (
+            <Input
+              label="Scholarship / Discount Reason"
+              placeholder="e.g. Merit Scholarship, Need-Based Aid, Sibling Concession"
+              value={formData.discountReason}
+              onChange={(e) => setFormData({ ...formData, discountReason: e.target.value })}
+            />
+          )}
 
           {/* Guardian Contact */}
           <div className="pt-2 border-t border-slate-100">

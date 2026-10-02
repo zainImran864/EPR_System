@@ -1,6 +1,14 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { StudentsService } from './students.service';
-import { CreateStudentDto, UpdateStudentDto, UpdateStudentStatusDto } from './dto/student.dto';
+import {
+  CreateStudentDto,
+  UpdateStudentDto,
+  UpdateStudentStatusDto,
+  PromoteStudentDto,
+  DemoteStudentDto,
+  AutoProgressionDto,
+  ProgressionDecisionDto,
+} from './dto/student.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -80,11 +88,43 @@ export class StudentsController {
 
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
-  @Delete(':id')
-  async deleteStudent(
+  @Post(':id/promote')
+  async promoteStudent(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
+    @Body() dto: PromoteStudentDto,
   ) {
-    return this.studentsService.deleteStudent(user.schoolId!, id);
+    return this.studentsService.promoteStudent(user.schoolId!, id, dto);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @Post(':id/demote')
+  async demoteStudent(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() dto: DemoteStudentDto,
+  ) {
+    return this.studentsService.demoteStudent(user.schoolId!, id, dto);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @Post('auto-progression')
+  async autoProgressAcademicYear(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: AutoProgressionDto,
+  ) {
+    return this.studentsService.autoProgressAcademicYear(user.schoolId!, dto);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @Post('apply-decisions')
+  async applyProgressionDecisions(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body('decisions') decisions: ProgressionDecisionDto[],
+  ) {
+    return this.studentsService.applyProgressionDecisions(user.schoolId!, decisions);
   }
 }

@@ -175,6 +175,7 @@ model Class {
   sections  Section[]
   students  Student[]
   subjects  Subject[]
+  paperSchedules ExamPaperSchedule[]
 
   @@unique([schoolId, grade])
   @@index([schoolId])
@@ -210,8 +211,9 @@ model Subject {
   code        String?          // e.g. "MATH-10"
   createdAt   DateTime         @default(now())
 
-  marks       Mark[]
-  timetables  TimetableEntry[]
+  marks          Mark[]
+  timetables     TimetableEntry[]
+  paperSchedules ExamPaperSchedule[]
 
   @@unique([schoolId, name, classId])
   @@index([schoolId])
@@ -249,32 +251,36 @@ model Teacher {
 // 6. Students & Parents
 // ─────────────────────────────────────────────────────────────────────────────
 model Student {
-  id               String       @id @default(cuid())
-  schoolId         String
-  school           School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  userId           String       @unique
-  user             User         @relation("StudentUser", fields: [userId], references: [id], onDelete: Cascade)
-  admissionNumber  String       // e.g. "ADM-2026-001"
-  fullName         String
-  email            String
-  classId          String
-  class            Class        @relation(fields: [classId], references: [id])
-  sectionId        String
-  section          Section      @relation(fields: [sectionId], references: [id])
-  rollNumber       String?
-  dob              DateTime?
-  gender           String?
-  address          String?
-  emergencyContact String?
-  status           String       @default("active") // active, inactive, alumni
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  id                 String       @id @default(cuid())
+  schoolId           String
+  school             School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  userId             String       @unique
+  user               User         @relation("StudentUser", fields: [userId], references: [id], onDelete: Cascade)
+  admissionNumber    String       // e.g. "ADM-2026-001"
+  fullName           String
+  email              String
+  photoUrl           String?      // Optional student photo for ID cards & Roll No slips
+  classId            String
+  class              Class        @relation(fields: [classId], references: [id])
+  sectionId          String
+  section            Section      @relation(fields: [sectionId], references: [id])
+  rollNumber         String?
+  dob                DateTime?
+  gender             String?
+  address            String?
+  emergencyContact   String?
+  discountPercentage Float?       @default(0) // Per-student scholarship/discount (e.g. 20, 50, 100)
+  customMonthlyFee   Float?       // Per-student custom fee override
+  discountReason     String?      // e.g. "Merit Scholarship", "Sibling Discount", "Need-Based Aid"
+  status             String       @default("active") // active, inactive, alumni
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
 
-  parentId         String?
-  parent           Parent?      @relation(fields: [parentId], references: [id])
-  attendances      Attendance[]
-  marks            Mark[]
-  feeChallans      FeeChallan[]
+  parentId           String?
+  parent             Parent?      @relation(fields: [parentId], references: [id])
+  attendances        Attendance[]
+  marks              Mark[]
+  feeChallans        FeeChallan[]
 
   @@unique([schoolId, admissionNumber])
   @@index([schoolId])
@@ -325,20 +331,41 @@ model Attendance {
 // 8. Examinations, Marks & Results
 // ─────────────────────────────────────────────────────────────────────────────
 model ExamTerm {
-  id           String    @id @default(cuid())
-  schoolId     String
-  school       School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  name         String    // e.g. "First Term Examination 2026"
-  academicYear String    // e.g. "2026-2027"
-  startDate    DateTime?
-  endDate      DateTime?
-  createdAt    DateTime  @default(now())
+  id              String               @id @default(cuid())
+  schoolId        String
+  school          School               @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  name            String               // e.g. "First Term Examination 2026"
+  termType        String?              @default("MID_TERM") // MID_TERM, MID_TERM_2, FINAL_TERM, SUPPLEMENTARY
+  academicYear    String               // e.g. "2026-2027"
+  startDate       DateTime?
+  endDate         DateTime?
+  createdAt       DateTime             @default(now())
 
-  marks        Mark[]
+  marks           Mark[]
+  paperSchedules  ExamPaperSchedule[]
 
   @@unique([schoolId, name, academicYear])
   @@index([schoolId])
   @@map("exam_terms")
+}
+
+model ExamPaperSchedule {
+  id           String    @id @default(cuid())
+  examTermId   String
+  examTerm     ExamTerm  @relation(fields: [examTermId], references: [id], onDelete: Cascade)
+  subjectId    String
+  subject      Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  classId      String
+  class        Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  examDate     DateTime
+  startTime    String    // "09:00"
+  endTime      String    // "12:00"
+  roomNo       String?   // "Main Hall", "Room 101"
+  totalMarks   Float     @default(100)
+  createdAt    DateTime  @default(now())
+
+  @@index([examTermId, classId])
+  @@map("exam_paper_schedules")
 }
 
 model Mark {
@@ -368,24 +395,26 @@ model Mark {
 // 9. Fees & Challans
 // ─────────────────────────────────────────────────────────────────────────────
 model FeeChallan {
-  id            String    @id @default(cuid())
-  schoolId      String
-  school        School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  studentId     String
-  student       Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  challanNumber String    @unique // e.g. "CH-2026-10-001"
-  title         String    // e.g. "October 2026 Tuition Fee"
-  month         String?   // e.g. "October"
-  academicYear  String    // e.g. "2026-2027"
-  dueDate       DateTime
-  amount        Float
-  fineAmount    Float     @default(0)
-  paidAmount    Float     @default(0)
-  status        FeeStatus @default(UNPAID)
-  paymentDate   DateTime?
-  paymentMethod String?   // "Cash", "Bank Transfer", "Cheque"
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id             String    @id @default(cuid())
+  schoolId       String
+  school         School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  studentId      String
+  student        Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  challanNumber  String    @unique // e.g. "CH-2026-10-001"
+  title          String    // e.g. "October 2026 Tuition Fee"
+  month          String?   // e.g. "October"
+  academicYear   String    // e.g. "2026-2027"
+  dueDate        DateTime
+  amount         Float
+  discountAmount Float     @default(0)
+  fineAmount     Float     @default(0)
+  paidAmount     Float     @default(0)
+  status         FeeStatus @default(UNPAID)
+  customNotes    String?
+  paymentDate    DateTime?
+  paymentMethod  String?   // "Cash", "Bank Transfer", "Cheque"
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@index([schoolId, status])
   @@index([studentId])

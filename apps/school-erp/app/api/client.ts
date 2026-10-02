@@ -173,12 +173,20 @@ export const schoolsRestApi = {
 };
 
 export const studentsRestApi = {
-  getAll: (params?: { classId?: string; sectionId?: string }) =>
+  getAll: (params?: { classId?: string; sectionId?: string; status?: string; search?: string }) =>
     apiClient.get<any[]>('/students', params),
   getById: (id: string) => apiClient.get<any>(`/students/${id}`),
   create: (data: any) => apiClient.post<any>('/students', data),
   update: (id: string, data: any) => apiClient.patch<any>(`/students/${id}`, data),
   delete: (id: string) => apiClient.delete<any>(`/students/${id}`),
+  promote: (id: string, data?: { targetClassId?: string; targetSectionId?: string }) =>
+    apiClient.post<{ success: boolean; message: string; student: any }>(`/students/${id}/promote`, data || {}),
+  demote: (id: string, data?: { targetClassId?: string; targetSectionId?: string }) =>
+    apiClient.post<{ success: boolean; message: string; student: any }>(`/students/${id}/demote`, data || {}),
+  autoProgress: (data: { finalExamTermId: string; passingThreshold?: number; autoPromotePassing?: boolean }) =>
+    apiClient.post<any>('/students/auto-progression', data),
+  applyProgressionDecisions: (decisions: any[]) =>
+    apiClient.post<any>('/students/apply-decisions', { decisions }),
 };
 
 export const teachersRestApi = {
@@ -209,12 +217,20 @@ export const attendanceRestApi = {
 export const marksRestApi = {
   getExams: () => apiClient.get<any[]>('/marks/exam-terms'),
   createExam: (data: any) => apiClient.post<any>('/marks/exam-terms', data),
+  savePaperSchedules: (data: { examTermId: string; classId: string; schedules: any[] }) =>
+    apiClient.post<any>('/marks/paper-schedules', data),
+  getPaperSchedules: (examTermId: string, classId: string) =>
+    apiClient.get<any[]>('/marks/paper-schedules', { examTermId, classId }),
+  getRollNoSlips: (examTermId: string, classId: string, sectionId?: string) =>
+    apiClient.get<any[]>('/marks/roll-no-slips', { examTermId, classId, sectionId }),
+  getSingleRollNoSlip: (studentId: string, examTermId: string, isRetake?: boolean) =>
+    apiClient.get<any>(`/marks/roll-no-slip/${studentId}`, { examTermId, isRetake: isRetake ? 'true' : 'false' }),
   getMarks: (examId: string, subjectId?: string, sectionId?: string) =>
     apiClient.get<any[]>('/marks/section-marks', { examTermId: examId, subjectId, sectionId }),
   submitBulk: (data: { examTermId: string; subjectId: string; entries: any[] }) =>
     apiClient.post<any>('/marks/save', data),
-  getStudentReportCard: (studentId: string, examTermId: string) =>
-    apiClient.get<any>(`/marks/report-card/${studentId}`, { examTermId }),
+  getStudentReportCard: (studentId: string, examTermId?: string) =>
+    apiClient.get<any>(`/marks/report-card/${studentId}`, examTermId ? { examTermId } : undefined),
   getExamAnalytics: (examTermId: string, sectionId?: string) =>
     apiClient.get<any>('/marks/analytics', { examTermId, sectionId }),
   getBatchReportCards: (examTermId: string, sectionId: string) =>
@@ -225,10 +241,15 @@ export const feesRestApi = {
   getStructures: () => apiClient.get<any[]>('/fees/structures'),
   createStructure: (data: any) => apiClient.post<any>('/fees/structures', data),
   getChallans: (params?: any) => apiClient.get<any[]>('/fees/challans', params),
-  generateMonthly: (data: any) => apiClient.post<any>('/fees/generate-monthly', data),
-  payFee: (data: any) => apiClient.post<any>('/fees/pay', data),
+  createChallan: (data: any) => apiClient.post<any>('/fees/challans', data),
+  generateMonthly: (data: { classId?: string; sectionId?: string; title: string; month: string; academicYear: string; dueDate: string; amount: number; applyStudentDiscounts?: boolean }) =>
+    apiClient.post<any>('/fees/challans/bulk', data),
+  setStudentDiscount: (studentId: string, data: { discountPercentage?: number; customMonthlyFee?: number; discountReason?: string }) =>
+    apiClient.patch<any>(`/fees/student-discount/${studentId}`, data),
+  payFee: (id: string, data: { paidAmount: number; paymentMethod?: string }) =>
+    apiClient.post<any>(`/fees/challans/${id}/pay`, data),
   getStudentLedger: (studentId: string) =>
-    apiClient.get<any>(`/fees/student/${studentId}`),
+    apiClient.get<any>(`/fees/student/${studentId}/ledger`),
 };
 
 export const notificationsRestApi = {
