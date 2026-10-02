@@ -94,3 +94,47 @@ export class SavePaperSchedulesDto {
   @Type(() => PaperScheduleEntryDto)
   schedules: PaperScheduleEntryDto[];
 }
+
+export class CreateQuestionPaperDto {
+  @IsString()
+  @IsNotEmpty()
+  examTermId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  classId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  subjectId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  title: string;
+
+  @IsOptional()
+  @IsNumber()
+  durationHours?: number;
+
+  @IsOptional()
+  @IsNumber()
+  totalMarks?: number;
+
+  @IsOptional()
+  @IsString()
+  instructions?: string;
+
+  @IsOptional()
+  @IsString()
+  fileUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  questionsJson?: string;
+}
+
+export class SetActiveQuestionPaperDto {
+  @IsString()
+  @IsNotEmpty()
+  questionPaperId: string;
+}

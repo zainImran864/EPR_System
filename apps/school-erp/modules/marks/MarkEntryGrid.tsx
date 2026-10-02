@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Award,
@@ -8,6 +8,10 @@ import {
   Printer,
   FileText,
   Sparkles,
+  BookOpen,
+  ShieldAlert,
+  UserCheck,
+  FileSpreadsheet,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -25,8 +29,11 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import { useMarks } from "@/app/hooks/useMarks";
 import { useClasses } from "@/app/hooks/useClasses";
+import { useAuth } from "@/app/hooks/useAuth";
+import { marksRestApi } from "@/app/api/client";
 import { ExamAnalyticsCard } from "./ExamAnalyticsCard";
 import { ExamScheduleModal } from "./ExamScheduleModal";
+import { QuestionPaperManagerModal } from "./QuestionPaperManagerModal";
 
 // Used only for the class-average badge label — roster rows use pre-computed grade from the store.
 function gradeLabel(pct: number): string {
@@ -46,6 +53,7 @@ function gradeBadgeVariant(grade: string): "success" | "primary" | "warning" | "
 }
 
 export const MarkEntryGrid: React.FC = () => {
+  const { role } = useAuth();
   const {
     exams,
     subjects,
@@ -68,6 +76,45 @@ export const MarkEntryGrid: React.FC = () => {
 
   const [savedFlash, setSavedFlash] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [isQuestionPaperModalOpen, setIsQuestionPaperModalOpen] = useState(false);
+
+  // Teacher Context & RBAC state
+  const [teacherContext, setTeacherContext] = useState<any>(null);
+
+  useEffect(() => {
+    const loadContext = async () => {
+      try {
+        const ctx = await marksRestApi.getTeacherContext();
+        setTeacherContext(ctx);
+      } catch {
+        // non-critical fallback
+      }
+    };
+    loadContext();
+  }, []);
+
+  const isAdmin = role === "admin" || role === "superadmin";
+  const isTeacher = role === "teacher";
+
+  // Check if teacher is the designated Class Teacher for this section
+  const isClassTeacherForSection =
+    Boolean(teacherContext?.isClassTeacher) &&
+    teacherContext.classTeacherSections?.some(
+      (s: any) => s.sectionId === selectedSectionId,
+    );
+
+  // Check if current user actually teaches this specific subject
+  const teachesSelectedSubject =
+    !isTeacher ||
+    teacherContext?.taughtSubjects?.some(
+      (ts: any) =>
+        ts.subjectId === selectedSubjectId &&
+        (!selectedSectionId || ts.sectionId === selectedSectionId),
+    );
+
+  // Can current user edit scores for this subject?
+  // Only the assigned subject teacher can edit scores. Admin and class teachers (who don't teach this subject) have read-only oversight.
+  const canEditScores = isTeacher && teachesSelectedSubject;
 
   const handleSave = async () => {
     const ok = await saveMarks();
@@ -93,67 +140,103 @@ export const MarkEntryGrid: React.FC = () => {
 
   const selectedExamName = exams.find((e) => e._id === selectedExamId)?.name || "Exam Term";
   const selectedClassName = classOptions.find((c) => c.value === selectedClassId)?.label || "Class";
+  const selectedSubjectName = subjects.find((s) => s._id === selectedSubjectId)?.name || "Subject";
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <Award className="w-5 h-5 text-[#0D9488]" aria-hidden="true" />
-            Examinations &amp; Mark Entry
-          </h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <Award className="w-5 h-5 text-[#0D9488]" aria-hidden="true" />
+              Examinations &amp; Mark Entry
+            </h2>
+            {isClassTeacherForSection && (
+              <Badge variant="success" size="sm" dot>
+                Class Teacher
+              </Badge>
+            )}
+            {isTeacher && !isClassTeacherForSection && teachesSelectedSubject && (
+              <Badge variant="primary" size="sm">
+                Subject Teacher
+              </Badge>
+            )}
+            {isAdmin && (
+              <Badge variant="neutral" size="sm">
+                Academic Administration
+              </Badge>
+            )}
+          </div>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Configure paper date-sheets, record term marks, print student Roll No Slips &amp; Transcripts
+            Subject-wise mark entry, multi-version question paper printing, roll number slips &amp; comprehensive transcripts
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {selectedClassId && selectedExamId && selectedSubjectId && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsQuestionPaperModalOpen(true)}
+              leftIcon={<BookOpen className="w-3.5 h-3.5 text-[#0D9488]" />}
+              className="text-xs"
+            >
+              Question Papers
+            </Button>
+          )}
+
           {selectedClassId && selectedExamId && (
             <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsScheduleModalOpen(true)}
-                leftIcon={<Calendar className="w-3.5 h-3.5 text-[#0D9488]" />}
-                className="text-xs"
-              >
-                Date-Sheet
-              </Button>
+              {(isAdmin || isClassTeacherForSection) && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsScheduleModalOpen(true)}
+                    leftIcon={<Calendar className="w-3.5 h-3.5 text-slate-600" />}
+                    className="text-xs"
+                  >
+                    Date-Sheet
+                  </Button>
 
-              <Link
-                href={`/print/roll-no-slip?examTermId=${selectedExamId}&classId=${selectedClassId}`}
-                target="_blank"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 shadow-xs"
-              >
-                <Printer className="w-3.5 h-3.5 text-slate-500" />
-                Roll No Slips
-              </Link>
+                  <Link
+                    href={`/print/roll-no-slip?examTermId=${selectedExamId}&classId=${selectedClassId}`}
+                    target="_blank"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 shadow-xs"
+                  >
+                    <Printer className="w-3.5 h-3.5 text-slate-500" />
+                    Roll No Slips
+                  </Link>
 
-              {selectedSectionId && (
-                <Link
-                  href={`/print/report-card?examTermId=${selectedExamId}&sectionId=${selectedSectionId}`}
-                  target="_blank"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-teal-300 bg-teal-50 text-teal-800 hover:bg-teal-100 shadow-xs"
-                >
-                  <FileText className="w-3.5 h-3.5 text-teal-600" />
-                  Report Cards
-                </Link>
+                  {selectedSectionId && (
+                    <Link
+                      href={`/print/report-card?examTermId=${selectedExamId}&sectionId=${selectedSectionId}`}
+                      target="_blank"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-teal-300 bg-teal-50 text-teal-800 hover:bg-teal-100 shadow-xs"
+                    >
+                      <FileText className="w-3.5 h-3.5 text-teal-600" />
+                      Report Cards
+                    </Link>
+                  )}
+                </>
               )}
             </>
           )}
 
-          <Button
-            variant={savedFlash ? "success" : "primary"}
-            size="sm"
-            onClick={handleSave}
-            isLoading={isSaving}
-            disabled={!allSelected || marksRoster.length === 0}
-            leftIcon={savedFlash ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-            className="text-xs"
-          >
-            {savedFlash ? "Scores Published!" : "Save Gradebook"}
-          </Button>
+          {canEditScores && (
+            <Button
+              variant={savedFlash ? "success" : "primary"}
+              size="sm"
+              onClick={handleSave}
+              isLoading={isSaving}
+              disabled={!allSelected || marksRoster.length === 0}
+              leftIcon={savedFlash ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+              className="text-xs"
+            >
+              {savedFlash ? "Scores Published!" : "Save Gradebook"}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -293,17 +376,30 @@ export const MarkEntryGrid: React.FC = () => {
 
                   <TableCell>
                     <div className="w-24">
-                      <input
-                        type="number"
-                        min={0}
-                        max={100}
-                        value={row.obtainedMarks}
-                        aria-label={`Obtained marks for ${fullName}`}
-                        onChange={(e) =>
-                          updateScore(idx, parseInt(e.target.value) || 0)
-                        }
-                        className="w-full font-mono-data text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-slate-300 text-slate-900 focus:outline-none focus:border-[#0D9488] focus:ring-2 focus:ring-[#0D9488]/20 bg-slate-50 focus:bg-white"
-                      />
+                      {canEditScores ? (
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          value={row.obtainedMarks}
+                          aria-label={`Obtained marks for ${fullName}`}
+                          onChange={(e) =>
+                            updateScore(idx, parseInt(e.target.value) || 0)
+                          }
+                          className="w-full font-mono-data text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-slate-300 text-slate-900 focus:outline-none focus:border-[#0D9488] focus:ring-2 focus:ring-[#0D9488]/20 bg-slate-50 focus:bg-white"
+                        />
+                      ) : (
+                        <div
+                          className="px-2.5 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-xs font-mono-data font-semibold text-slate-700 text-center"
+                          title={
+                            isAdmin
+                              ? "Score entry is reserved for the assigned Subject Teacher"
+                              : "Read-only: You are viewing marks entered by the subject teacher"
+                          }
+                        >
+                          {row.obtainedMarks != null ? row.obtainedMarks : "—"}
+                        </div>
+                      )}
                     </div>
                   </TableCell>
 
@@ -354,6 +450,19 @@ export const MarkEntryGrid: React.FC = () => {
         </Table>
       )}
 
+      {/* Non-editable banner for Class Teachers or Admins */}
+      {allSelected && !canEditScores && marksRoster.length > 0 && (
+        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-center justify-between">
+          <span>
+            {isAdmin
+              ? "Academic Integrity Notice: Administrators have full oversight of results and transcripts, but score modifications must be submitted directly by the assigned Subject Teacher."
+              : isClassTeacherForSection
+                ? "Class Teacher Oversight Mode: You have full visibility of all subject scores, class report cards, and roll number slips. Scores for this subject are maintained by the assigned Subject Teacher."
+                : "Read-Only Mode: You are not assigned to teach this subject."}
+          </span>
+        </div>
+      )}
+
       {/* Date-Sheet Modal */}
       {selectedExamId && selectedClassId && (
         <ExamScheduleModal
@@ -364,6 +473,21 @@ export const MarkEntryGrid: React.FC = () => {
           classId={selectedClassId}
           className={selectedClassName}
           subjects={subjects}
+        />
+      )}
+
+      {/* Question Papers Modal */}
+      {selectedExamId && selectedClassId && selectedSubjectId && (
+        <QuestionPaperManagerModal
+          isOpen={isQuestionPaperModalOpen}
+          onClose={() => setIsQuestionPaperModalOpen(false)}
+          examTermId={selectedExamId}
+          examTermName={selectedExamName}
+          classId={selectedClassId}
+          className={selectedClassName}
+          subjectId={selectedSubjectId}
+          subjectName={selectedSubjectName}
+          isTeacher={isTeacher}
         />
       )}
     </div>

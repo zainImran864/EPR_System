@@ -87,6 +87,7 @@ model School {
   marks              Mark[]
   feeChallans        FeeChallan[]
   timetables         TimetableEntry[]
+  questionPapers     ExamQuestionPaper[]
 
   @@map("schools")
 }
@@ -176,6 +177,7 @@ model Class {
   students  Student[]
   subjects  Subject[]
   paperSchedules ExamPaperSchedule[]
+  questionPapers ExamQuestionPaper[]
 
   @@unique([schoolId, grade])
   @@index([schoolId])
@@ -183,18 +185,20 @@ model Class {
 }
 
 model Section {
-  id          String           @id @default(cuid())
-  classId     String
-  class       Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
-  schoolId    String
-  name        String           // e.g. "A", "B", "Rose"
-  room        String?
-  capacity    Int              @default(40)
-  createdAt   DateTime         @default(now())
+  id             String           @id @default(cuid())
+  classId        String
+  class          Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
+  schoolId       String
+  name           String           // e.g. "A", "B", "Rose"
+  room           String?
+  capacity       Int              @default(40)
+  classTeacherId String?
+  classTeacher   Teacher?         @relation("ClassTeacherSections", fields: [classTeacherId], references: [id], onDelete: SetNull)
+  createdAt      DateTime         @default(now())
 
-  students    Student[]
-  timetables  TimetableEntry[]
-  attendances Attendance[]
+  students       Student[]
+  timetables     TimetableEntry[]
+  attendances    Attendance[]
 
   @@unique([classId, name])
   @@index([schoolId])
@@ -214,6 +218,7 @@ model Subject {
   marks          Mark[]
   timetables     TimetableEntry[]
   paperSchedules ExamPaperSchedule[]
+  questionPapers ExamQuestionPaper[]
 
   @@unique([schoolId, name, classId])
   @@index([schoolId])
@@ -224,23 +229,25 @@ model Subject {
 // 5. Faculty & Staff (Teachers)
 // ─────────────────────────────────────────────────────────────────────────────
 model Teacher {
-  id             String           @id @default(cuid())
-  schoolId       String
-  school         School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  userId         String           @unique
-  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  employeeId     String           // e.g. "EMP-001"
-  fullName       String
-  email          String
-  phone          String?
-  qualification  String?
-  designation    String?          @default("Teacher")
-  joiningDate    DateTime?        @default(now())
-  specialization String?
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  id                   String              @id @default(cuid())
+  schoolId             String
+  school               School              @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  userId               String              @unique
+  user                 User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  employeeId           String              // e.g. "EMP-001"
+  fullName             String
+  email                String
+  phone                String?
+  qualification        String?
+  designation          String?             @default("Teacher")
+  joiningDate          DateTime?           @default(now())
+  specialization       String?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
 
-  timetables     TimetableEntry[]
+  timetables           TimetableEntry[]
+  classTeacherSections Section[]           @relation("ClassTeacherSections")
+  questionPapers       ExamQuestionPaper[]
 
   @@unique([schoolId, employeeId])
   @@index([schoolId])
@@ -343,6 +350,7 @@ model ExamTerm {
 
   marks           Mark[]
   paperSchedules  ExamPaperSchedule[]
+  questionPapers  ExamQuestionPaper[]
 
   @@unique([schoolId, name, academicYear])
   @@index([schoolId])
@@ -366,6 +374,35 @@ model ExamPaperSchedule {
 
   @@index([examTermId, classId])
   @@map("exam_paper_schedules")
+}
+
+model ExamQuestionPaper {
+  id              String      @id @default(cuid())
+  schoolId        String
+  school          School      @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  examTermId      String
+  examTerm        ExamTerm    @relation(fields: [examTermId], references: [id], onDelete: Cascade)
+  classId         String
+  class           Class       @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subjectId       String
+  subject         Subject     @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacherId       String
+  teacher         Teacher     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  title           String      // e.g. "Mathematics Final Paper - Version A"
+  durationHours   Float       @default(2.5) // in hours e.g. 2.5, 3.0
+  totalMarks      Float       @default(100)
+  instructions    String?     // e.g. "Attempt all questions. Calculators are permitted."
+  fileUrl         String?     // Document / PDF upload link
+  questionsJson   String?     // JSON array of structured questions
+  status          String      @default("DRAFT") // DRAFT, SUBMITTED, APPROVED, ACTIVE
+  isActiveForExam Boolean     @default(false)   // Selected paper to be printed for this exam
+  version         Int         @default(1)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([schoolId, examTermId, classId, subjectId])
+  @@index([teacherId])
+  @@map("exam_question_papers")
 }
 
 model Mark {

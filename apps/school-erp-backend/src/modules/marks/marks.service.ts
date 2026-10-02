@@ -1,6 +1,11 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { CreateExamTermDto, SaveMarksDto, SavePaperSchedulesDto } from './dto/marks.dto';
+import {
+  CreateExamTermDto,
+  SaveMarksDto,
+  SavePaperSchedulesDto,
+  CreateQuestionPaperDto,
+} from './dto/marks.dto';
 
 @Injectable()
 export class MarksService {
@@ -268,7 +273,119 @@ export class MarksService {
     });
   }
 
-  async saveMarks(schoolId: string, dto: SaveMarksDto) {
+  // ─────────────────────────────────────────────────────────────────────────
+  // Teacher Context & RBAC Permissions
+  // ─────────────────────────────────────────────────────────────────────────
+
+  async getTeacherContext(schoolId: string, userId: string, role: string) {
+    if (role !== 'TEACHER') {
+      return {
+        isTeacher: false,
+        isClassTeacher: false,
+        classTeacherSections: [],
+        taughtSubjects: [],
+      };
+    }
+
+    const teacher = await this.prisma.teacher.findFirst({
+      where: { userId, schoolId },
+      include: {
+        classTeacherSections: {
+          include: { class: true },
+        },
+        timetables: {
+          include: {
+            subject: true,
+            section: { include: { class: true } },
+          },
+        },
+      },
+    });
+
+    if (!teacher) {
+      return {
+        isTeacher: true,
+        isClassTeacher: false,
+        classTeacherSections: [],
+        taughtSubjects: [],
+      };
+    }
+
+    const classTeacherSections = teacher.classTeacherSections.map((s) => ({
+      sectionId: s.id,
+      sectionName: s.name,
+      classId: s.classId,
+      className: s.class.name,
+    }));
+
+    // Deduplicate taught subjects across timetable entries
+    const taughtMap = new Map<string, any>();
+    teacher.timetables.forEach((t) => {
+      const key = `${t.section.classId}_${t.sectionId}_${t.subjectId}`;
+      if (!taughtMap.has(key)) {
+        taughtMap.set(key, {
+          classId: t.section.classId,
+          className: t.section.class.name,
+          sectionId: t.sectionId,
+          sectionName: t.section.name,
+          subjectId: t.subjectId,
+          subjectName: t.subject.name,
+        });
+      }
+    });
+
+    return {
+      isTeacher: true,
+      teacherId: teacher.id,
+      teacherName: teacher.fullName,
+      isClassTeacher: classTeacherSections.length > 0,
+      classTeacherSections,
+      taughtSubjects: Array.from(taughtMap.values()),
+    };
+  }
+
+  async saveMarks(
+    schoolId: string,
+    userPayload: { userId: string; role: string },
+    dto: SaveMarksDto,
+  ) {
+    // Academic Integrity Rule: Admin cannot directly modify subject exam scores
+    if (userPayload.role === 'ADMIN' || userPayload.role === 'SUPER_ADMIN') {
+      throw new ForbiddenException(
+        'Direct score modifications by administrators are restricted. Marks must be submitted by the assigned Subject Teacher.',
+      );
+    }
+
+    // If caller is Teacher: Validate that this teacher actually teaches the subject
+    if (userPayload.role === 'TEACHER') {
+      const teacher = await this.prisma.teacher.findFirst({
+        where: { userId: userPayload.userId, schoolId },
+      });
+      if (!teacher) {
+        throw new ForbiddenException('Teacher profile not found for this account.');
+      }
+
+      // Check timetable entry or direct subject assignment
+      const teachesSubject = await this.prisma.timetableEntry.findFirst({
+        where: {
+          teacherId: teacher.id,
+          subjectId: dto.subjectId,
+          schoolId,
+        },
+      });
+
+      // If timetable is configured, strictly enforce subject assignment
+      const anyTimetableForTeacher = await this.prisma.timetableEntry.findFirst({
+        where: { teacherId: teacher.id, schoolId },
+      });
+
+      if (anyTimetableForTeacher && !teachesSubject) {
+        throw new ForbiddenException(
+          'Unauthorized: You are only permitted to enter or update marks for your own assigned subject.',
+        );
+      }
+    }
+
     const results = await this.prisma.$transaction(
       dto.entries.map((entry) => {
         const totalMarks = entry.totalMarks || 100;
@@ -303,7 +420,11 @@ export class MarksService {
       }),
     );
 
-    return { success: true, count: results.length };
+    return {
+      success: true,
+      count: results.length,
+      message: `Successfully saved marks for ${results.length} students.`,
+    };
   }
 
   async getStudentReportCard(schoolId: string, studentId: string, examTermId?: string) {
@@ -620,5 +741,237 @@ export class MarksService {
         totalInClass: reportCards.length,
       },
     }));
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Exam Question Papers Management & Official Printable Paper Generation
+  // ─────────────────────────────────────────────────────────────────────────
+
+  async createQuestionPaper(
+    schoolId: string,
+    userPayload: { userId: string; role: string },
+    dto: CreateQuestionPaperDto,
+  ) {
+    let teacherId: string;
+
+    if (userPayload.role === 'TEACHER') {
+      const teacher = await this.prisma.teacher.findFirst({
+        where: { userId: userPayload.userId, schoolId },
+      });
+      if (!teacher) throw new NotFoundException('Teacher profile not found');
+      teacherId = teacher.id;
+    } else {
+      // If admin, find assigned teacher or first teacher for subject
+      const assigned = await this.prisma.timetableEntry.findFirst({
+        where: { subjectId: dto.subjectId, schoolId },
+        include: { teacher: true },
+      });
+      if (assigned) {
+        teacherId = assigned.teacherId;
+      } else {
+        const firstTeacher = await this.prisma.teacher.findFirst({
+          where: { schoolId },
+        });
+        if (!firstTeacher) throw new NotFoundException('No teacher available to assign as paper setter.');
+        teacherId = firstTeacher.id;
+      }
+    }
+
+    // Determine version number
+    const count = await this.prisma.examQuestionPaper.count({
+      where: {
+        schoolId,
+        examTermId: dto.examTermId,
+        classId: dto.classId,
+        subjectId: dto.subjectId,
+      },
+    });
+
+    const isFirstPaper = count === 0;
+
+    const paper = await this.prisma.examQuestionPaper.create({
+      data: {
+        schoolId,
+        examTermId: dto.examTermId,
+        classId: dto.classId,
+        subjectId: dto.subjectId,
+        teacherId,
+        title: dto.title,
+        durationHours: dto.durationHours || 2.5,
+        totalMarks: dto.totalMarks || 100,
+        instructions:
+          dto.instructions ||
+          '1. Write your Name, Roll Number, and Section clearly.\n2. Attempt all questions as indicated.\n3. Calculators and unauthorized electronic devices are strictly prohibited.\n4. Write all answers legibly on the provided answer booklet.',
+        fileUrl: dto.fileUrl,
+        questionsJson: dto.questionsJson,
+        status: 'SUBMITTED',
+        isActiveForExam: isFirstPaper,
+        version: count + 1,
+      },
+      include: {
+        subject: true,
+        class: true,
+        teacher: true,
+        examTerm: true,
+      },
+    });
+
+    return paper;
+  }
+
+  async getQuestionPapers(
+    schoolId: string,
+    examTermId?: string,
+    classId?: string,
+    subjectId?: string,
+  ) {
+    const where: any = { schoolId };
+    if (examTermId) where.examTermId = examTermId;
+    if (classId) where.classId = classId;
+    if (subjectId) where.subjectId = subjectId;
+
+    return this.prisma.examQuestionPaper.findMany({
+      where,
+      include: {
+        subject: true,
+        class: true,
+        teacher: true,
+        examTerm: true,
+      },
+      orderBy: [{ isActiveForExam: 'desc' }, { createdAt: 'desc' }],
+    });
+  }
+
+  async setActiveQuestionPaper(schoolId: string, questionPaperId: string) {
+    const target = await this.prisma.examQuestionPaper.findFirst({
+      where: { id: questionPaperId, schoolId },
+    });
+    if (!target) throw new NotFoundException('Question paper not found');
+
+    // Deactivate all other papers for the same exam term, class, and subject
+    await this.prisma.examQuestionPaper.updateMany({
+      where: {
+        schoolId,
+        examTermId: target.examTermId,
+        classId: target.classId,
+        subjectId: target.subjectId,
+      },
+      data: { isActiveForExam: false },
+    });
+
+    // Activate the chosen paper
+    const updated = await this.prisma.examQuestionPaper.update({
+      where: { id: questionPaperId },
+      data: { isActiveForExam: true, status: 'ACTIVE' },
+      include: {
+        subject: true,
+        class: true,
+        teacher: true,
+        examTerm: true,
+      },
+    });
+
+    return {
+      success: true,
+      message: `Version ${updated.version} (${updated.title}) is now set as the official active exam paper.`,
+      paper: updated,
+    };
+  }
+
+  async deleteQuestionPaper(schoolId: string, questionPaperId: string) {
+    const paper = await this.prisma.examQuestionPaper.findFirst({
+      where: { id: questionPaperId, schoolId },
+    });
+    if (!paper) throw new NotFoundException('Question paper not found');
+
+    await this.prisma.examQuestionPaper.delete({
+      where: { id: questionPaperId },
+    });
+
+    return { success: true, message: 'Question paper deleted successfully.' };
+  }
+
+  async getPrintableQuestionPaper(schoolId: string, questionPaperId: string) {
+    const paper = await this.prisma.examQuestionPaper.findFirst({
+      where: { id: questionPaperId, schoolId },
+      include: {
+        school: true,
+        examTerm: true,
+        class: true,
+        subject: true,
+        teacher: true,
+      },
+    });
+    if (!paper) throw new NotFoundException('Question paper not found');
+
+    // Parse structured questions JSON if present, or provide default structured format
+    let parsedQuestions: any[] = [];
+    if (paper.questionsJson) {
+      try {
+        parsedQuestions = JSON.parse(paper.questionsJson);
+      } catch {
+        parsedQuestions = [];
+      }
+    }
+
+    if (parsedQuestions.length === 0) {
+      parsedQuestions = [
+        {
+          sectionTitle: 'Section A — Multiple Choice Questions & Short Inquiries',
+          instructions: 'Answer all questions in this section.',
+          questions: [
+            { qNumber: '1', questionText: 'Define the fundamental laws and principles governing this topic.', marks: 10 },
+            { qNumber: '2', questionText: 'Explain the key terminology and distinguish between related concepts.', marks: 10 },
+            { qNumber: '3', questionText: 'Solve the primary theoretical equations and present step-by-step reasoning.', marks: 10 },
+          ],
+        },
+        {
+          sectionTitle: 'Section B — Analytical & Problem Solving Questions',
+          instructions: 'Answer any three questions from this section.',
+          questions: [
+            { qNumber: '4', questionText: 'Provide a comprehensive case analysis with supporting structural diagrams.', marks: 20 },
+            { qNumber: '5', questionText: 'Derive the mathematical proof or experimental procedure in detail.', marks: 25 },
+            { qNumber: '6', questionText: 'Critically evaluate modern practical applications and formulate conclusions.', marks: 25 },
+          ],
+        },
+      ];
+    }
+
+    const durationText =
+      paper.durationHours === 1
+        ? '1 Hour'
+        : paper.durationHours % 1 === 0
+          ? `${paper.durationHours} Hours`
+          : `${Math.floor(paper.durationHours)} Hours 30 Minutes`;
+
+    return {
+      paperId: paper.id,
+      title: paper.title,
+      version: paper.version,
+      isActiveForExam: paper.isActiveForExam,
+      status: paper.status,
+      fileUrl: paper.fileUrl,
+      school: {
+        name: paper.school.name,
+        code: paper.school.code,
+        logoUrl: paper.school.logoUrl,
+        address: paper.school.address,
+        phone: paper.school.phone,
+        email: paper.school.email,
+      },
+      examination: {
+        examTermName: paper.examTerm.name,
+        academicYear: paper.examTerm.academicYear,
+        className: paper.class.name,
+        subjectName: paper.subject.name,
+        subjectCode: paper.subject.code || '',
+        paperSetterTeacher: paper.teacher.fullName,
+        duration: durationText,
+        durationHours: paper.durationHours,
+        totalMarks: paper.totalMarks,
+      },
+      instructions: paper.instructions,
+      sections: parsedQuestions,
+    };
   }
 }

@@ -215,6 +215,7 @@ export const attendanceRestApi = {
 };
 
 export const marksRestApi = {
+  getTeacherContext: () => apiClient.get<any>('/marks/teacher-context'),
   getExams: () => apiClient.get<any[]>('/marks/exam-terms'),
   createExam: (data: any) => apiClient.post<any>('/marks/exam-terms', data),
   savePaperSchedules: (data: { examTermId: string; classId: string; schedules: any[] }) =>
@@ -235,6 +236,16 @@ export const marksRestApi = {
     apiClient.get<any>('/marks/analytics', { examTermId, sectionId }),
   getBatchReportCards: (examTermId: string, sectionId: string) =>
     apiClient.get<any[]>('/marks/batch-report-cards', { examTermId, sectionId }),
+  getQuestionPapers: (params?: { examTermId?: string; classId?: string; subjectId?: string }) =>
+    apiClient.get<any[]>('/marks/question-papers', params),
+  createQuestionPaper: (data: any) =>
+    apiClient.post<any>('/marks/question-papers', data),
+  setActiveQuestionPaper: (id: string) =>
+    apiClient.patch<any>(`/marks/question-papers/${id}/set-active`, {}),
+  deleteQuestionPaper: (id: string) =>
+    apiClient.delete<any>(`/marks/question-papers/${id}`),
+  getPrintableQuestionPaper: (id: string) =>
+    apiClient.get<any>(`/marks/question-paper/print/${id}`),
 };
 
 export const feesRestApi = {

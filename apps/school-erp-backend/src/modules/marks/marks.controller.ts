@@ -1,6 +1,11 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { MarksService } from './marks.service';
-import { CreateExamTermDto, SaveMarksDto, SavePaperSchedulesDto } from './dto/marks.dto';
+import {
+  CreateExamTermDto,
+  SaveMarksDto,
+  SavePaperSchedulesDto,
+  CreateQuestionPaperDto,
+} from './dto/marks.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -11,6 +16,11 @@ import { Role } from '@prisma/client';
 @Controller('marks')
 export class MarksController {
   constructor(private readonly marksService: MarksService) {}
+
+  @Get('teacher-context')
+  async getTeacherContext(@CurrentUser() user: CurrentUserPayload) {
+    return this.marksService.getTeacherContext(user.schoolId!, user.userId, user.role);
+  }
 
   @Get('exam-terms')
   async listExamTerms(@CurrentUser() user: CurrentUserPayload) {
@@ -88,7 +98,7 @@ export class MarksController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: SaveMarksDto,
   ) {
-    return this.marksService.saveMarks(user.schoolId!, dto);
+    return this.marksService.saveMarks(user.schoolId!, { userId: user.userId, role: user.role }, dto);
   }
 
   @Get('analytics')
@@ -116,5 +126,57 @@ export class MarksController {
     @Query('examTermId') examTermId?: string,
   ) {
     return this.marksService.getStudentReportCard(user.schoolId!, studentId, examTermId);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Exam Question Papers
+  // ─────────────────────────────────────────────────────────────────────────
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.TEACHER)
+  @Post('question-papers')
+  async createQuestionPaper(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: CreateQuestionPaperDto,
+  ) {
+    return this.marksService.createQuestionPaper(user.schoolId!, { userId: user.userId, role: user.role }, dto);
+  }
+
+  @Get('question-papers')
+  async getQuestionPapers(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query('examTermId') examTermId?: string,
+    @Query('classId') classId?: string,
+    @Query('subjectId') subjectId?: string,
+  ) {
+    return this.marksService.getQuestionPapers(user.schoolId!, examTermId, classId, subjectId);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.TEACHER)
+  @Patch('question-papers/:id/set-active')
+  async setActiveQuestionPaper(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    return this.marksService.setActiveQuestionPaper(user.schoolId!, id);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.TEACHER)
+  @Delete('question-papers/:id')
+  async deleteQuestionPaper(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    return this.marksService.deleteQuestionPaper(user.schoolId!, id);
+  }
+
+  @Get('question-paper/print/:id')
+  async getPrintableQuestionPaper(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    return this.marksService.getPrintableQuestionPaper(user.schoolId!, id);
   }
 }
