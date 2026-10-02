@@ -207,14 +207,18 @@ export const attendanceRestApi = {
 };
 
 export const marksRestApi = {
-  getExams: () => apiClient.get<any[]>('/marks/exams'),
-  createExam: (data: any) => apiClient.post<any>('/marks/exams', data),
-  getMarks: (examId: string, subjectId?: string, classId?: string) =>
-    apiClient.get<any[]>('/marks', { examId, subjectId, classId }),
-  submitBulk: (data: { examId: string; subjectId: string; results: any[] }) =>
-    apiClient.post<any>('/marks/bulk', data),
-  getStudentReportCard: (studentId: string, examId?: string) =>
-    apiClient.get<any>(`/marks/student/${studentId}`, { examId }),
+  getExams: () => apiClient.get<any[]>('/marks/exam-terms'),
+  createExam: (data: any) => apiClient.post<any>('/marks/exam-terms', data),
+  getMarks: (examId: string, subjectId?: string, sectionId?: string) =>
+    apiClient.get<any[]>('/marks/section-marks', { examTermId: examId, subjectId, sectionId }),
+  submitBulk: (data: { examTermId: string; subjectId: string; entries: any[] }) =>
+    apiClient.post<any>('/marks/save', data),
+  getStudentReportCard: (studentId: string, examTermId: string) =>
+    apiClient.get<any>(`/marks/report-card/${studentId}`, { examTermId }),
+  getExamAnalytics: (examTermId: string, sectionId?: string) =>
+    apiClient.get<any>('/marks/analytics', { examTermId, sectionId }),
+  getBatchReportCards: (examTermId: string, sectionId: string) =>
+    apiClient.get<any[]>('/marks/batch-report-cards', { examTermId, sectionId }),
 };
 
 export const feesRestApi = {

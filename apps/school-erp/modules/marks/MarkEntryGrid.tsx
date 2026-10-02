@@ -18,6 +18,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import { useMarks } from "@/app/hooks/useMarks";
 import { useClasses } from "@/app/hooks/useClasses";
+import { ExamAnalyticsCard } from "./ExamAnalyticsCard";
 
 // Used only for the class-average badge label — roster rows use pre-computed grade from the store.
 function gradeLabel(pct: number): string {
@@ -178,6 +179,14 @@ export const MarkEntryGrid: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Real-time Exam Performance & At-Risk Insights */}
+      {selectedExamId && (
+        <ExamAnalyticsCard
+          examTermId={selectedExamId}
+          sectionId={selectedSectionId || undefined}
+        />
+      )}
 
       {/* Content area: no-selection / loading / empty / data */}
       {!allSelected ? (

@@ -47,6 +47,24 @@ export class MarksController {
     return this.marksService.saveMarks(user.schoolId!, dto);
   }
 
+  @Get('analytics')
+  async getExamAnalytics(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query('examTermId') examTermId: string,
+    @Query('sectionId') sectionId?: string,
+  ) {
+    return this.marksService.getExamAnalytics(user.schoolId!, examTermId, sectionId);
+  }
+
+  @Get('batch-report-cards')
+  async getBatchReportCards(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query('examTermId') examTermId: string,
+    @Query('sectionId') sectionId: string,
+  ) {
+    return this.marksService.getBatchReportCards(user.schoolId!, examTermId, sectionId);
+  }
+
   @Get('report-card/:studentId')
   async getReportCard(
     @CurrentUser() user: CurrentUserPayload,
