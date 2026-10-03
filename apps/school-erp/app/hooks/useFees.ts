@@ -12,6 +12,9 @@ export interface FeeHead {
 export interface GenerateBillsArgs {
   classId?: string;
   sectionId?: string;
+  studentId?: string;
+  discountPercentage?: number;
+  discountAmount?: number;
   title: string;
   heads?: FeeHead[];
   month?: string;
@@ -37,18 +40,25 @@ export function useFees() {
         sectionId: sectionId || undefined,
       });
       if (Array.isArray(data)) {
-        const normalized = data.map((b) => ({
-          ...b,
-          _id: b.id || b._id,
-          studentName: b.student?.fullName || b.studentName || "Student",
-          rollNumber: b.student?.rollNumber || b.rollNumber || "",
-          className: b.student?.class?.name || b.className || "",
-          sectionName: b.student?.section?.name || b.sectionName || "",
-          amount: b.amount || 0,
-          paidAmount: b.paidAmount || 0,
-          status: (b.status || "UNPAID").toLowerCase(),
-          dueDate: b.dueDate ? new Date(b.dueDate).toISOString().split("T")[0] : "",
-        }));
+        const normalized = data.map((b) => {
+          const totalAmt = Number(b.amount ?? b.totalAmount ?? 0);
+          const paidAmt = Number(b.paidAmount ?? 0);
+          return {
+            ...b,
+            _id: b.id || b._id,
+            id: b.id || b._id,
+            studentName: b.student?.fullName || b.studentName || "Student",
+            admissionNumber: b.student?.admissionNumber || b.admissionNumber || "",
+            rollNumber: b.student?.rollNumber || b.rollNumber || "",
+            className: b.student?.class?.name || b.className || "",
+            sectionName: b.student?.section?.name || b.sectionName || "",
+            amount: totalAmt,
+            totalAmount: totalAmt,
+            paidAmount: paidAmt,
+            status: (b.status || "UNPAID").toLowerCase(),
+            dueDate: b.dueDate ? new Date(b.dueDate).toISOString().split("T")[0] : "",
+          };
+        });
         setBills(normalized);
       }
     } catch (e) {
@@ -68,9 +78,12 @@ export function useFees() {
     const res = await feesRestApi.generateMonthly({
       classId: args.classId,
       sectionId: args.sectionId,
+      studentId: args.studentId,
+      discountPercentage: args.discountPercentage,
+      discountAmount: args.discountAmount,
       title: args.title,
       month: args.month || new Date().toLocaleString("default", { month: "long" }),
-      academicYear: args.academicYear || "2024-2025",
+      academicYear: args.academicYear || "2026-2027",
       dueDate: args.dueDate || new Date().toISOString(),
       amount,
       applyStudentDiscounts: true,

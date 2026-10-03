@@ -280,8 +280,19 @@ export const feesRestApi = {
   getChallans: (params?: any) => apiClient.get<any[]>('/fees/challans', params),
   getChallanById: (id: string) => apiClient.get<any>(`/fees/challans/${id}`),
   createChallan: (data: any) => apiClient.post<any>('/fees/challans', data),
-  generateMonthly: (data: { classId?: string; sectionId?: string; title: string; month: string; academicYear: string; dueDate: string; amount: number; applyStudentDiscounts?: boolean }) =>
-    apiClient.post<any>('/fees/challans/bulk', data),
+  generateMonthly: (data: {
+    classId?: string;
+    sectionId?: string;
+    studentId?: string;
+    discountPercentage?: number;
+    discountAmount?: number;
+    title: string;
+    month: string;
+    academicYear: string;
+    dueDate: string;
+    amount: number;
+    applyStudentDiscounts?: boolean;
+  }) => apiClient.post<any>('/fees/challans/bulk', data),
   setStudentDiscount: (studentId: string, data: { discountPercentage?: number; customMonthlyFee?: number; discountReason?: string }) =>
     apiClient.patch<any>(`/fees/student-discount/${studentId}`, data),
   payFee: (id: string, data: { paidAmount: number; paymentMethod?: string }) =>

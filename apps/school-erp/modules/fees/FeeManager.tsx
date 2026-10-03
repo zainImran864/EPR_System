@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import {
   Wallet,
@@ -10,6 +10,8 @@ import {
   Printer,
   DollarSign,
   MessageCircle,
+  User,
+  Percent,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -21,6 +23,7 @@ import { useClasses } from "@/app/hooks/useClasses";
 import { useFees } from "@/app/hooks/useFees";
 import { useToast } from "@/app/hooks/useToast";
 import { useConfirmDialog } from "@/app/hooks/useConfirmDialog";
+import { studentsRestApi } from "@/app/api/client";
 
 type BillRow = {
   _id: string;
@@ -29,6 +32,7 @@ type BillRow = {
   className: string;
   sectionName: string;
   title: string;
+  amount?: number;
   totalAmount: number;
   paidAmount: number;
   dueDate: string;
@@ -52,6 +56,14 @@ export const FeeManager: React.FC = () => {
 
   const sections = classId ? sectionOptions(classId) : [];
 
+  // Single student vs Whole class/section toggle
+  const [isSpecificStudent, setIsSpecificStudent] = useState(false);
+  const [classStudents, setClassStudents] = useState<{ value: string; label: string }[]>([]);
+  const [selectedStudentId, setSelectedStudentId] = useState("");
+  const [hasDiscount, setHasDiscount] = useState(false);
+  const [discountType, setDiscountType] = useState<"percentage" | "fixed">("percentage");
+  const [discountValue, setDiscountValue] = useState<number>(0);
+
   // Generation form
   const [title, setTitle] = useState("");
   const [issueDate, setIssueDate] = useState("");
@@ -61,7 +73,39 @@ export const FeeManager: React.FC = () => {
   ]);
   const [generating, setGenerating] = useState(false);
 
+  // Fetch students when class/section changes
+  useEffect(() => {
+    if (!classId) {
+      setClassStudents([]);
+      setSelectedStudentId("");
+      return;
+    }
+    studentsRestApi
+      .getAll({ classId, sectionId: sectionId || undefined, status: "active" })
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setClassStudents(
+            data.map((s: any) => ({
+              value: s.id || s._id,
+              label: `${s.fullName || s.name} (Roll: ${s.rollNumber || "—"}, Adm: ${s.admissionNumber})`,
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+  }, [classId, sectionId]);
+
   const total = heads.reduce((s, h) => s + (h.amount || 0), 0);
+
+  const calculatedDiscount = useMemo(() => {
+    if (!hasDiscount || !discountValue || discountValue <= 0) return 0;
+    if (discountType === "percentage") {
+      return Math.round((total * Math.min(100, discountValue)) / 100);
+    }
+    return Math.min(total, discountValue);
+  }, [hasDiscount, discountType, discountValue, total]);
+
+  const netPayable = Math.max(0, total - calculatedDiscount);
 
   const updateHead = (i: number, patch: Partial<{ name: string; amount: number }>) =>
     setHeads(heads.map((h, idx) => (idx === i ? { ...h, ...patch } : h)));
@@ -69,7 +113,12 @@ export const FeeManager: React.FC = () => {
   const removeHead = (i: number) => setHeads(heads.filter((_, idx) => idx !== i));
 
   const canGenerate =
-    classId && title.trim() && issueDate && dueDate && heads.some((h) => h.name && h.amount > 0);
+    classId &&
+    title.trim() &&
+    issueDate &&
+    dueDate &&
+    heads.some((h) => h.name && h.amount > 0) &&
+    (!isSpecificStudent || selectedStudentId);
 
   const handleGenerate = async () => {
     if (!canGenerate) return;
@@ -78,14 +127,29 @@ export const FeeManager: React.FC = () => {
       const res = await generateBills({
         classId,
         sectionId: sectionId || undefined,
+        studentId: isSpecificStudent ? selectedStudentId : undefined,
+        discountPercentage:
+          isSpecificStudent && hasDiscount && discountType === "percentage"
+            ? discountValue
+            : undefined,
+        discountAmount:
+          isSpecificStudent && hasDiscount && discountType === "fixed"
+            ? discountValue
+            : undefined,
         title: title.trim(),
         heads: heads.filter((h) => h.name && h.amount > 0),
+        amount: isSpecificStudent && hasDiscount ? netPayable : undefined,
         issueDate,
         dueDate,
       });
-      const n = (res as { created?: number } | undefined)?.created ?? 0;
-      success(`Generated ${n} fee ${n === 1 ? "bill" : "bills"}.`);
+      const n = (res as { created?: number; count?: number } | undefined)?.count ?? (res as { created?: number } | undefined)?.created ?? 1;
+      success(`Generated ${n} fee ${n === 1 ? "bill" : "bills"} successfully.`);
       setTitle("");
+      if (isSpecificStudent) {
+        setSelectedStudentId("");
+        setHasDiscount(false);
+        setDiscountValue(0);
+      }
     } catch {
       error("Could not generate bills.");
     } finally {
@@ -94,7 +158,9 @@ export const FeeManager: React.FC = () => {
   };
 
   const handlePay = async (b: BillRow) => {
-    const remaining = b.totalAmount - b.paidAmount;
+    const totalAmt = Number(b.totalAmount ?? b.amount ?? 0);
+    const paidAmt = Number(b.paidAmount ?? 0);
+    const remaining = Math.max(0, totalAmt - paidAmt);
     const input = await prompt({
       title: "Record Fee Payment",
       message: `Enter collected payment amount for student ${b.studentName} (${b.className} ${b.sectionName}).\nRemaining balance due: PKR ${remaining.toLocaleString()}`,
@@ -132,12 +198,16 @@ export const FeeManager: React.FC = () => {
     {
       key: "amount",
       header: "Amount",
-      render: (b) => (
-        <div className="text-xs">
-          <span className="font-semibold text-slate-800">{b.paidAmount}</span>
-          <span className="text-slate-400"> / {b.totalAmount}</span>
-        </div>
-      ),
+      render: (b) => {
+        const totalAmt = Number(b.totalAmount ?? b.amount ?? 0);
+        const paidAmt = Number(b.paidAmount ?? 0);
+        return (
+          <div className="text-xs font-mono-data">
+            <span className="font-semibold text-slate-800">{paidAmt.toLocaleString()}</span>
+            <span className="text-slate-400"> / {totalAmt.toLocaleString()}</span>
+          </div>
+        );
+      },
     },
     { key: "due", header: "Due", render: (b) => <span className="text-xs text-slate-500">{b.dueDate}</span> },
     {
@@ -158,10 +228,16 @@ export const FeeManager: React.FC = () => {
       header: "Actions",
       align: "right",
       render: (b) => {
-        const remaining = Math.max(0, b.totalAmount - b.paidAmount);
+        const totalAmt = Number(b.totalAmount ?? b.amount ?? 0);
+        const paidAmt = Number(b.paidAmount ?? 0);
+        const remaining = Math.max(0, totalAmt - paidAmt);
+        const dueDateFormatted = b.dueDate
+          ? new Date(b.dueDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
+          : "Due Date";
+
         const handleWhatsApp = () => {
           const msg = encodeURIComponent(
-            `*Fee Reminder Notification*\nDear Parent, this is a reminder regarding the fee challan for *${b.studentName}* (${b.className} - ${b.sectionName}).\n\nTitle: ${b.title}\nOutstanding Balance: *Rs. ${remaining.toLocaleString()}*\nDue Date: *${b.dueDate}*\n\nPlease clear the dues at your earliest convenience to avoid late surcharges. Thank you!`
+            `*Fee Reminder Notification*\nDear Parent, this is a reminder regarding the fee challan for *${b.studentName}* (${b.className} - ${b.sectionName}).\n\nTitle: ${b.title}\nOutstanding Balance: *Rs. ${remaining.toLocaleString()}*\nDue Date: *${dueDateFormatted}*\n\nPlease clear the dues at your earliest convenience to avoid late surcharges. Thank you!`
           );
           window.open(`https://wa.me/?text=${msg}`, "_blank");
         };
@@ -175,7 +251,7 @@ export const FeeManager: React.FC = () => {
                   size="xs"
                   onClick={handleWhatsApp}
                   title="Send Fee Reminder via WhatsApp"
-                  className="p-1 text-slate-400 hover:text-emerald-600"
+                  className="p-1 text-slate-400 hover:text-emerald-600 cursor-pointer"
                 >
                   <MessageCircle className="w-4 h-4" />
                 </Button>
@@ -184,7 +260,7 @@ export const FeeManager: React.FC = () => {
                   size="xs"
                   onClick={() => handlePay(b)}
                   title="Record payment"
-                  className="p-1 text-slate-400 hover:text-emerald-600"
+                  className="p-1 text-slate-400 hover:text-emerald-600 cursor-pointer"
                 >
                   <DollarSign className="w-4 h-4" />
                 </Button>
@@ -242,6 +318,114 @@ export const FeeManager: React.FC = () => {
               options={[{ value: "", label: "All sections" }, ...sections]}
             />
           </div>
+
+          {/* Scope Toggle: Whole Class/Section vs Specific Student */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+            <div>
+              <span className="text-xs font-semibold text-slate-800 block">Bill Scope</span>
+              <span className="text-[11px] text-slate-500">
+                Generate for all students in class/section, or target a specific student and apply a discount.
+              </span>
+            </div>
+            <div className="flex items-center gap-1 bg-white p-1 rounded-lg border border-slate-200 text-xs font-medium shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSpecificStudent(false);
+                  setSelectedStudentId("");
+                  setHasDiscount(false);
+                  setDiscountValue(0);
+                }}
+                className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
+                  !isSpecificStudent
+                    ? "bg-[#0D9488] text-white font-bold shadow-2xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Whole Class / Section
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsSpecificStudent(true)}
+                className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
+                  isSpecificStudent
+                    ? "bg-[#0D9488] text-white font-bold shadow-2xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Specific Student
+              </button>
+            </div>
+          </div>
+
+          {/* Specific Student & Discount Controls */}
+          {isSpecificStudent && (
+            <div className="p-4 bg-teal-50/60 rounded-xl border border-teal-200 space-y-3">
+              <div className="flex items-center gap-2 text-xs font-bold text-teal-950">
+                <User className="w-4 h-4 text-[#0D9488]" />
+                <span>Target Specific Student</span>
+              </div>
+
+              <Select
+                label="Select Student *"
+                value={selectedStudentId}
+                placeholder={classId ? "Choose student..." : "Select a class first"}
+                disabled={!classId}
+                onChange={(e) => setSelectedStudentId(e.target.value)}
+                options={classStudents}
+              />
+
+              <div className="pt-2 border-t border-teal-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-800">
+                  <input
+                    type="checkbox"
+                    checked={hasDiscount}
+                    onChange={(e) => {
+                      setHasDiscount(e.target.checked);
+                      if (!e.target.checked) setDiscountValue(0);
+                    }}
+                    className="rounded border-slate-300 text-[#0D9488] focus:ring-[#0D9488]"
+                  />
+                  <span>Apply Fee Concession / Discount to this Student</span>
+                </label>
+
+                {hasDiscount && (
+                  <div className="flex items-center gap-2">
+                    <Select
+                      value={discountType}
+                      onChange={(e) => setDiscountType(e.target.value as "percentage" | "fixed")}
+                      options={[
+                        { value: "percentage", label: "Percentage (%)" },
+                        { value: "fixed", label: "Flat PKR (Rs.)" },
+                      ]}
+                      className="w-36 text-xs"
+                    />
+                    <Input
+                      type="number"
+                      min={0}
+                      max={discountType === "percentage" ? 100 : total}
+                      placeholder={discountType === "percentage" ? "e.g. 25" : "e.g. 1500"}
+                      value={discountValue || ""}
+                      onChange={(e) => setDiscountValue(Math.max(0, Number(e.target.value) || 0))}
+                      className="w-32 text-xs"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {hasDiscount && discountValue > 0 && (
+                <div className="flex items-center justify-between text-xs font-medium text-teal-950 bg-white p-2.5 rounded-lg border border-teal-200">
+                  <span>
+                    Gross Amount: PKR {total.toLocaleString()} — Discount ({discountType === "percentage" ? `${discountValue}%` : `PKR ${discountValue.toLocaleString()}`}):{" "}
+                    <b className="text-rose-600">-PKR {calculatedDiscount.toLocaleString()}</b>
+                  </span>
+                  <span className="font-bold text-sm text-[#0D9488]">
+                    Net Payable: PKR {netPayable.toLocaleString()}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Input

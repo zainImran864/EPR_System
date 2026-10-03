@@ -2,7 +2,7 @@ import React from "react";
 import { cn } from "@/app/lib/utils";
 
 export interface AvatarProps {
-  name: string;
+  name?: string | null;
   src?: string;
   size?: "xs" | "sm" | "md" | "lg" | "xl";
   status?: "online" | "offline" | "busy" | "away";
@@ -10,18 +10,22 @@ export interface AvatarProps {
 }
 
 export const Avatar: React.FC<AvatarProps> = ({
-  name,
+  name = "User",
   src,
   size = "md",
   status,
   className,
 }) => {
-  const initials = name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const safeName = typeof name === "string" ? name.trim() : "";
+  const initials = safeName
+    ? safeName
+        .split(/\s+/)
+        .map((n) => n[0])
+        .filter(Boolean)
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : "??";
 
   const sizeStyles = {
     xs: "w-6 h-6 text-[10px]",
@@ -57,7 +61,7 @@ export const Avatar: React.FC<AvatarProps> = ({
         {src ? (
           <img
             src={src}
-            alt={name}
+            alt={safeName || undefined}
             className="w-full h-full object-cover"
           />
         ) : (

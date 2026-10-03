@@ -256,12 +256,14 @@ export const AdminAttendanceView: React.FC = () => {
           {overview.map((row) => (
             <button
               key={row.studentId}
-              onClick={() => setSelected({ id: row.studentId, name: row.name })}
+              onClick={() => setSelected({ id: row.studentId, name: row.name || (row as any).fullName || "Student" })}
               className="w-full flex items-center gap-3 p-3.5 hover:bg-slate-50 transition-colors text-left"
             >
-              <Avatar name={row.name} size="sm" />
+              <Avatar name={row.name || (row as any).fullName || "Student"} size="sm" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-slate-900 truncate">{row.name}</p>
+                <p className="text-sm font-semibold text-slate-900 truncate">
+                  {row.name || (row as any).fullName || "Student"}
+                </p>
                 <p className="text-[11px] text-slate-400 font-mono-data">
                   {row.rollNumber} · {row.admissionNumber}
                 </p>

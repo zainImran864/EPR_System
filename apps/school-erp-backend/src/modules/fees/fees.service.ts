@@ -116,10 +116,18 @@ export class FeesService {
 
   async generateBulkChallans(schoolId: string, dto: GenerateBulkChallansDto) {
     const where: any = { schoolId, status: 'active' };
-    if (dto.classId) where.classId = dto.classId;
-    if (dto.sectionId) where.sectionId = dto.sectionId;
+    if (dto.studentId) {
+      where.id = dto.studentId;
+    } else {
+      if (dto.classId) where.classId = dto.classId;
+      if (dto.sectionId) where.sectionId = dto.sectionId;
+    }
 
     const students = await this.prisma.student.findMany({ where });
+    if (students.length === 0) {
+      throw new NotFoundException('No active students found matching the selected criteria.');
+    }
+
     const year = new Date().getFullYear();
     let count = await this.prisma.feeChallan.count({ where: { schoolId } });
 
@@ -134,11 +142,18 @@ export class FeesService {
         let baseAmount = (s.customMonthlyFee && s.customMonthlyFee > 0) ? s.customMonthlyFee : dto.amount;
         let discountAmount = 0;
 
-        if (applyDiscounts && s.discountPercentage && s.discountPercentage > 0) {
+        if (dto.discountAmount !== undefined && dto.discountAmount > 0) {
+          discountAmount = dto.discountAmount;
+        } else if (dto.discountPercentage !== undefined && dto.discountPercentage > 0) {
+          discountAmount = (baseAmount * dto.discountPercentage) / 100;
+        } else if (applyDiscounts && s.discountPercentage && s.discountPercentage > 0) {
           discountAmount = (baseAmount * s.discountPercentage) / 100;
         }
 
         const payableAmount = Math.max(0, baseAmount - discountAmount);
+        const discountNote = dto.discountPercentage || dto.discountAmount
+          ? `Custom Discount Applied: ${dto.discountPercentage ? `${dto.discountPercentage}%` : `Rs. ${dto.discountAmount}`}`
+          : (s.discountReason ? `Discount Applied: ${s.discountReason}` : undefined);
 
         return this.prisma.feeChallan.create({
           data: {
@@ -152,7 +167,7 @@ export class FeesService {
             amount: payableAmount,
             discountAmount,
             status: FeeStatus.UNPAID,
-            customNotes: s.discountReason ? `Discount Applied: ${s.discountReason}` : undefined,
+            customNotes: discountNote,
           },
         });
       }),
