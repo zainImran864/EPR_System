@@ -71,8 +71,25 @@ function QuestionPaperContent() {
       <div className="no-print print:hidden max-w-4xl mx-auto mb-6 flex items-center justify-between bg-white p-4 rounded-xl shadow-md border border-slate-200">
         <div className="flex items-center gap-2 text-xs text-slate-600">
           <button
-            onClick={() => window.history.back()}
-            className="flex items-center gap-1 hover:text-slate-900 font-medium"
+            onClick={() => {
+              if (window.opener) {
+                window.close();
+                return;
+              }
+              if (window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)) {
+                window.history.back();
+              } else {
+                window.close();
+                setTimeout(() => {
+                  if (document.referrer && document.referrer.includes(window.location.host)) {
+                    window.location.href = document.referrer;
+                  } else {
+                    window.location.href = "/admin/marks";
+                  }
+                }, 150);
+              }
+            }}
+            className="flex items-center gap-1 hover:text-slate-900 font-medium cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             Back

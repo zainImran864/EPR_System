@@ -44,6 +44,8 @@ const mapSlotData = (s: any) => {
     period: s.periodNumber || s.period || 1,
     subjectName: s.subject?.name || s.subjectName || "Subject",
     teacherName: s.teacher?.fullName || s.teacherName || "",
+    className: s.section?.class?.name || s.class?.name || s.className || "",
+    sectionName: s.section?.name || s.sectionName || "",
   };
 };
 

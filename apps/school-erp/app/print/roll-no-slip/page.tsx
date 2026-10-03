@@ -11,7 +11,24 @@ function Toolbar() {
   return (
     <div className="no-print print:hidden sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200 px-6 py-3.5 flex items-center justify-between shadow-xs">
       <button
-        onClick={() => window.history.back()}
+        onClick={() => {
+          if (window.opener) {
+            window.close();
+            return;
+          }
+          if (window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)) {
+            window.history.back();
+          } else {
+            window.close();
+            setTimeout(() => {
+              if (document.referrer && document.referrer.includes(window.location.host)) {
+                window.location.href = document.referrer;
+              } else {
+                window.location.href = "/admin/marks";
+              }
+            }, 150);
+          }
+        }}
         className="flex items-center gap-2 text-xs font-semibold text-slate-700 hover:text-teal-700 transition-colors px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer"
       >
         <ArrowLeft className="w-4 h-4" />

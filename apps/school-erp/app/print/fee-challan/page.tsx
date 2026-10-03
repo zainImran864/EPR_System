@@ -9,11 +9,30 @@ import { FeeChallanSheet, type ChallanData } from "@/components/print/FeeChallan
 import { Spinner } from "@/components/ui/Spinner";
 
 function Toolbar() {
+  const handleBack = () => {
+    if (window.opener) {
+      window.close();
+      return;
+    }
+    if (window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)) {
+      window.history.back();
+    } else {
+      window.close();
+      setTimeout(() => {
+        if (document.referrer && document.referrer.includes(window.location.host)) {
+          window.location.href = document.referrer;
+        } else {
+          window.location.href = "/admin/fees";
+        }
+      }, 150);
+    }
+  };
+
   return (
     <div className="no-print print:hidden sticky top-0 z-10 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
       <button
-        onClick={() => window.history.back()}
-        className="flex items-center gap-2 text-xs font-medium text-slate-600 hover:text-slate-900"
+        onClick={handleBack}
+        className="flex items-center gap-2 text-xs font-medium text-slate-600 hover:text-slate-900 cursor-pointer"
       >
         <ArrowLeft className="w-4 h-4" />
         Back

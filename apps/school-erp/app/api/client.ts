@@ -150,6 +150,8 @@ export const timetableRestApi = {
   getMyTimetable: () => apiClient.get<any>('/timetable/my'),
   getSectionTimetable: (sectionId: string) =>
     apiClient.get<any[]>(`/timetable/section/${sectionId}`),
+  getClassTimetable: (classId: string) =>
+    apiClient.get<any[]>(`/timetable/class/${classId}`),
   getTeacherTimetable: (teacherId: string) =>
     apiClient.get<any[]>(`/timetable/teacher/${teacherId}`),
   getStudentTimetable: (studentId: string) =>

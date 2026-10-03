@@ -20,6 +20,18 @@ export class TimetableService {
     });
   }
 
+  async getClassTimetable(schoolId: string, classId: string) {
+    return this.prisma.timetableEntry.findMany({
+      where: { schoolId, section: { classId } },
+      include: {
+        subject: true,
+        teacher: true,
+        section: { include: { class: true } },
+      },
+      orderBy: [{ dayOfWeek: 'asc' }, { periodNumber: 'asc' }],
+    });
+  }
+
   async getTeacherTimetable(schoolId: string, teacherId: string) {
     return this.prisma.timetableEntry.findMany({
       where: { schoolId, teacherId },
