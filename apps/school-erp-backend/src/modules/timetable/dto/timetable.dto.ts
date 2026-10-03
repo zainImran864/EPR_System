@@ -6,13 +6,17 @@ export class CreateTimetableEntryDto {
   @IsNotEmpty()
   sectionId: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  subjectId: string;
+  subjectId?: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  teacherId: string;
+  subjectName?: string;
+
+  @IsOptional()
+  @IsString()
+  teacherId?: string;
 
   @IsEnum(DayOfWeek)
   dayOfWeek: DayOfWeek;

@@ -129,12 +129,78 @@ export class TimetableService {
   }
 
   async createEntry(schoolId: string, dto: CreateTimetableEntryDto) {
-    // 1. Check teacher collision unless combined class is explicitly enabled
+    // 0. Verify section exists
+    const section = await this.prisma.section.findFirst({
+      where: { id: dto.sectionId, schoolId },
+      include: { class: true },
+    });
+    if (!section) {
+      throw new NotFoundException('Section not found in this school');
+    }
+
+    // 1. Resolve Subject (by ID or by Name, auto-creating if needed)
+    let subject = null;
+    if (dto.subjectId) {
+      subject = await this.prisma.subject.findFirst({
+        where: { id: dto.subjectId, schoolId },
+      });
+    }
+
+    if (!subject) {
+      const subjectName = (dto.subjectName || dto.subjectId || 'General Studies').trim();
+      subject = await this.prisma.subject.findFirst({
+        where: {
+          schoolId,
+          name: { equals: subjectName, mode: 'insensitive' },
+        },
+      });
+
+      if (!subject) {
+        subject = await this.prisma.subject.create({
+          data: {
+            schoolId,
+            classId: section.classId,
+            name: subjectName,
+          },
+        });
+      }
+    }
+
+    // 2. Resolve Teacher (by ID or fallback to section classTeacher or school faculty)
+    let teacher = null;
+    if (dto.teacherId) {
+      teacher = await this.prisma.teacher.findFirst({
+        where: { id: dto.teacherId, schoolId },
+      });
+    }
+
+    if (!teacher && section.classTeacherId) {
+      teacher = await this.prisma.teacher.findFirst({
+        where: { id: section.classTeacherId, schoolId },
+      });
+    }
+
+    if (!teacher) {
+      teacher = await this.prisma.teacher.findFirst({
+        where: { schoolId },
+      });
+    }
+
+    if (!teacher) {
+      throw new NotFoundException(
+        'No active faculty found for this institution. Please register at least one teacher before building timetables.',
+      );
+    }
+
+    const resolvedSubjectId = subject.id;
+    const resolvedTeacherId = teacher.id;
+
+    // 3. Check teacher collision unless combined class is explicitly enabled
     if (!dto.allowCombinedClass) {
       const teacherClash = await this.prisma.timetableEntry.findFirst({
         where: {
           schoolId,
-          teacherId: dto.teacherId,
+          teacherId: resolvedTeacherId,
           dayOfWeek: dto.dayOfWeek,
           periodNumber: dto.periodNumber,
           NOT: {
@@ -151,7 +217,7 @@ export class TimetableService {
       }
     }
 
-    // 2. Check if another section is in the same room (informational / allowed)
+    // 4. Check if another section is in the same room (informational / allowed)
     let sharedRoomInfo: string | null = null;
     if (dto.room) {
       const existingRoomEntry = await this.prisma.timetableEntry.findFirst({
@@ -172,7 +238,7 @@ export class TimetableService {
       }
     }
 
-    // 3. Upsert entry for the section
+    // 5. Upsert entry for the section
     const savedEntry = await this.prisma.timetableEntry.upsert({
       where: {
         sectionId_dayOfWeek_periodNumber: {
@@ -184,8 +250,8 @@ export class TimetableService {
       create: {
         schoolId,
         sectionId: dto.sectionId,
-        subjectId: dto.subjectId,
-        teacherId: dto.teacherId,
+        subjectId: resolvedSubjectId,
+        teacherId: resolvedTeacherId,
         dayOfWeek: dto.dayOfWeek,
         periodNumber: dto.periodNumber,
         startTime: dto.startTime,
@@ -193,8 +259,8 @@ export class TimetableService {
         room: dto.room,
       },
       update: {
-        subjectId: dto.subjectId,
-        teacherId: dto.teacherId,
+        subjectId: resolvedSubjectId,
+        teacherId: resolvedTeacherId,
         startTime: dto.startTime,
         endTime: dto.endTime,
         room: dto.room,
