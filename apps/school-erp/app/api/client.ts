@@ -156,8 +156,9 @@ export const timetableRestApi = {
     apiClient.get<any>(`/timetable/student/${studentId}`),
   createEntry: (data: {
     sectionId: string;
-    subjectId: string;
-    teacherId: string;
+    subjectId?: string;
+    subjectName?: string;
+    teacherId?: string;
     dayOfWeek: string;
     periodNumber: number;
     startTime: string;
