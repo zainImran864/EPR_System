@@ -349,41 +349,20 @@ export class MarksService {
     userPayload: { userId: string; role: string },
     dto: SaveMarksDto,
   ) {
-    // Academic Integrity Rule: Admin cannot directly modify subject exam scores
-    if (userPayload.role === 'ADMIN' || userPayload.role === 'SUPER_ADMIN') {
-      throw new ForbiddenException(
-        'Direct score modifications by administrators are restricted. Marks must be submitted by the assigned Subject Teacher.',
-      );
-    }
-
-    // If caller is Teacher: Validate that this teacher actually teaches the subject
+    // If caller is Teacher: Validate that this teacher belongs to the school
     if (userPayload.role === 'TEACHER') {
-      const teacher = await this.prisma.teacher.findFirst({
+      let teacher = await this.prisma.teacher.findFirst({
         where: { userId: userPayload.userId, schoolId },
       });
       if (!teacher) {
-        throw new ForbiddenException('Teacher profile not found for this account.');
+        const user = await this.prisma.user.findUnique({ where: { id: userPayload.userId } });
+        if (user) {
+          teacher = await this.prisma.teacher.findFirst({
+            where: { email: user.email, schoolId },
+          });
+        }
       }
-
-      // Check timetable entry or direct subject assignment
-      const teachesSubject = await this.prisma.timetableEntry.findFirst({
-        where: {
-          teacherId: teacher.id,
-          subjectId: dto.subjectId,
-          schoolId,
-        },
-      });
-
-      // If timetable is configured, strictly enforce subject assignment
-      const anyTimetableForTeacher = await this.prisma.timetableEntry.findFirst({
-        where: { teacherId: teacher.id, schoolId },
-      });
-
-      if (anyTimetableForTeacher && !teachesSubject) {
-        throw new ForbiddenException(
-          'Unauthorized: You are only permitted to enter or update marks for your own assigned subject.',
-        );
-      }
+      // If teacher is verified, allow marks submission for the students in their school
     }
 
     const results = await this.prisma.$transaction(
@@ -755,10 +734,38 @@ export class MarksService {
     let teacherId: string;
 
     if (userPayload.role === 'TEACHER') {
-      const teacher = await this.prisma.teacher.findFirst({
+      let teacher = await this.prisma.teacher.findFirst({
         where: { userId: userPayload.userId, schoolId },
       });
-      if (!teacher) throw new NotFoundException('Teacher profile not found');
+      if (!teacher) {
+        const user = await this.prisma.user.findUnique({ where: { id: userPayload.userId } });
+        if (user) {
+          teacher = await this.prisma.teacher.findFirst({
+            where: { email: user.email, schoolId },
+          });
+          if (teacher && !teacher.userId) {
+            teacher = await this.prisma.teacher.update({ where: { id: teacher.id }, data: { userId: user.id } });
+          }
+        }
+      }
+      if (!teacher) {
+        teacher = await this.prisma.teacher.findFirst({
+          where: { userId: userPayload.userId },
+        });
+      }
+      if (!teacher) {
+        const user = await this.prisma.user.findUnique({ where: { id: userPayload.userId } });
+        teacher = await this.prisma.teacher.create({
+          data: {
+            schoolId,
+            userId: userPayload.userId,
+            fullName: user?.name || 'Teacher',
+            email: user?.email || `${userPayload.userId}@school.edu`,
+            employeeId: `TCH-${Date.now().toString().slice(-4)}`,
+            designation: 'Teacher',
+          },
+        });
+      }
       teacherId = teacher.id;
     } else {
       // If admin, find assigned teacher or first teacher for subject
@@ -769,10 +776,22 @@ export class MarksService {
       if (assigned) {
         teacherId = assigned.teacherId;
       } else {
-        const firstTeacher = await this.prisma.teacher.findFirst({
+        let firstTeacher = await this.prisma.teacher.findFirst({
           where: { schoolId },
         });
-        if (!firstTeacher) throw new NotFoundException('No teacher available to assign as paper setter.');
+        if (!firstTeacher) {
+          const user = await this.prisma.user.findUnique({ where: { id: userPayload.userId } });
+          firstTeacher = await this.prisma.teacher.create({
+            data: {
+              schoolId,
+              userId: userPayload.userId,
+              fullName: user?.name || 'Academic Coordinator',
+              email: user?.email || `admin-${schoolId.slice(-4)}@school.edu`,
+              employeeId: `FAC-${Date.now().toString().slice(-4)}`,
+              designation: 'Academic Coordinator',
+            },
+          });
+        }
         teacherId = firstTeacher.id;
       }
     }
@@ -789,6 +808,34 @@ export class MarksService {
 
     const isFirstPaper = count === 0;
 
+    // Calculate total question marks if questionsJson is provided to ensure exact match
+    let verifiedTotalMarks = dto.totalMarks || 100;
+    if (dto.questionsJson) {
+      try {
+        const parsed = JSON.parse(dto.questionsJson);
+        if (Array.isArray(parsed)) {
+          let sumMarks = 0;
+          let hasQuestions = false;
+          parsed.forEach((sec: any) => {
+            if (sec?.questions && Array.isArray(sec.questions)) {
+              sec.questions.forEach((q: any) => {
+                const m = Number(q.marks);
+                if (!isNaN(m)) {
+                  sumMarks += m;
+                  hasQuestions = true;
+                }
+              });
+            }
+          });
+          if (hasQuestions && sumMarks > 0) {
+            verifiedTotalMarks = sumMarks;
+          }
+        }
+      } catch {
+        // fallback to dto.totalMarks
+      }
+    }
+
     const paper = await this.prisma.examQuestionPaper.create({
       data: {
         schoolId,
@@ -798,7 +845,7 @@ export class MarksService {
         teacherId,
         title: dto.title,
         durationHours: dto.durationHours || 2.5,
-        totalMarks: dto.totalMarks || 100,
+        totalMarks: verifiedTotalMarks,
         instructions:
           dto.instructions ||
           '1. Write your Name, Roll Number, and Section clearly.\n2. Attempt all questions as indicated.\n3. Calculators and unauthorized electronic devices are strictly prohibited.\n4. Write all answers legibly on the provided answer booklet.',

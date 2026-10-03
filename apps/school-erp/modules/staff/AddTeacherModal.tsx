@@ -1,14 +1,12 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useQuery } from "convex/react";
 import { Mail, KeyRound, Copy, Check, Hash, Send } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { previewEmail } from "@/app/lib/emailPreview";
-import { teachersApi } from "@/app/api/teachers";
 import { useActiveSchool } from "@/app/hooks/useActiveSchool";
 
 export interface AddTeacherSubmit {
@@ -61,10 +59,7 @@ export const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
   schoolCode,
 }) => {
   const { schoolId } = useActiveSchool();
-  const nextEmpId = useQuery(
-    teachersApi.nextEmployeeId,
-    schoolId && isOpen ? { schoolId } : "skip"
-  );
+  const nextEmpId = "EMP-AUTO";
 
   const [form, setForm] = useState(emptyForm);
   const [isSubmitting, setIsSubmitting] = useState(false);

@@ -29,6 +29,7 @@ import { useStudents } from "@/app/hooks/useStudents";
 import { useClasses } from "@/app/hooks/useClasses";
 import { useActiveSchool } from "@/app/hooks/useActiveSchool";
 import { useToast } from "@/app/hooks/useToast";
+import { useConfirmDialog } from "@/app/hooks/useConfirmDialog";
 import { exportToExcel } from "@/app/lib/exportExcel";
 import { studentsRestApi } from "@/app/api/client";
 
@@ -67,6 +68,7 @@ export const StudentDirectory: React.FC = () => {
   const { classOptions, sectionOptions } = useClasses();
   const { school } = useActiveSchool();
   const { success, error } = useToast();
+  const { confirm, ConfirmDialog } = useConfirmDialog();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isProgressionOpen, setIsProgressionOpen] = useState(false);
   const [editing, setEditing] = useState<EditStudentRow | null>(null);
@@ -286,12 +288,14 @@ export const StudentDirectory: React.FC = () => {
   };
 
   const handleDelete = async (s: StudentRow) => {
-    if (
-      !window.confirm(
-        `Delete ${s.firstName} ${s.lastName}? This permanently removes their profile and login (plus the linked guardian login) — they will lose dashboard access.`
-      )
-    )
-      return;
+    const ok = await confirm({
+      title: "Delete Student Profile",
+      message: `Are you sure you want to delete ${s.firstName} ${s.lastName}?\n\nThis permanently removes their profile and student credentials (including linked parent account).`,
+      variant: "danger",
+      confirmText: "Delete Student",
+    });
+    if (!ok) return;
+
     try {
       await removeStudent(s._id);
       success("Student deleted.");
@@ -446,6 +450,9 @@ export const StudentDirectory: React.FC = () => {
           // Re-fetch students if needed
         }}
       />
+
+      {/* Reusable Confirmation Dialog */}
+      <ConfirmDialog />
     </div>
   );
 };

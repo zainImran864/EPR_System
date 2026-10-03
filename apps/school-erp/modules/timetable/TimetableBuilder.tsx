@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { CalendarDays, Plus, Trash2, Save, MapPin, Users, Info } from "lucide-react";
+import Link from "next/link";
+import { CalendarDays, Plus, Trash2, Save, MapPin, Users, Info, Printer } from "lucide-react";
 import { Select } from "@/components/ui/Select";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -146,6 +147,31 @@ export const TimetableBuilder: React.FC = () => {
             options={sections}
           />
         </div>
+
+        {sectionId && (
+          <div className="w-full sm:w-auto sm:ml-auto flex items-end pt-2 sm:pt-0">
+            <Link
+              href={`/print/timetable?sectionId=${sectionId}`}
+              target="_blank"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl border border-teal-300 bg-teal-50 text-teal-800 hover:bg-teal-100 shadow-xs transition-colors cursor-pointer"
+            >
+              <Printer className="w-4 h-4 text-teal-600" />
+              Print Section Timetable
+            </Link>
+          </div>
+        )}
+        {!sectionId && classId && (
+          <div className="w-full sm:w-auto sm:ml-auto flex items-end pt-2 sm:pt-0">
+            <Link
+              href={`/print/timetable?classId=${classId}`}
+              target="_blank"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 shadow-xs transition-colors cursor-pointer"
+            >
+              <Printer className="w-4 h-4 text-slate-500" />
+              Print Class Timetable
+            </Link>
+          </div>
+        )}
       </div>
 
       {!classId || !sectionId ? (

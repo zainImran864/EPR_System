@@ -7,11 +7,15 @@ const USER_KEY = "erp_session_user";
 
 export interface StoredUser {
   _id: string;
+  id?: string;
   name: string;
   email: string;
   role: string;
   status: string;
+  schoolId?: string;
   school?: {
+    id?: string;
+    _id?: string;
     name: string;
     code: string;
     logoUrl?: string | null;
@@ -21,6 +25,20 @@ export interface StoredUser {
   twoFactorEnabled?: boolean;
   notificationsEnabled?: boolean;
   avatarUrl?: string | null;
+  linkedTeacherId?: string;
+  linkedStudentId?: string;
+  studentContext?: {
+    studentId: string;
+    classId: string;
+    sectionId: string;
+    firstName?: string;
+    lastName?: string;
+    fullName?: string;
+    className?: string;
+    sectionName?: string;
+    admissionNumber?: string;
+    rollNumber?: string;
+  };
 }
 
 interface AuthStoreState {
@@ -43,8 +61,13 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
   hydrated: false,
   setAuth: (token, user) => {
     if (typeof window !== "undefined") {
-      if (token) localStorage.setItem(TOKEN_KEY, token);
-      else localStorage.removeItem(TOKEN_KEY);
+      if (token) {
+        localStorage.setItem(TOKEN_KEY, token);
+        localStorage.setItem("auth_token", token);
+      } else {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem("auth_token");
+      }
 
       if (user) localStorage.setItem(USER_KEY, JSON.stringify(user));
       else localStorage.removeItem(USER_KEY);
@@ -53,8 +76,13 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
   },
   setToken: (token) => {
     if (typeof window !== "undefined") {
-      if (token) localStorage.setItem(TOKEN_KEY, token);
-      else localStorage.removeItem(TOKEN_KEY);
+      if (token) {
+        localStorage.setItem(TOKEN_KEY, token);
+        localStorage.setItem("auth_token", token);
+      } else {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem("auth_token");
+      }
     }
     set({ token });
   },

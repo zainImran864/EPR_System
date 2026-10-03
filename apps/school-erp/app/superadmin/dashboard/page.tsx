@@ -19,6 +19,7 @@ import { DataGrid, type Column } from "@/components/ui/DataGrid";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useRegistrations } from "@/app/hooks/useRegistrations";
 import { useToast } from "@/app/hooks/useToast";
+import { useConfirmDialog } from "@/app/hooks/useConfirmDialog";
 
 type RequestRow = {
   _id: string;
@@ -48,6 +49,7 @@ function SuperAdminDashboard() {
   } = useRegistrations();
   const [busyId, setBusyId] = useState<string | null>(null);
   const { success, error } = useToast();
+  const { prompt, confirm, ConfirmDialog } = useConfirmDialog();
 
   const handleResolveChange = async (id: string, approve: boolean) => {
     setBusyId(id);
@@ -76,10 +78,19 @@ function SuperAdminDashboard() {
   };
 
   const handleReject = async (id: string) => {
-    const note = window.prompt("Reason for rejection (optional):") ?? undefined;
+    const note = await prompt({
+      title: "Reject School Registration",
+      message: "Please state the reason for rejecting this institution's onboarding request (optional):",
+      placeholder: "e.g. Incomplete school documentation or unverified contact details",
+      label: "Rejection Reason",
+      variant: "danger",
+      confirmText: "Confirm Rejection",
+    });
+    if (note === null) return; // Cancelled
+
     setBusyId(id);
     try {
-      await rejectRequest(id, note);
+      await rejectRequest(id, note.trim() || undefined);
       success("Request rejected — the applicant has been notified.", {
         title: "Rejected",
       });
@@ -294,6 +305,9 @@ function SuperAdminDashboard() {
           </div>
         )}
       </main>
+
+      {/* Reusable Confirmation Dialog */}
+      <ConfirmDialog />
     </div>
   );
 }

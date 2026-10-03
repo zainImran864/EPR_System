@@ -9,10 +9,27 @@ import Image from "next/image";
 
 function Toolbar() {
   return (
-    <div className="no-print sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200 px-6 py-3.5 flex items-center justify-between shadow-xs">
+    <div className="no-print print:hidden sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200 px-6 py-3.5 flex items-center justify-between shadow-xs">
       <button
-        onClick={() => window.history.back()}
-        className="flex items-center gap-2 text-xs font-semibold text-slate-700 hover:text-teal-700 transition-colors px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50"
+        onClick={() => {
+          if (window.opener) {
+            window.close();
+            return;
+          }
+          if (window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)) {
+            window.history.back();
+          } else {
+            window.close();
+            setTimeout(() => {
+              if (document.referrer && document.referrer.includes(window.location.host)) {
+                window.location.href = document.referrer;
+              } else {
+                window.location.href = "/admin/marks";
+              }
+            }, 150);
+          }
+        }}
+        className="flex items-center gap-2 text-xs font-semibold text-slate-700 hover:text-teal-700 transition-colors px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to Dashboard
@@ -21,37 +38,13 @@ function Toolbar() {
         <span className="text-xs text-slate-500 font-medium">Ready for A4 Official Printing</span>
         <button
           onClick={() => window.print()}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0D9488] text-white text-xs font-semibold hover:bg-[#0B7A70] transition-colors shadow-sm"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0D9488] text-white text-xs font-semibold hover:bg-[#0B7A70] transition-colors shadow-sm cursor-pointer"
         >
           <Printer className="w-4 h-4" />
           Print All Slips / Save as PDF
         </button>
       </div>
     </div>
-  );
-}
-
-function PrintStyles() {
-  return (
-    <style jsx global>{`
-      @media print {
-        .no-print {
-          display: none !important;
-        }
-        body {
-          background: white !important;
-          color: black !important;
-        }
-        .page-break {
-          page-break-after: always;
-          break-after: page;
-        }
-        @page {
-          size: A4 portrait;
-          margin: 12mm;
-        }
-      }
-    `}</style>
   );
 }
 
@@ -96,7 +89,7 @@ interface SlipData {
 function SingleSlipCard({ slip, isLast }: { slip: SlipData; isLast: boolean }) {
   return (
     <div
-      className={`max-w-3xl mx-auto my-6 bg-white border-2 border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm ${
+      className={`print-sheet max-w-3xl w-full mx-auto my-6 print:my-0 bg-white border-2 border-slate-800 rounded-2xl print:rounded-none p-6 sm:p-8 print:p-0 shadow-sm print:shadow-none print:max-w-none ${
         !isLast ? "page-break" : ""
       }`}
     >
@@ -330,8 +323,7 @@ function RollNoSlipContent() {
   return (
     <div>
       <Toolbar />
-      <PrintStyles />
-      <div className="py-6 px-4 bg-slate-100 min-h-screen">
+      <div className="print-page-container py-6 px-4 bg-slate-100 min-h-screen print:bg-white print:p-0 print:m-0">
         {slips.map((slip, i) => (
           <SingleSlipCard key={slip.student.id} slip={slip} isLast={i === slips.length - 1} />
         ))}

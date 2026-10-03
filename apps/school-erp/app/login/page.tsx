@@ -90,10 +90,18 @@ export default function LoginPage() {
   const [code, setCode] = useState("");
   const [rememberDevice, setRememberDevice] = useState(true);
 
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Bounce logged-in users to their respective dashboard
   useEffect(() => {
-    if (!isLoading && user && role) router.replace(ROLE_HOME[role]);
-  }, [isLoading, user, role, router]);
+    if (mounted && !isLoading && user && role) {
+      router.replace(ROLE_HOME[role]);
+    }
+  }, [mounted, isLoading, user, role, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

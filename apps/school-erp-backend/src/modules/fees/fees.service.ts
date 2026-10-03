@@ -1,11 +1,17 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { RedisService } from '../../database/redis.service';
 import { CreateChallanDto, PayChallanDto, GenerateBulkChallansDto, SetStudentDiscountDto } from './dto/fees.dto';
 import { FeeStatus } from '@prisma/client';
 
 @Injectable()
 export class FeesService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(FeesService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly redisService: RedisService,
+  ) {}
 
   async listChallans(
     schoolId: string,
@@ -69,7 +75,7 @@ export class FeesService {
 
     const finalPayable = Math.max(0, baseAmount - discountAmount);
 
-    return this.prisma.feeChallan.create({
+    const createdChallan = await this.prisma.feeChallan.create({
       data: {
         schoolId,
         studentId: dto.studentId,
@@ -86,6 +92,9 @@ export class FeesService {
       },
       include: { student: { include: { class: true, section: true } } },
     });
+
+    await this.redisService.del(`dashboard:stats:${schoolId}`);
+    return createdChallan;
   }
 
   async setStudentDiscount(schoolId: string, studentId: string, dto: SetStudentDiscountDto) {
@@ -107,10 +116,18 @@ export class FeesService {
 
   async generateBulkChallans(schoolId: string, dto: GenerateBulkChallansDto) {
     const where: any = { schoolId, status: 'active' };
-    if (dto.classId) where.classId = dto.classId;
-    if (dto.sectionId) where.sectionId = dto.sectionId;
+    if (dto.studentId) {
+      where.id = dto.studentId;
+    } else {
+      if (dto.classId) where.classId = dto.classId;
+      if (dto.sectionId) where.sectionId = dto.sectionId;
+    }
 
     const students = await this.prisma.student.findMany({ where });
+    if (students.length === 0) {
+      throw new NotFoundException('No active students found matching the selected criteria.');
+    }
+
     const year = new Date().getFullYear();
     let count = await this.prisma.feeChallan.count({ where: { schoolId } });
 
@@ -125,11 +142,18 @@ export class FeesService {
         let baseAmount = (s.customMonthlyFee && s.customMonthlyFee > 0) ? s.customMonthlyFee : dto.amount;
         let discountAmount = 0;
 
-        if (applyDiscounts && s.discountPercentage && s.discountPercentage > 0) {
+        if (dto.discountAmount !== undefined && dto.discountAmount > 0) {
+          discountAmount = dto.discountAmount;
+        } else if (dto.discountPercentage !== undefined && dto.discountPercentage > 0) {
+          discountAmount = (baseAmount * dto.discountPercentage) / 100;
+        } else if (applyDiscounts && s.discountPercentage && s.discountPercentage > 0) {
           discountAmount = (baseAmount * s.discountPercentage) / 100;
         }
 
         const payableAmount = Math.max(0, baseAmount - discountAmount);
+        const discountNote = dto.discountPercentage || dto.discountAmount
+          ? `Custom Discount Applied: ${dto.discountPercentage ? `${dto.discountPercentage}%` : `Rs. ${dto.discountAmount}`}`
+          : (s.discountReason ? `Discount Applied: ${s.discountReason}` : undefined);
 
         return this.prisma.feeChallan.create({
           data: {
@@ -143,11 +167,13 @@ export class FeesService {
             amount: payableAmount,
             discountAmount,
             status: FeeStatus.UNPAID,
-            customNotes: s.discountReason ? `Discount Applied: ${s.discountReason}` : undefined,
+            customNotes: discountNote,
           },
         });
       }),
     );
+
+    await this.redisService.del(`dashboard:stats:${schoolId}`);
 
     return {
       success: true,
@@ -170,7 +196,7 @@ export class FeesService {
       status = FeeStatus.PAID;
     }
 
-    return this.prisma.feeChallan.update({
+    const updated = await this.prisma.feeChallan.update({
       where: { id },
       data: {
         paidAmount: newPaidAmount,
@@ -179,6 +205,9 @@ export class FeesService {
         paymentMethod: dto.paymentMethod || 'Cash',
       },
     });
+
+    await this.redisService.del(`dashboard:stats:${schoolId}`);
+    return updated;
   }
 
   async getStudentLedger(schoolId: string, studentId: string) {

@@ -57,7 +57,7 @@ export const MyAttendanceView: React.FC<MyAttendanceViewProps> = ({ title, subti
         <p className="text-xs sm:text-sm text-slate-500 mt-0.5">{subtitle}</p>
         {ctx && (
           <p className="text-xs text-teal-600 mt-1 font-medium">
-            {ctx.firstName} {ctx.lastName} · {ctx.className} · {ctx.sectionName}
+            {(ctx as any).firstName || ""} {(ctx as any).lastName || ""} · {ctx.className} · {ctx.sectionName}
           </p>
         )}
       </div>

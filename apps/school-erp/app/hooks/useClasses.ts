@@ -1,14 +1,14 @@
 "use client";
 
-import { useQuery, useMutation } from "convex/react";
-import { classesApi } from "@/app/api/classes";
+import { useEffect, useState, useCallback } from "react";
+import { classesRestApi } from "@/app/api/client";
 import { useActiveSchool } from "./useActiveSchool";
 
 interface CreateClassArgs {
   name: string;
   numericGrade: number;
-  academicYear: string;
-  sections: string[];
+  academicYear?: string;
+  sections?: string[];
 }
 
 interface AddSectionArgs {
@@ -19,53 +19,108 @@ interface AddSectionArgs {
 }
 
 /**
- * Reactive classes-with-sections list. Also exposes select option helpers so
- * every module (students / attendance / marks) can share the same class and
- * section pickers backed by real Convex ids.
+ * REST-powered reactive classes-with-sections list with select options
+ * helpers for student/marks/attendance modules.
  */
 export function useClasses() {
   const { schoolId } = useActiveSchool();
+  const [classes, setClasses] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const data = useQuery(
-    classesApi.listWithSections,
-    schoolId ? { schoolId } : "skip"
-  );
-  const isLoading = schoolId === null || data === undefined;
-  const classes = data ?? [];
+  const fetchClasses = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await classesRestApi.getAll();
+      if (Array.isArray(data)) {
+        const normalized = data.map((c) => ({
+          ...c,
+          _id: c.id || c._id,
+          sections: (c.sections || []).map((s: any) => ({
+            ...s,
+            _id: s.id || s._id,
+          })),
+        }));
+        setClasses(normalized);
+      }
+    } catch (e) {
+      console.warn("REST classes fetch notice:", e);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-  const createClassMutation = useMutation(classesApi.create);
-  const addSectionMutation = useMutation(classesApi.addSection);
-  const updateClassMutation = useMutation(classesApi.updateClass);
-  const updateSectionMutation = useMutation(classesApi.updateSection);
+  useEffect(() => {
+    fetchClasses();
+  }, [fetchClasses, schoolId]);
 
-  const classOptions = classes.map((c) => ({ value: c._id, label: c.name }));
+  const classOptions = classes.map((c) => ({
+    value: c._id || c.id,
+    label: c.name,
+  }));
 
   const sectionOptions = (classId: string) => {
-    const cls = classes.find((c) => c._id === classId);
-    return (cls?.sections ?? []).map((s) => ({ value: s._id, label: s.name }));
+    const cls = classes.find((c) => (c._id || c.id) === classId);
+    return (cls?.sections ?? []).map((s: any) => ({
+      value: s._id || s.id,
+      label: s.name,
+    }));
   };
 
-  const addClass = (args: CreateClassArgs) =>
-    schoolId ? createClassMutation({ schoolId, ...args }) : undefined;
+  const addClass = async (args: CreateClassArgs) => {
+    const res = await classesRestApi.createClass(args);
+    await fetchClasses();
+    return res;
+  };
 
-  const addSection = (args: AddSectionArgs) =>
-    schoolId ? addSectionMutation({ schoolId, ...(args as any) }) : undefined;
+  const addSection = async (args: AddSectionArgs) => {
+    const res = await classesRestApi.createSection({
+      classId: args.classId,
+      name: args.name,
+      room: args.roomNumber,
+      classTeacherId: args.classTeacherId,
+    });
+    await fetchClasses();
+    return res;
+  };
 
-  const editClass = (
+  const editClass = async (
     classId: string,
-    fields: { name?: string; numericGrade?: number; academicYear?: string }
-  ) => updateClassMutation({ classId: classId as any, ...fields });
+    fields: { name?: string; numericGrade?: number; grade?: number }
+  ) => {
+    const res = await classesRestApi.updateClass(classId, {
+      name: fields.name,
+      grade: fields.grade || fields.numericGrade,
+    });
+    await fetchClasses();
+    return res;
+  };
 
-  const editSection = (
+  const editSection = async (
     sectionId: string,
-    fields: { name?: string; roomNumber?: string; classTeacherId?: string }
-  ) => updateSectionMutation({ sectionId: sectionId as any, ...(fields as any) });
+    fields: { name?: string; roomNumber?: string; room?: string; capacity?: number; classTeacherId?: string | null }
+  ) => {
+    const res = await classesRestApi.updateSection(sectionId, {
+      name: fields.name,
+      room: fields.roomNumber || fields.room,
+      capacity: fields.capacity,
+      classTeacherId: fields.classTeacherId !== undefined ? (fields.classTeacherId || null) : undefined,
+    });
+    await fetchClasses();
+    return res;
+  };
+
+  const deleteSection = async (sectionId: string) => {
+    const res = await classesRestApi.deleteSection(sectionId);
+    await fetchClasses();
+    return res;
+  };
 
   return {
     classes,
     isLoading,
     classOptions,
     sectionOptions,
+    refetch: fetchClasses,
     addClass,
     addSection,
     editClass,

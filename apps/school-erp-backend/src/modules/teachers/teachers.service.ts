@@ -1,12 +1,18 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { RedisService } from '../../database/redis.service';
 import { CreateTeacherDto, UpdateTeacherDto } from './dto/teacher.dto';
 import { Role, UserStatus } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class TeachersService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(TeachersService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly redisService: RedisService,
+  ) {}
 
   async listTeachers(schoolId: string, search?: string) {
     const where: any = { schoolId };
@@ -96,6 +102,9 @@ export class TeachersService {
         include: { user: true },
       });
 
+      await this.redisService.del(`dashboard:stats:${schoolId}`);
+      this.logger.log(`👨‍🏫 [TeachersService] Created teacher "${teacher.fullName}" (${teacher.employeeId})`);
+
       return teacher;
     });
   }
@@ -122,6 +131,7 @@ export class TeachersService {
     if (!teacher) throw new NotFoundException('Teacher not found');
 
     await this.prisma.user.delete({ where: { id: teacher.userId } });
+    await this.redisService.del(`dashboard:stats:${schoolId}`);
     return { success: true, message: 'Teacher deleted successfully' };
   }
 }

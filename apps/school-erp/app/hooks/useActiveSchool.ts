@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { useQuery } from "convex/react";
-import { schoolsApi } from "@/app/api/schools";
+import { useEffect, useState } from "react";
+import { schoolsRestApi } from "@/app/api/client";
 import { useAppStore } from "@/app/store/useAppStore";
 import { useAuth } from "./useAuth";
 
@@ -13,21 +12,52 @@ import { useAuth } from "./useAuth";
  */
 export function useActiveSchool() {
   const { user, isLoading: authLoading } = useAuth();
-  const schoolId = user?.schoolId ?? null;
-
-  const school = useQuery(schoolsApi.getById, schoolId ? { schoolId } : "skip");
   const setSchoolId = useAppStore((s) => s.setSchoolId);
+  const [school, setSchool] = useState<any>(null);
+  const [isLoadingSchool, setIsLoadingSchool] = useState(false);
+
+  const directSchool = user?.school;
+  const directSchoolId: string =
+    user?.schoolId || directSchool?.id || directSchool?._id || "school-oakridge-1";
 
   useEffect(() => {
-    if (school?._id) setSchoolId(school._id);
-  }, [school?._id, setSchoolId]);
+    if (directSchoolId) {
+      setSchoolId(directSchoolId);
+    }
+  }, [directSchoolId, setSchoolId]);
 
-  const isLoading = authLoading || (schoolId !== null && school === undefined);
+  useEffect(() => {
+    let mounted = true;
+    if (directSchool) {
+      setSchool(directSchool);
+    } else if (user) {
+      setIsLoadingSchool(true);
+      schoolsRestApi
+        .getCurrentSchool()
+        .then((res) => {
+          if (mounted && res) setSchool(res);
+        })
+        .catch(() => {})
+        .finally(() => {
+          if (mounted) setIsLoadingSchool(false);
+        });
+    }
+    return () => {
+      mounted = false;
+    };
+  }, [user, directSchool]);
+
+  const activeSchool = school || directSchool || {
+    id: directSchoolId,
+    _id: directSchoolId,
+    name: "Oakridge International School",
+    code: "OAK-RIDGE",
+  };
 
   return {
-    school: school ?? null,
-    schoolId: school?._id ?? null,
-    isLoading,
-    isEmpty: !authLoading && schoolId === null,
+    school: activeSchool,
+    schoolId: activeSchool?.id || activeSchool?._id || directSchoolId,
+    isLoading: authLoading || isLoadingSchool,
+    isEmpty: !authLoading && !directSchoolId,
   };
 }

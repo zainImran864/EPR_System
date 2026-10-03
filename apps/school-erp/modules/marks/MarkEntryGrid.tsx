@@ -104,18 +104,22 @@ export const MarkEntryGrid: React.FC = () => {
       (s: any) => s.sectionId === selectedSectionId,
     );
 
-  // Check if current user actually teaches this specific subject
+  // Check if current user teaches this subject (by subject ID or matching name)
   const teachesSelectedSubject =
     !isTeacher ||
-    teacherContext?.taughtSubjects?.some(
-      (ts: any) =>
-        ts.subjectId === selectedSubjectId &&
-        (!selectedSectionId || ts.sectionId === selectedSectionId),
-    );
+    !teacherContext?.taughtSubjects?.length ||
+    teacherContext.taughtSubjects.some((ts: any) => {
+      const matchId = ts.subjectId === selectedSubjectId;
+      const matchName =
+        subjects.find((s) => s._id === selectedSubjectId)?.name?.toLowerCase() ===
+        ts.subjectName?.toLowerCase();
+      const matchSection = !selectedSectionId || ts.sectionId === selectedSectionId;
+      return (matchId || matchName) && matchSection;
+    });
 
   // Can current user edit scores for this subject?
-  // Only the assigned subject teacher can edit scores. Admin and class teachers (who don't teach this subject) have read-only oversight.
-  const canEditScores = isTeacher && teachesSelectedSubject;
+  // Admin can always edit/override scores. Teachers can edit when assigned or designated for section.
+  const canEditScores = isAdmin || (isTeacher && (teachesSelectedSubject || isClassTeacherForSection));
 
   const handleSave = async () => {
     const ok = await saveMarks();

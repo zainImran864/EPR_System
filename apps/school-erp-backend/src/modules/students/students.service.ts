@@ -1,5 +1,6 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { RedisService } from '../../database/redis.service';
 import {
   CreateStudentDto,
   UpdateStudentDto,
@@ -15,7 +16,12 @@ import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class StudentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(StudentsService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly redisService: RedisService,
+  ) {}
 
   async listStudents(
     schoolId: string,
@@ -179,6 +185,9 @@ export class StudentsService {
         },
       });
 
+      await this.redisService.del(`dashboard:stats:${schoolId}`);
+      this.logger.log(`🎓 [StudentsService] Created student "${student.fullName}" (ADM: ${student.admissionNumber})`);
+
       return student;
     });
   }
@@ -203,11 +212,14 @@ export class StudentsService {
     if (dto.customMonthlyFee !== undefined) updateData.customMonthlyFee = dto.customMonthlyFee;
     if (dto.discountReason !== undefined) updateData.discountReason = dto.discountReason;
 
-    return this.prisma.student.update({
+    const updated = await this.prisma.student.update({
       where: { id },
       data: updateData,
       include: { class: true, section: true, parent: true },
     });
+
+    await this.redisService.del(`dashboard:stats:${schoolId}`);
+    return updated;
   }
 
   async updateStatus(schoolId: string, id: string, dto: UpdateStudentStatusDto) {
@@ -216,10 +228,13 @@ export class StudentsService {
     });
     if (!student) throw new NotFoundException('Student not found');
 
-    return this.prisma.student.update({
+    const updated = await this.prisma.student.update({
       where: { id },
       data: { status: dto.status },
     });
+
+    await this.redisService.del(`dashboard:stats:${schoolId}`);
+    return updated;
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -268,6 +283,8 @@ export class StudentsService {
       },
       include: { class: true, section: true },
     });
+
+    await this.redisService.del(`dashboard:stats:${schoolId}`);
 
     return {
       success: true,
@@ -322,6 +339,8 @@ export class StudentsService {
       },
       include: { class: true, section: true },
     });
+
+    await this.redisService.del(`dashboard:stats:${schoolId}`);
 
     return {
       success: true,

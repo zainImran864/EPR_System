@@ -1,15 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import { BookOpen, Plus, DoorClosed, Pencil } from "lucide-react";
+import { BookOpen, Plus, DoorClosed, Pencil, UserCheck } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useClasses } from "@/app/hooks/useClasses";
+import { useTeachers } from "@/app/hooks/useTeachers";
 
 // ---------------------------------------------------------------------------
 // Types inferred from the hook's return shape
@@ -19,7 +21,14 @@ interface Section {
   _id: string;
   name: string;
   roomNumber?: string;
-  classTeacherId?: string;
+  room?: string;
+  classTeacherId?: string | null;
+  classTeacher?: {
+    id: string;
+    fullName: string;
+    email?: string;
+    specialization?: string;
+  } | null;
   studentCount: number;
 }
 
@@ -74,49 +83,58 @@ const ClassCardSkeleton: React.FC = () => (
 );
 
 // ---------------------------------------------------------------------------
-// Per-section card (no teacher name — only room + studentCount + badge)
+// Per-section card (showing section name, room, assigned teacher + count)
 // ---------------------------------------------------------------------------
 
 const SectionCard: React.FC<{ section: Section; onEdit: () => void }> = ({
   section,
   onEdit,
-}) => (
-  <div className="p-4 rounded-xl border border-slate-200/80 bg-white hover:border-[#0D9488]/40 hover:shadow-xs transition-all duration-150 flex flex-col justify-between space-y-3">
-    <div className="flex items-center justify-between">
-      <span className="font-bold text-sm text-slate-900">{section.name}</span>
-      <div className="flex items-center gap-2">
-        {section.roomNumber && (
-          <span className="text-xs text-slate-500 flex items-center gap-1 font-mono-data">
-            <DoorClosed className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
-            {section.roomNumber}
+}) => {
+  const room = section.roomNumber || section.room;
+  const teacherName = section.classTeacher?.fullName;
+
+  return (
+    <div className="p-4 rounded-xl border border-slate-200/80 bg-white hover:border-[#0D9488]/40 hover:shadow-xs transition-all duration-150 flex flex-col justify-between space-y-3">
+      <div className="flex items-center justify-between">
+        <span className="font-bold text-sm text-slate-900">{section.name}</span>
+        <div className="flex items-center gap-2">
+          {room && (
+            <span className="text-xs text-slate-500 flex items-center gap-1 font-mono-data">
+              <DoorClosed className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
+              {room}
+            </span>
+          )}
+          <button
+            onClick={onEdit}
+            title="Edit section"
+            className="p-1 rounded text-slate-400 hover:text-[#0D9488] hover:bg-slate-50 transition-colors"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+        <div className="flex items-center gap-1.5 text-slate-700 min-w-0 pr-2">
+          <UserCheck
+            className={`w-3.5 h-3.5 shrink-0 ${
+              teacherName || section.classTeacherId ? "text-[#0D9488]" : "text-slate-300"
+            }`}
+          />
+          <span className="truncate font-medium text-[11px]">
+            {teacherName || (section.classTeacherId ? "Teacher assigned" : "No teacher assigned")}
           </span>
-        )}
-        <button
-          onClick={onEdit}
-          title="Edit section"
-          className="p-1 rounded text-slate-400 hover:text-[#0D9488] hover:bg-slate-50"
-        >
-          <Pencil className="w-3.5 h-3.5" />
-        </button>
+        </div>
+        <Badge variant="info" size="sm" isMono className="shrink-0">
+          {section.studentCount} enrolled
+        </Badge>
       </div>
     </div>
-
-    <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
-      <Badge
-        variant={section.classTeacherId ? "success" : "neutral"}
-        size="sm"
-      >
-        {section.classTeacherId ? "Teacher assigned" : "No teacher"}
-      </Badge>
-      <Badge variant="info" size="sm" isMono>
-        {section.studentCount} enrolled
-      </Badge>
-    </div>
-  </div>
-);
+  );
+};
 
 // ---------------------------------------------------------------------------
-// Add Section modal (self-contained, keyed per classId)
+// Add Section modal (with Class Teacher dropdown)
 // ---------------------------------------------------------------------------
 
 interface AddSectionModalProps {
@@ -124,10 +142,12 @@ interface AddSectionModalProps {
   className: string;
   isOpen: boolean;
   onClose: () => void;
+  teacherOptions: { value: string; label: string }[];
   addSection: (args: {
     classId: string;
     name: string;
     roomNumber?: string;
+    classTeacherId?: string;
   }) => Promise<unknown> | undefined;
 }
 
@@ -136,14 +156,17 @@ const AddSectionModal: React.FC<AddSectionModalProps> = ({
   className,
   isOpen,
   onClose,
+  teacherOptions,
   addSection,
 }) => {
   const [sectionName, setSectionName] = useState("");
   const [roomNumber, setRoomNumber] = useState("");
+  const [classTeacherId, setClassTeacherId] = useState("");
 
   const handleClose = () => {
     setSectionName("");
     setRoomNumber("");
+    setClassTeacherId("");
     onClose();
   };
 
@@ -153,6 +176,7 @@ const AddSectionModal: React.FC<AddSectionModalProps> = ({
       classId,
       name: sectionName.trim(),
       roomNumber: roomNumber.trim() || undefined,
+      classTeacherId: classTeacherId || undefined,
     });
     handleClose();
   };
@@ -162,7 +186,7 @@ const AddSectionModal: React.FC<AddSectionModalProps> = ({
       isOpen={isOpen}
       onClose={handleClose}
       title={`Add Section — ${className}`}
-      description="Create a new section within this class."
+      description="Create a new section and assign an in-charge class teacher."
       size="sm"
       footer={
         <>
@@ -183,7 +207,7 @@ const AddSectionModal: React.FC<AddSectionModalProps> = ({
       <div className="space-y-4">
         <Input
           label="Section Name *"
-          placeholder="e.g. Section B"
+          placeholder="e.g. Section B or Rose"
           value={sectionName}
           onChange={(e) => setSectionName(e.target.value)}
         />
@@ -192,6 +216,16 @@ const AddSectionModal: React.FC<AddSectionModalProps> = ({
           placeholder="e.g. Room 305"
           value={roomNumber}
           onChange={(e) => setRoomNumber(e.target.value)}
+        />
+        <Select
+          label="Class Teacher (In-Charge)"
+          placeholder="Select an available faculty member..."
+          value={classTeacherId}
+          onChange={(e) => setClassTeacherId(e.target.value)}
+          options={[
+            { value: "", label: "-- None / Assign Later --" },
+            ...teacherOptions,
+          ]}
         />
       </div>
     </Modal>
@@ -204,6 +238,7 @@ const AddSectionModal: React.FC<AddSectionModalProps> = ({
 
 interface ClassCardProps {
   cls: ClassRecord;
+  teacherOptions: { value: string; label: string }[];
   addSection: AddSectionModalProps["addSection"];
   editClass: (
     classId: string,
@@ -211,12 +246,13 @@ interface ClassCardProps {
   ) => Promise<unknown> | undefined;
   editSection: (
     sectionId: string,
-    fields: { name?: string; roomNumber?: string }
+    fields: { name?: string; roomNumber?: string; classTeacherId?: string | null }
   ) => Promise<unknown> | undefined;
 }
 
 const ClassCard: React.FC<ClassCardProps> = ({
   cls,
+  teacherOptions,
   addSection,
   editClass,
   editSection,
@@ -226,14 +262,18 @@ const ClassCard: React.FC<ClassCardProps> = ({
   const [editSectionTarget, setEditSectionTarget] = useState<Section | null>(null);
 
   const [clsForm, setClsForm] = useState({ name: cls.name, grade: String(cls.numericGrade) });
-  const [secForm, setSecForm] = useState({ name: "", roomNumber: "" });
+  const [secForm, setSecForm] = useState({ name: "", roomNumber: "", classTeacherId: "" });
 
   const openClassEdit = () => {
     setClsForm({ name: cls.name, grade: String(cls.numericGrade) });
     setEditingClass(true);
   };
   const openSectionEdit = (sec: Section) => {
-    setSecForm({ name: sec.name, roomNumber: sec.roomNumber ?? "" });
+    setSecForm({
+      name: sec.name,
+      roomNumber: sec.roomNumber || sec.room || "",
+      classTeacherId: sec.classTeacherId || sec.classTeacher?.id || "",
+    });
     setEditSectionTarget(sec);
   };
 
@@ -245,11 +285,13 @@ const ClassCard: React.FC<ClassCardProps> = ({
     });
     setEditingClass(false);
   };
+
   const saveSection = async () => {
     if (!editSectionTarget || !secForm.name.trim()) return;
     await editSection(editSectionTarget._id, {
       name: secForm.name.trim(),
       roomNumber: secForm.roomNumber.trim() || undefined,
+      classTeacherId: secForm.classTeacherId || null,
     });
     setEditSectionTarget(null);
   };
@@ -326,6 +368,7 @@ const ClassCard: React.FC<ClassCardProps> = ({
         className={cls.name}
         isOpen={isSectionModalOpen}
         onClose={() => setIsSectionModalOpen(false)}
+        teacherOptions={teacherOptions}
         addSection={addSection}
       />
 
@@ -373,7 +416,7 @@ const ClassCard: React.FC<ClassCardProps> = ({
         isOpen={Boolean(editSectionTarget)}
         onClose={() => setEditSectionTarget(null)}
         title="Edit Section"
-        description="Rename the section or change its room."
+        description="Rename the section, change its room, or update the in-charge class teacher."
         size="sm"
         footer={
           <>
@@ -402,6 +445,16 @@ const ClassCard: React.FC<ClassCardProps> = ({
             value={secForm.roomNumber}
             onChange={(e) => setSecForm({ ...secForm, roomNumber: e.target.value })}
           />
+          <Select
+            label="Class Teacher (In-Charge)"
+            placeholder="Select an available faculty member..."
+            value={secForm.classTeacherId}
+            onChange={(e) => setSecForm({ ...secForm, classTeacherId: e.target.value })}
+            options={[
+              { value: "", label: "-- None / Unassign --" },
+              ...teacherOptions,
+            ]}
+          />
         </div>
       </Modal>
     </>
@@ -415,6 +468,14 @@ const ClassCard: React.FC<ClassCardProps> = ({
 export const ClassManager: React.FC = () => {
   const { classes, isLoading, addClass, addSection, editClass, editSection } =
     useClasses();
+  const { teachers } = useTeachers();
+
+  const teacherOptions = React.useMemo(() => {
+    return (teachers || []).map((t: any) => ({
+      value: t._id || t.id,
+      label: `${t.fullName} (${t.department || t.specialization || "Faculty"})`,
+    }));
+  }, [teachers]);
 
   const [isAddClassOpen, setIsAddClassOpen] = useState(false);
   const [newClassName, setNewClassName] = useState("");
@@ -498,6 +559,7 @@ export const ClassManager: React.FC = () => {
             <ClassCard
               key={cls._id}
               cls={cls}
+              teacherOptions={teacherOptions}
               addSection={addSection}
               editClass={editClass}
               editSection={editSection}

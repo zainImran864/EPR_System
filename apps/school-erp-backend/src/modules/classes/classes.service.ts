@@ -1,10 +1,16 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { RedisService } from '../../database/redis.service';
 import { CreateClassDto, CreateSectionDto, CreateSubjectDto } from './dto/class.dto';
 
 @Injectable()
 export class ClassesService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(ClassesService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly redisService: RedisService,
+  ) {}
 
   async listClasses(schoolId: string) {
     return this.prisma.class.findMany({
@@ -12,6 +18,14 @@ export class ClassesService {
       include: {
         sections: {
           include: {
+            classTeacher: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+                specialization: true,
+              },
+            },
             _count: { select: { students: true } },
           },
           orderBy: { name: 'asc' },
@@ -50,7 +64,27 @@ export class ClassesService {
       },
     });
 
+    await this.redisService.del(`dashboard:stats:${schoolId}`);
+    await this.redisService.delPattern(`school:code:*`);
+
     return createdClass;
+  }
+
+  async updateClass(schoolId: string, classId: string, dto: any) {
+    const cls = await this.prisma.class.findFirst({
+      where: { id: classId, schoolId },
+    });
+    if (!cls) {
+      throw new NotFoundException('Class not found');
+    }
+
+    return this.prisma.class.update({
+      where: { id: classId },
+      data: {
+        name: dto.name ?? cls.name,
+        grade: dto.grade !== undefined ? Number(dto.grade) : cls.grade,
+      },
+    });
   }
 
   async createSection(schoolId: string, dto: CreateSectionDto) {
@@ -62,6 +96,15 @@ export class ClassesService {
       throw new NotFoundException('Class not found in this school');
     }
 
+    if (dto.classTeacherId) {
+      const teacher = await this.prisma.teacher.findFirst({
+        where: { id: dto.classTeacherId, schoolId },
+      });
+      if (!teacher) {
+        throw new NotFoundException('Selected teacher not found in this school');
+      }
+    }
+
     return this.prisma.section.create({
       data: {
         classId: dto.classId,
@@ -69,6 +112,56 @@ export class ClassesService {
         name: dto.name,
         room: dto.room,
         capacity: dto.capacity || 40,
+        classTeacherId: dto.classTeacherId || null,
+      },
+      include: {
+        classTeacher: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            specialization: true,
+          },
+        },
+      },
+    });
+  }
+
+  async updateSection(schoolId: string, sectionId: string, dto: any) {
+    const section = await this.prisma.section.findFirst({
+      where: { id: sectionId, schoolId },
+    });
+
+    if (!section) {
+      throw new NotFoundException('Section not found');
+    }
+
+    if (dto.classTeacherId) {
+      const teacher = await this.prisma.teacher.findFirst({
+        where: { id: dto.classTeacherId, schoolId },
+      });
+      if (!teacher) {
+        throw new NotFoundException('Selected teacher not found in this school');
+      }
+    }
+
+    return this.prisma.section.update({
+      where: { id: sectionId },
+      data: {
+        name: dto.name !== undefined ? dto.name : section.name,
+        room: dto.room !== undefined ? dto.room : section.room,
+        capacity: dto.capacity !== undefined ? Number(dto.capacity) : section.capacity,
+        classTeacherId: dto.classTeacherId !== undefined ? (dto.classTeacherId || null) : section.classTeacherId,
+      },
+      include: {
+        classTeacher: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            specialization: true,
+          },
+        },
       },
     });
   }

@@ -12,6 +12,7 @@ import {
   Clock,
   Award,
   AlertCircle,
+  AlertTriangle,
   Eye,
   Check,
   FileCheck,
@@ -22,6 +23,7 @@ import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { marksRestApi } from "@/app/api/client";
 import { useToast } from "@/app/hooks/useToast";
+import { useConfirmDialog } from "@/app/hooks/useConfirmDialog";
 
 interface QuestionPaperManagerModalProps {
   isOpen: boolean;
@@ -53,6 +55,7 @@ export const QuestionPaperManagerModal: React.FC<QuestionPaperManagerModalProps>
   isTeacher,
 }) => {
   const { success, error } = useToast();
+  const { confirm, ConfirmDialog } = useConfirmDialog();
   const [papers, setPapers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -109,7 +112,14 @@ export const QuestionPaperManagerModal: React.FC<QuestionPaperManagerModalProps>
   };
 
   const handleDelete = async (paperId: string) => {
-    if (!confirm("Are you sure you want to delete this question paper version?")) return;
+    const ok = await confirm({
+      title: "Delete Question Paper",
+      message: "Are you sure you want to delete this question paper version? This action cannot be undone.",
+      variant: "danger",
+      confirmText: "Delete Paper",
+    });
+    if (!ok) return;
+
     try {
       await marksRestApi.deleteQuestionPaper(paperId);
       success("Question paper deleted.");
@@ -142,6 +152,17 @@ export const QuestionPaperManagerModal: React.FC<QuestionPaperManagerModalProps>
     e.preventDefault();
     if (!title.trim()) {
       error("Paper title is required.");
+      return;
+    }
+
+    const sumQuestionMarks = questions.reduce(
+      (acc, q) => acc + (Number(q.marks) || 0),
+      0
+    );
+    if (sumQuestionMarks !== Number(totalMarks)) {
+      error(
+        `Total marks mismatch! The sum of question marks (${sumQuestionMarks}) must equal the Maximum Marks (${totalMarks}). Click 'Sync Total Marks' or adjust question marks.`
+      );
       return;
     }
 
@@ -384,6 +405,53 @@ export const QuestionPaperManagerModal: React.FC<QuestionPaperManagerModalProps>
               />
             </div>
 
+            {/* Live Marks Matching Banner */}
+            {(() => {
+              const sumQMarks = questions.reduce((acc, q) => acc + (Number(q.marks) || 0), 0);
+              const isBalanced = sumQMarks === Number(totalMarks);
+              return (
+                <div
+                  className={`p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs transition-colors ${
+                    isBalanced
+                      ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                      : "bg-amber-50 border-amber-300 text-amber-900"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {isBalanced ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    ) : (
+                      <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                    )}
+                    <span>
+                      Sum of Questions: <strong>{sumQMarks}</strong> marks / Maximum Paper Marks:{" "}
+                      <strong>{totalMarks}</strong> marks{" "}
+                      {isBalanced ? (
+                        <span className="font-semibold text-emerald-700">(Balanced)</span>
+                      ) : (
+                        <span className="font-semibold text-amber-700">
+                          (Difference:{" "}
+                          {sumQMarks > totalMarks
+                            ? `+${sumQMarks - totalMarks}`
+                            : `-${totalMarks - sumQMarks}`}
+                          )
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  {!isBalanced && (
+                    <button
+                      type="button"
+                      onClick={() => setTotalMarks(sumQMarks)}
+                      className="text-[11px] font-bold text-amber-900 bg-amber-200/80 hover:bg-amber-200 px-3 py-1 rounded-lg transition-colors cursor-pointer self-start sm:self-auto shadow-2xs"
+                    >
+                      Sync Maximum Marks to {sumQMarks}
+                    </button>
+                  )}
+                </div>
+              );
+            })()}
+
             {/* Structured Questions Builder */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -469,6 +537,9 @@ export const QuestionPaperManagerModal: React.FC<QuestionPaperManagerModalProps>
           </form>
         )}
       </div>
+
+      {/* Reusable Confirmation Dialog */}
+      <ConfirmDialog />
     </Modal>
   );
 };

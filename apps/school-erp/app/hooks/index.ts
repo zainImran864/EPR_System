@@ -9,3 +9,4 @@ export { useDebounce } from "./useDebounce";
 export { useAuth } from "./useAuth";
 export type { Role, RegisterInput } from "./useAuth";
 export { useRegistrations } from "./useRegistrations";
+export { useConfirmDialog } from "./useConfirmDialog";

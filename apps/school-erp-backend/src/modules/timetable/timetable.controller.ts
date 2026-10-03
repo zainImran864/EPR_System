@@ -25,6 +25,14 @@ export class TimetableController {
     return this.timetableService.getSectionTimetable(user.schoolId!, sectionId);
   }
 
+  @Get('class/:classId')
+  async getClassTimetable(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('classId') classId: string,
+  ) {
+    return this.timetableService.getClassTimetable(user.schoolId!, classId);
+  }
+
   @Get('teacher/:teacherId')
   async getTeacherTimetable(
     @CurrentUser() user: CurrentUserPayload,

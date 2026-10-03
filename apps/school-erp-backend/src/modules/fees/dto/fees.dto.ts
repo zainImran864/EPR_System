@@ -54,6 +54,18 @@ export class GenerateBulkChallansDto {
   @IsString()
   sectionId?: string;
 
+  @IsOptional()
+  @IsString()
+  studentId?: string;
+
+  @IsOptional()
+  @IsNumber()
+  discountPercentage?: number;
+
+  @IsOptional()
+  @IsNumber()
+  discountAmount?: number;
+
   @IsString()
   @IsNotEmpty()
   title: string;

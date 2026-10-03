@@ -3,8 +3,17 @@
  * Connects directly to the NestJS backend and handles auth tokens & JSON serialization.
  */
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
+function getApiBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_API_BASE_URL) {
+    return process.env.NEXT_PUBLIC_API_BASE_URL;
+  }
+  if (typeof window !== 'undefined') {
+    const protocol = window.location.protocol || 'http:';
+    const hostname = window.location.hostname || '127.0.0.1';
+    return `${protocol}//${hostname}:3001/api`;
+  }
+  return 'http://127.0.0.1:3001/api';
+}
 
 export interface ApiResponse<T = any> {
   statusCode: number;
@@ -28,7 +37,9 @@ export class ApiError extends Error {
 function getAuthHeader(): Record<string, string> {
   if (typeof window === 'undefined') return {};
   try {
-    const token = localStorage.getItem('auth_token');
+    const token =
+      localStorage.getItem('erp_session_token') ||
+      localStorage.getItem('auth_token');
     if (token) {
       return { Authorization: `Bearer ${token}` };
     }
@@ -40,7 +51,8 @@ async function request<T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const url = `${API_BASE_URL.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
+  const baseUrl = getApiBaseUrl();
+  const url = `${baseUrl.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -123,20 +135,32 @@ export const authRestApi = {
     apiClient.post<{ accessToken: string; user: any }>('/auth/login', credentials),
   me: () => apiClient.get<any>('/auth/me'),
   logout: () => apiClient.post<{ success: boolean }>('/auth/logout'),
+  registerSchool: (data: any) =>
+    apiClient.post<{ message: string; schoolId: string; adminEmail: string }>('/auth/register-school', data),
+  changePassword: (data: { oldPassword?: string; newPassword?: string }) =>
+    apiClient.post<{ success: boolean }>('/auth/change-password', data),
+  updateTheme: (themeColor: string) =>
+    apiClient.patch<{ success: boolean }>('/auth/theme', { themeColor }),
+  generate2FA: () => apiClient.post<{ secret: string; otpauthUrl: string; qrCodeUri?: string }>('/auth/2fa/generate'),
+  enable2FA: (code: string) => apiClient.post<{ success: boolean }>('/auth/2fa/enable', { code }),
+  disable2FA: (code: string) => apiClient.post<{ success: boolean }>('/auth/2fa/disable', { code }),
 };
 
 export const timetableRestApi = {
   getMyTimetable: () => apiClient.get<any>('/timetable/my'),
   getSectionTimetable: (sectionId: string) =>
     apiClient.get<any[]>(`/timetable/section/${sectionId}`),
+  getClassTimetable: (classId: string) =>
+    apiClient.get<any[]>(`/timetable/class/${classId}`),
   getTeacherTimetable: (teacherId: string) =>
     apiClient.get<any[]>(`/timetable/teacher/${teacherId}`),
   getStudentTimetable: (studentId: string) =>
     apiClient.get<any>(`/timetable/student/${studentId}`),
   createEntry: (data: {
     sectionId: string;
-    subjectId: string;
-    teacherId: string;
+    subjectId?: string;
+    subjectName?: string;
+    teacherId?: string;
     dayOfWeek: string;
     periodNumber: number;
     startTime: string;
@@ -200,8 +224,12 @@ export const teachersRestApi = {
 export const classesRestApi = {
   getAll: () => apiClient.get<any[]>('/classes'),
   createClass: (data: any) => apiClient.post<any>('/classes', data),
-  createSection: (classId: string, data: any) =>
-    apiClient.post<any>(`/classes/${classId}/sections`, data),
+  updateClass: (id: string, data: any) => apiClient.patch<any>(`/classes/${id}`, data),
+  createSection: (data: { classId: string; name: string; room?: string; capacity?: number; classTeacherId?: string }) =>
+    apiClient.post<any>('/classes/sections', data),
+  updateSection: (id: string, data: { name?: string; room?: string; capacity?: number; classTeacherId?: string | null }) =>
+    apiClient.patch<any>(`/classes/sections/${id}`, data),
+  deleteSection: (id: string) => apiClient.delete<any>(`/classes/sections/${id}`),
   createSubject: (data: any) => apiClient.post<any>('/classes/subjects', data),
 };
 
@@ -252,9 +280,21 @@ export const feesRestApi = {
   getStructures: () => apiClient.get<any[]>('/fees/structures'),
   createStructure: (data: any) => apiClient.post<any>('/fees/structures', data),
   getChallans: (params?: any) => apiClient.get<any[]>('/fees/challans', params),
+  getChallanById: (id: string) => apiClient.get<any>(`/fees/challans/${id}`),
   createChallan: (data: any) => apiClient.post<any>('/fees/challans', data),
-  generateMonthly: (data: { classId?: string; sectionId?: string; title: string; month: string; academicYear: string; dueDate: string; amount: number; applyStudentDiscounts?: boolean }) =>
-    apiClient.post<any>('/fees/challans/bulk', data),
+  generateMonthly: (data: {
+    classId?: string;
+    sectionId?: string;
+    studentId?: string;
+    discountPercentage?: number;
+    discountAmount?: number;
+    title: string;
+    month: string;
+    academicYear: string;
+    dueDate: string;
+    amount: number;
+    applyStudentDiscounts?: boolean;
+  }) => apiClient.post<any>('/fees/challans/bulk', data),
   setStudentDiscount: (studentId: string, data: { discountPercentage?: number; customMonthlyFee?: number; discountReason?: string }) =>
     apiClient.patch<any>(`/fees/student-discount/${studentId}`, data),
   payFee: (id: string, data: { paidAmount: number; paymentMethod?: string }) =>
@@ -284,11 +324,15 @@ export const whatsappRestApi = {
 };
 
 export const dashboardRestApi = {
-  getStats: () => apiClient.get<any>('/dashboard/stats'),
+  getAdminStats: () => apiClient.get<any>('/dashboard/admin'),
+  getTeacherStats: () => apiClient.get<any>('/dashboard/teacher'),
+  getStudentStats: () => apiClient.get<any>('/dashboard/student'),
+  getSuperAdminStats: () => apiClient.get<any>('/dashboard/superadmin'),
+  getStats: () => apiClient.get<any>('/dashboard/admin'),
 };
 
 export const superAdminRestApi = {
-  getStats: () => apiClient.get<any>('/superadmin/stats'),
+  getStats: () => apiClient.get<any>('/dashboard/superadmin'),
   getSchools: () => apiClient.get<any[]>('/schools/superadmin/all'),
   getPendingRequests: () => apiClient.get<any[]>('/schools/superadmin/pending-requests'),
   approveRequest: (id: string) =>

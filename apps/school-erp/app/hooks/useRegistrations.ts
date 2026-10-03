@@ -1,43 +1,68 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { registrationsApi, superAdminApi } from "@/app/api/registrations";
+import { useState, useEffect, useCallback } from "react";
+import { superAdminRestApi } from "@/app/api/client";
 
 type StatusFilter = "pending" | "approved" | "rejected" | "all";
 
 /**
- * Super-admin registration queue: filtered requests, platform stats, and
- * approve/reject mutations (Convex reactivity refreshes the list on action).
+ * REST-powered SuperAdmin queue for school registrations and stats.
  */
 export function useRegistrations() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("pending");
+  const [requests, setRequests] = useState<any[]>([]);
+  const [stats, setStats] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const requests = useQuery(
-    registrationsApi.list,
-    statusFilter === "all" ? {} : { status: statusFilter }
-  );
-  const stats = useQuery(superAdminApi.stats, {});
-  const changeRequests = useQuery(registrationsApi.listChangeRequests, {
-    status: "pending",
-  });
+  const fetchQueue = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [reqList, statData] = await Promise.all([
+        superAdminRestApi.getPendingRequests().catch(() => []),
+        superAdminRestApi.getStats().catch(() => null),
+      ]);
+      if (Array.isArray(reqList)) {
+        setRequests(reqList.map((r) => ({ ...r, _id: r.id || r._id })));
+      }
+      if (statData) setStats(statData);
+    } catch (e) {
+      console.warn("Superadmin registrations fetch notice:", e);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-  const approveMutation = useMutation(registrationsApi.approve);
-  const rejectMutation = useMutation(registrationsApi.reject);
-  const resolveChangeMutation = useMutation(registrationsApi.resolveChangeRequest);
+  useEffect(() => {
+    fetchQueue();
+  }, [fetchQueue]);
+
+  const approveRequest = async (requestId: string, reviewNote?: string) => {
+    const res = await superAdminRestApi.approveRequest(requestId);
+    await fetchQueue();
+    return res;
+  };
+
+  const rejectRequest = async (requestId: string, reviewNote?: string) => {
+    const res = await superAdminRestApi.rejectRequest(requestId, reviewNote);
+    await fetchQueue();
+    return res;
+  };
+
+  const resolveChangeRequest = async (requestId: string, approve: boolean) => {
+    if (approve) return approveRequest(requestId);
+    return rejectRequest(requestId);
+  };
 
   return {
-    requests: requests ?? [],
-    isLoading: requests === undefined,
-    stats: stats ?? null,
-    changeRequests: changeRequests ?? [],
+    requests,
+    isLoading,
+    stats,
+    changeRequests: [] as any[],
     statusFilter,
     setStatusFilter,
-    approveRequest: (requestId: string, reviewNote?: string) =>
-      approveMutation({ requestId: requestId as any, reviewNote }),
-    rejectRequest: (requestId: string, reviewNote?: string) =>
-      rejectMutation({ requestId: requestId as any, reviewNote }),
-    resolveChangeRequest: (requestId: string, approve: boolean) =>
-      resolveChangeMutation({ requestId: requestId as any, approve }),
+    approveRequest,
+    rejectRequest,
+    resolveChangeRequest,
+    refetch: fetchQueue,
   };
 }

@@ -1,6 +1,5 @@
-import { api } from "@/convex/_generated/api";
+import { schoolsRestApi } from "./client";
 
-/** Convex action references for the Email domain. */
-export const emailApi = {
-  testSmtp: api.email.testSmtpConnection,
+export const emailRestApi = {
+  testSmtp: (data: any) => schoolsRestApi.testSmtp(data),
 };

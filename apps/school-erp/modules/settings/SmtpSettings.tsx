@@ -2,14 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import { Mailbox, Save, ShieldCheck, Send, CheckCircle2, AlertCircle } from "lucide-react";
-import { useQuery, useMutation, useAction } from "convex/react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Switch } from "@/components/ui/Switch";
 import { Badge } from "@/components/ui/Badge";
-import { schoolsApi } from "@/app/api/schools";
-import { emailApi } from "@/app/api/email";
 import { schoolsRestApi } from "@/app/api/client";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useToast } from "@/app/hooks/useToast";
@@ -20,10 +17,6 @@ import { useToast } from "@/app/hooks/useToast";
  */
 export const SmtpSettings: React.FC = () => {
   const { user } = useAuth();
-  const schoolId = user?.schoolId ?? null;
-  const school = useQuery(schoolsApi.getById, schoolId ? { schoolId } : "skip");
-  const updateSmtp = useMutation(schoolsApi.updateSmtp);
-  const testSmtpAction = useAction(emailApi.testSmtp);
   const { success, error } = useToast();
 
   const [form, setForm] = useState({
@@ -41,7 +34,6 @@ export const SmtpSettings: React.FC = () => {
   const [isConfigured, setIsConfigured] = useState(false);
 
   useEffect(() => {
-    // Attempt fetching current SMTP settings from REST backend
     async function loadRestSmtp() {
       try {
         const res = await schoolsRestApi.getSmtpSettings();
@@ -57,66 +49,29 @@ export const SmtpSettings: React.FC = () => {
             smtpEnabled: res.smtpEnabled ?? false,
           }));
           setIsConfigured(Boolean(res.isConfigured || res.smtpHost));
-          return;
         }
-      } catch {
-        // Fallback to Convex if REST not running
-      }
-
-      if (school) {
-        setForm((prev) => ({
-          ...prev,
-          smtpHost: school.smtpHost ?? "",
-          smtpPort: school.smtpPort ?? 587,
-          smtpUser: school.smtpUser ?? "",
-          smtpPass: "",
-          smtpFrom: school.smtpFrom ?? "",
-          smtpSecure: school.smtpSecure ?? false,
-          smtpEnabled: school.smtpEnabled ?? false,
-        }));
-        setIsConfigured(Boolean(school.smtpConfigured));
+      } catch (err) {
+        console.warn("SMTP settings fetch notice:", err);
       }
     }
 
     loadRestSmtp();
-  }, [school]);
+  }, []);
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      // 1. Try NestJS REST Backend
-      try {
-        await schoolsRestApi.updateSmtpSettings({
-          smtpHost: form.smtpHost || undefined,
-          smtpPort: form.smtpPort || undefined,
-          smtpUser: form.smtpUser || undefined,
-          smtpPass: form.smtpPass || undefined,
-          smtpFrom: form.smtpFrom || undefined,
-          smtpSecure: form.smtpSecure,
-          smtpEnabled: form.smtpEnabled,
-        });
-        setIsConfigured(Boolean(form.smtpHost && form.smtpUser));
-        success("SMTP server settings saved successfully.");
-        return;
-      } catch (restErr: any) {
-        // Fallback to Convex mutation if REST is unreachable
-        if (schoolId) {
-          await updateSmtp({
-            schoolId,
-            smtpHost: form.smtpHost || undefined,
-            smtpPort: form.smtpPort || undefined,
-            smtpUser: form.smtpUser || undefined,
-            smtpPass: form.smtpPass || undefined,
-            smtpFrom: form.smtpFrom || undefined,
-            smtpSecure: form.smtpSecure,
-            smtpEnabled: form.smtpEnabled,
-          });
-          setIsConfigured(Boolean(form.smtpHost && form.smtpUser));
-          success("SMTP server settings saved successfully.");
-          return;
-        }
-        throw restErr;
-      }
+      await schoolsRestApi.updateSmtpSettings({
+        smtpHost: form.smtpHost || undefined,
+        smtpPort: form.smtpPort || undefined,
+        smtpUser: form.smtpUser || undefined,
+        smtpPass: form.smtpPass || undefined,
+        smtpFrom: form.smtpFrom || undefined,
+        smtpSecure: form.smtpSecure,
+        smtpEnabled: form.smtpEnabled,
+      });
+      setIsConfigured(Boolean(form.smtpHost && form.smtpUser));
+      success("SMTP server settings saved successfully.");
     } catch (err: any) {
       error(err?.message || "Could not save SMTP settings.");
     } finally {
@@ -131,35 +86,22 @@ export const SmtpSettings: React.FC = () => {
     }
     setTesting(true);
     try {
-      // 1. Try NestJS REST Backend
-      try {
-        const res = await schoolsRestApi.testSmtp({
-          toEmail: testEmail.trim(),
-          smtpHost: form.smtpHost || undefined,
-          smtpPort: form.smtpPort || undefined,
-          smtpUser: form.smtpUser || undefined,
-          smtpPass: form.smtpPass || undefined,
-          smtpFrom: form.smtpFrom || undefined,
-          smtpSecure: form.smtpSecure,
-        });
-        if (res?.success) {
-          success(`SMTP verified! Test message sent to ${testEmail.trim()}`);
-          return;
-        }
-      } catch (restErr: any) {
-        // Fallback to Convex action
-        if (schoolId) {
-          const res = await testSmtpAction({ schoolId, to: testEmail.trim() });
-          if (res?.ok) {
-            success(`Test email sent to ${testEmail.trim()} — check inbox.`);
-            return;
-          }
-          throw new Error(res?.error || "Test failed.");
-        }
-        throw restErr;
+      const res = await schoolsRestApi.testSmtp({
+        toEmail: testEmail.trim(),
+        smtpHost: form.smtpHost || undefined,
+        smtpPort: form.smtpPort || undefined,
+        smtpUser: form.smtpUser || undefined,
+        smtpPass: form.smtpPass || undefined,
+        smtpFrom: form.smtpFrom || undefined,
+        smtpSecure: form.smtpSecure,
+      });
+      if (res?.success) {
+        success(`SMTP verified! Test message sent to ${testEmail.trim()}`);
+      } else {
+        error(res?.message || "Test email delivery failed.");
       }
-    } catch (e: any) {
-      error(e?.message || "SMTP handshake failed. Verify host, port, username & password.");
+    } catch (err: any) {
+      error(err?.message || "SMTP test connection failed.");
     } finally {
       setTesting(false);
     }

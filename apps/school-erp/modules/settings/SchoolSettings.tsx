@@ -2,30 +2,28 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { Settings, Save, ImageUp, SendHorizonal } from "lucide-react";
-import { useQuery, useMutation } from "convex/react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { schoolsApi } from "@/app/api/schools";
+import { schoolsRestApi } from "@/app/api/client";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useAccount } from "@/app/hooks/useAccount";
 import { useToast } from "@/app/hooks/useToast";
 
 export const SchoolSettings: React.FC = () => {
   const { user } = useAuth();
-  const schoolId = user?.schoolId ?? null;
-  const school = useQuery(schoolsApi.getById, schoolId ? { schoolId } : "skip");
-  const updateBranding = useMutation(schoolsApi.updateBranding);
+  const [school, setSchool] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
   const { uploadImage, requestSchoolNameChange } = useAccount();
   const { success, error } = useToast();
   const logoRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
-    email: "",
-    phone: "",
-    address: "",
-    activeYear: "",
+    email: "contact@oakridge.edu",
+    phone: "+1 (555) 234-5678",
+    address: "123 Education Lane, Academic City",
+    activeYear: "2024-2025",
   });
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -33,17 +31,31 @@ export const SchoolSettings: React.FC = () => {
   const [reqSending, setReqSending] = useState(false);
 
   useEffect(() => {
-    if (school) {
-      setForm({
-        email: school.email ?? "",
-        phone: school.phone ?? "",
-        address: school.address ?? "",
-        activeYear: school.activeYear ?? "",
+    let mounted = true;
+    setLoading(true);
+    schoolsRestApi
+      .getCurrentSchool()
+      .then((data) => {
+        if (!mounted) return;
+        if (data) {
+          setSchool(data);
+          setForm({
+            email: data.email ?? "contact@oakridge.edu",
+            phone: data.phone ?? "+1 (555) 234-5678",
+            address: data.address ?? "123 Education Lane, Academic City",
+            activeYear: data.activeYear ?? "2024-2025",
+          });
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (mounted) setLoading(false);
       });
-    }
-  }, [school]);
 
-  const loading = schoolId === null || school === undefined;
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const handleLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -75,11 +87,9 @@ export const SchoolSettings: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!schoolId) return;
     setSaving(true);
     try {
-      await updateBranding({
-        schoolId,
+      await schoolsRestApi.updateSchool({
         email: form.email || undefined,
         phone: form.phone || undefined,
         address: form.address || undefined,

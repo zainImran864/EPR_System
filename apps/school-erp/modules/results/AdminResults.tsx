@@ -24,8 +24,8 @@ const StudentResultPanel: React.FC<{ studentId: string }> = ({ studentId }) => {
     );
   return (
     <div className="space-y-3">
-      {results.map((exam) => (
-        <div key={exam.examId} className="rounded-xl border border-slate-200 p-4">
+      {results.map((exam, idx) => (
+        <div key={exam.examId || `exam-${idx}`} className="rounded-xl border border-slate-200 p-4">
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-semibold text-slate-900 text-sm">{exam.examName}</h4>
