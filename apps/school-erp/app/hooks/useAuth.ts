@@ -101,21 +101,7 @@ export function useAuth() {
   const login = async (email: string, password: string) => {
     const normalizedEmail = email.trim().toLowerCase();
 
-    // 1. Check local seed accounts for instant, deterministic login
-    if (SEED_USERS[normalizedEmail]) {
-      const demo = SEED_USERS[normalizedEmail];
-      const seedToken = `seed_token_${normalizedEmail}`;
-      setAuth(seedToken, demo);
-      setUser(demo);
-      return {
-        ok: true,
-        token: seedToken,
-        role: demo.role as Role,
-        user: demo,
-      };
-    }
-
-    // 2. Try NestJS REST backend API
+    // 1. Try NestJS REST backend API first for full JWT token authentication
     try {
       const restRes: any = await authRestApi.login({
         email: normalizedEmail,
@@ -140,6 +126,20 @@ export function useAuth() {
       }
     } catch (e) {
       console.warn("Backend REST login fallback:", e);
+    }
+
+    // 2. Offline fallback for demo seed accounts if backend is unreachable
+    if (SEED_USERS[normalizedEmail]) {
+      const demo = SEED_USERS[normalizedEmail];
+      const seedToken = `seed_token_${normalizedEmail}`;
+      setAuth(seedToken, demo);
+      setUser(demo);
+      return {
+        ok: true,
+        token: seedToken,
+        role: demo.role as Role,
+        user: demo,
+      };
     }
 
     return { ok: false, error: "invalid-credentials" };
