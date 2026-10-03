@@ -1,6 +1,12 @@
-import { Controller, Get, Post, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { ClassesService } from './classes.service';
-import { CreateClassDto, CreateSectionDto, CreateSubjectDto } from './dto/class.dto';
+import {
+  CreateClassDto,
+  UpdateClassDto,
+  CreateSectionDto,
+  UpdateSectionDto,
+  CreateSubjectDto,
+} from './dto/class.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -29,12 +35,34 @@ export class ClassesController {
 
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
+  @Patch(':id')
+  async updateClass(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() dto: UpdateClassDto,
+  ) {
+    return this.classesService.updateClass(user.schoolId!, id, dto);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @Post('sections')
   async createSection(
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: CreateSectionDto,
   ) {
     return this.classesService.createSection(user.schoolId!, dto);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @Patch('sections/:id')
+  async updateSection(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() dto: UpdateSectionDto,
+  ) {
+    return this.classesService.updateSection(user.schoolId!, id, dto);
   }
 
   @UseGuards(RolesGuard)

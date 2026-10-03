@@ -37,7 +37,7 @@ export const FeeChallanSheet: React.FC<{ data: ChallanData; lastPage?: boolean }
 
   return (
     <div
-      className="mx-auto my-6 print:my-0 bg-white shadow-lg print:shadow-none w-[210mm] min-h-[297mm] p-[16mm] flex flex-col"
+      className="print-sheet mx-auto my-6 print:my-0 bg-white shadow-lg print:shadow-none max-w-3xl w-full min-h-[280mm] p-6 sm:p-10 print:p-0 flex flex-col border border-slate-200 print:border-0"
       style={{ pageBreakAfter: lastPage ? "auto" : "always" }}
     >
       {/* Header */}

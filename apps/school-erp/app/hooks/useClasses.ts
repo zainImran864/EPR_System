@@ -73,9 +73,10 @@ export function useClasses() {
   };
 
   const addSection = async (args: AddSectionArgs) => {
-    const res = await classesRestApi.createSection(args.classId, {
+    const res = await classesRestApi.createSection({
+      classId: args.classId,
       name: args.name,
-      roomNumber: args.roomNumber,
+      room: args.roomNumber,
       classTeacherId: args.classTeacherId,
     });
     await fetchClasses();
@@ -84,16 +85,34 @@ export function useClasses() {
 
   const editClass = async (
     classId: string,
-    fields: { name?: string; numericGrade?: number; academicYear?: string }
+    fields: { name?: string; numericGrade?: number; grade?: number }
   ) => {
-    return { success: true };
+    const res = await classesRestApi.updateClass(classId, {
+      name: fields.name,
+      grade: fields.grade || fields.numericGrade,
+    });
+    await fetchClasses();
+    return res;
   };
 
   const editSection = async (
     sectionId: string,
-    fields: { name?: string; roomNumber?: string; classTeacherId?: string }
+    fields: { name?: string; roomNumber?: string; room?: string; capacity?: number; classTeacherId?: string | null }
   ) => {
-    return { success: true };
+    const res = await classesRestApi.updateSection(sectionId, {
+      name: fields.name,
+      room: fields.roomNumber || fields.room,
+      capacity: fields.capacity,
+      classTeacherId: fields.classTeacherId !== undefined ? (fields.classTeacherId || null) : undefined,
+    });
+    await fetchClasses();
+    return res;
+  };
+
+  const deleteSection = async (sectionId: string) => {
+    const res = await classesRestApi.deleteSection(sectionId);
+    await fetchClasses();
+    return res;
   };
 
   return {

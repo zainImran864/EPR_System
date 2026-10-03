@@ -66,12 +66,12 @@ function QuestionPaperContent() {
   const { school, examination, instructions, sections } = paper;
 
   return (
-    <div className="min-h-screen bg-slate-200/70 p-4 sm:p-8 font-sans print:p-0 print:bg-white text-slate-900">
+    <div className="print-page-container min-h-screen bg-slate-200/70 p-4 sm:p-8 font-sans print:p-0 print:bg-white text-slate-900">
       {/* Floating Print Bar - Hidden during printing */}
-      <div className="max-w-4xl mx-auto mb-6 flex items-center justify-between print:hidden bg-white p-4 rounded-xl shadow-md border border-slate-200">
+      <div className="no-print print:hidden max-w-4xl mx-auto mb-6 flex items-center justify-between bg-white p-4 rounded-xl shadow-md border border-slate-200">
         <div className="flex items-center gap-2 text-xs text-slate-600">
           <button
-            onClick={() => window.close()}
+            onClick={() => window.history.back()}
             className="flex items-center gap-1 hover:text-slate-900 font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -92,7 +92,7 @@ function QuestionPaperContent() {
       </div>
 
       {/* Printable Sheet (Standard A4) */}
-      <div className="max-w-4xl mx-auto bg-white p-8 sm:p-12 shadow-2xl rounded-2xl border border-slate-300/80 print:shadow-none print:border-0 print:p-8 print:max-w-none print:rounded-none">
+      <div className="print-sheet max-w-4xl mx-auto bg-white p-8 sm:p-12 shadow-2xl rounded-2xl border border-slate-300/80 print:shadow-none print:border-0 print:p-0 print:max-w-none print:rounded-none">
         {/* Top Header */}
         <div className="text-center pb-4 border-b-2 border-slate-900">
           {school.logoUrl && (

@@ -27,6 +27,40 @@ export class CreateSectionDto {
   @IsOptional()
   @IsInt()
   capacity?: number;
+
+  @IsOptional()
+  @IsString()
+  classTeacherId?: string;
+}
+
+export class UpdateSectionDto {
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  room?: string;
+
+  @IsOptional()
+  @IsInt()
+  capacity?: number;
+
+  @IsOptional()
+  @IsString()
+  classTeacherId?: string;
+}
+
+export class UpdateClassDto {
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(12)
+  grade?: number;
 }
 
 export class CreateSubjectDto {

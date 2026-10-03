@@ -221,8 +221,12 @@ export const teachersRestApi = {
 export const classesRestApi = {
   getAll: () => apiClient.get<any[]>('/classes'),
   createClass: (data: any) => apiClient.post<any>('/classes', data),
-  createSection: (classId: string, data: any) =>
-    apiClient.post<any>(`/classes/${classId}/sections`, data),
+  updateClass: (id: string, data: any) => apiClient.patch<any>(`/classes/${id}`, data),
+  createSection: (data: { classId: string; name: string; room?: string; capacity?: number; classTeacherId?: string }) =>
+    apiClient.post<any>('/classes/sections', data),
+  updateSection: (id: string, data: { name?: string; room?: string; capacity?: number; classTeacherId?: string | null }) =>
+    apiClient.patch<any>(`/classes/sections/${id}`, data),
+  deleteSection: (id: string) => apiClient.delete<any>(`/classes/sections/${id}`),
   createSubject: (data: any) => apiClient.post<any>('/classes/subjects', data),
 };
 
@@ -273,6 +277,7 @@ export const feesRestApi = {
   getStructures: () => apiClient.get<any[]>('/fees/structures'),
   createStructure: (data: any) => apiClient.post<any>('/fees/structures', data),
   getChallans: (params?: any) => apiClient.get<any[]>('/fees/challans', params),
+  getChallanById: (id: string) => apiClient.get<any>(`/fees/challans/${id}`),
   createChallan: (data: any) => apiClient.post<any>('/fees/challans', data),
   generateMonthly: (data: { classId?: string; sectionId?: string; title: string; month: string; academicYear: string; dueDate: string; amount: number; applyStudentDiscounts?: boolean }) =>
     apiClient.post<any>('/fees/challans/bulk', data),

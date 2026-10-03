@@ -18,6 +18,14 @@ export class ClassesService {
       include: {
         sections: {
           include: {
+            classTeacher: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+                specialization: true,
+              },
+            },
             _count: { select: { students: true } },
           },
           orderBy: { name: 'asc' },
@@ -62,6 +70,23 @@ export class ClassesService {
     return createdClass;
   }
 
+  async updateClass(schoolId: string, classId: string, dto: any) {
+    const cls = await this.prisma.class.findFirst({
+      where: { id: classId, schoolId },
+    });
+    if (!cls) {
+      throw new NotFoundException('Class not found');
+    }
+
+    return this.prisma.class.update({
+      where: { id: classId },
+      data: {
+        name: dto.name ?? cls.name,
+        grade: dto.grade !== undefined ? Number(dto.grade) : cls.grade,
+      },
+    });
+  }
+
   async createSection(schoolId: string, dto: CreateSectionDto) {
     const classObj = await this.prisma.class.findFirst({
       where: { id: dto.classId, schoolId },
@@ -71,6 +96,15 @@ export class ClassesService {
       throw new NotFoundException('Class not found in this school');
     }
 
+    if (dto.classTeacherId) {
+      const teacher = await this.prisma.teacher.findFirst({
+        where: { id: dto.classTeacherId, schoolId },
+      });
+      if (!teacher) {
+        throw new NotFoundException('Selected teacher not found in this school');
+      }
+    }
+
     return this.prisma.section.create({
       data: {
         classId: dto.classId,
@@ -78,6 +112,56 @@ export class ClassesService {
         name: dto.name,
         room: dto.room,
         capacity: dto.capacity || 40,
+        classTeacherId: dto.classTeacherId || null,
+      },
+      include: {
+        classTeacher: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            specialization: true,
+          },
+        },
+      },
+    });
+  }
+
+  async updateSection(schoolId: string, sectionId: string, dto: any) {
+    const section = await this.prisma.section.findFirst({
+      where: { id: sectionId, schoolId },
+    });
+
+    if (!section) {
+      throw new NotFoundException('Section not found');
+    }
+
+    if (dto.classTeacherId) {
+      const teacher = await this.prisma.teacher.findFirst({
+        where: { id: dto.classTeacherId, schoolId },
+      });
+      if (!teacher) {
+        throw new NotFoundException('Selected teacher not found in this school');
+      }
+    }
+
+    return this.prisma.section.update({
+      where: { id: sectionId },
+      data: {
+        name: dto.name !== undefined ? dto.name : section.name,
+        room: dto.room !== undefined ? dto.room : section.room,
+        capacity: dto.capacity !== undefined ? Number(dto.capacity) : section.capacity,
+        classTeacherId: dto.classTeacherId !== undefined ? (dto.classTeacherId || null) : section.classTeacherId,
+      },
+      include: {
+        classTeacher: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            specialization: true,
+          },
+        },
       },
     });
   }

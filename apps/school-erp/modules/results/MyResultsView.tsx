@@ -51,8 +51,8 @@ export const MyResultsView: React.FC<MyResultsViewProps> = ({ title, subtitle })
           description="Exam results will appear here once teachers publish marks."
         />
       ) : (
-        results.map((exam) => (
-          <Card key={exam.examId}>
+        results.map((exam, idx) => (
+          <Card key={exam.examId || `exam-${idx}`}>
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-4">
                 <div>

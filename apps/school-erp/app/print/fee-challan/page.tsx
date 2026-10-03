@@ -10,7 +10,7 @@ import { Spinner } from "@/components/ui/Spinner";
 
 function Toolbar() {
   return (
-    <div className="no-print sticky top-0 z-10 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+    <div className="no-print print:hidden sticky top-0 z-10 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
       <button
         onClick={() => window.history.back()}
         className="flex items-center gap-2 text-xs font-medium text-slate-600 hover:text-slate-900"
@@ -29,22 +29,6 @@ function Toolbar() {
   );
 }
 
-function PrintStyles() {
-  return (
-    <style jsx global>{`
-      @media print {
-        .no-print {
-          display: none !important;
-        }
-        @page {
-          size: A4;
-          margin: 0;
-        }
-      }
-    `}</style>
-  );
-}
-
 function SingleChallan({ billId }: { billId: string }) {
   const { school } = useActiveSchool();
   const [data, setData] = useState<any>(null);
@@ -53,42 +37,50 @@ function SingleChallan({ billId }: { billId: string }) {
   useEffect(() => {
     let mounted = true;
     feesRestApi
-      .getChallans({ id: billId })
-      .then((res) => {
-        if (!mounted) return;
-        const item = Array.isArray(res) ? res[0] : res;
-        if (item) {
-          setData({
-            school: {
-              name: school?.name || "Oakridge International School",
-              address: school?.address || "123 Education Lane",
-              phone: school?.phone || "+1 (555) 234-5678",
-              logoUrl: school?.logoUrl,
-            },
-            student: item.student || {
-              firstName: item.studentName || "Student",
-              lastName: "",
-              rollNumber: item.rollNumber || "",
-              className: item.className || "",
-              sectionName: item.sectionName || "",
-            },
-            bill: {
-              _id: item.id || item._id,
-              challanNumber: item.challanNumber || `CHL-${item.id?.slice(0, 6) || "001"}`,
-              title: item.title || "Monthly Tuition Fee",
-              month: item.month || "October",
-              academicYear: item.academicYear || "2024-2025",
-              issueDate: item.createdAt || new Date().toISOString(),
-              dueDate: item.dueDate || new Date().toISOString(),
-              totalAmount: item.amount || 0,
-              paidAmount: item.paidAmount || 0,
-              status: item.status || "UNPAID",
-              heads: item.heads || [{ name: "Tuition Fee", amount: item.amount || 0 }],
-            },
-          });
-        }
+      .getChallanById(billId)
+      .then((item) => {
+        if (!mounted || !item) return;
+        setData({
+          school: {
+            name: item.student?.school?.name || school?.name || "Oakridge International School",
+            address: item.student?.school?.address || school?.address || "123 Education Lane",
+            phone: item.student?.school?.phone || school?.phone || "+1 (555) 234-5678",
+            logoUrl: item.student?.school?.logoUrl || school?.logoUrl,
+          },
+          student: item.student
+            ? {
+                name: item.student.fullName || item.studentName || `${item.student.firstName || ''} ${item.student.lastName || ''}`.trim() || "Student",
+                admissionNumber: item.student.admissionNumber || "",
+                rollNumber: item.student.rollNumber || "",
+                className: item.student.class?.name || item.className || "",
+                sectionName: item.student.section?.name || item.sectionName || "",
+              }
+            : {
+                name: item.studentName || "Student",
+                admissionNumber: "",
+                rollNumber: item.rollNumber || "",
+                className: item.className || "",
+                sectionName: item.sectionName || "",
+              },
+          bill: {
+            _id: item.id || item._id,
+            id: item.id || item._id,
+            challanNumber: item.challanNumber || `CHL-${item.id?.slice(0, 6) || "001"}`,
+            title: item.title || "Monthly Tuition Fee",
+            month: item.month || "October",
+            academicYear: item.academicYear || "2026-2027",
+            issueDate: item.createdAt ? new Date(item.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : new Date().toLocaleDateString(),
+            dueDate: item.dueDate ? new Date(item.dueDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : new Date().toLocaleDateString(),
+            totalAmount: item.amount || 0,
+            paidAmount: item.paidAmount || 0,
+            status: item.status || "UNPAID",
+            heads: item.heads || [{ name: "Tuition Fee", amount: item.amount || 0 }],
+          },
+        });
       })
-      .catch(() => {})
+      .catch((err) => {
+        console.warn("Failed to fetch challan by id:", err);
+      })
       .finally(() => {
         if (mounted) setIsLoading(false);
       });
@@ -179,7 +171,7 @@ function ChallanInner() {
   const classId = params.get("class");
 
   return (
-    <div className="min-h-screen bg-slate-100 print:bg-white">
+    <div className="print-page-container min-h-screen bg-slate-100 print:bg-white print:p-0 print:m-0">
       <Toolbar />
       {billId ? (
         <SingleChallan billId={billId} />
@@ -188,7 +180,6 @@ function ChallanInner() {
       ) : (
         <Centered>No challan selected.</Centered>
       )}
-      <PrintStyles />
     </div>
   );
 }

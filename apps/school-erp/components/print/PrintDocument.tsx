@@ -27,9 +27,9 @@ export const PrintDocument: React.FC<PrintDocumentProps> = ({
   children,
 }) => {
   return (
-    <div className="min-h-screen bg-slate-100 print:bg-white">
+    <div className="print-page-container min-h-screen bg-slate-100 print:bg-white">
       {/* Toolbar */}
-      <div className="no-print sticky top-0 z-10 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+      <div className="no-print print:hidden sticky top-0 z-10 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
         <button
           onClick={() => window.history.back()}
           className="flex items-center gap-2 text-xs font-medium text-slate-600 hover:text-slate-900"
@@ -47,7 +47,7 @@ export const PrintDocument: React.FC<PrintDocumentProps> = ({
       </div>
 
       {/* A4 sheet */}
-      <div className="mx-auto my-6 print:my-0 bg-white shadow-lg print:shadow-none w-[210mm] min-h-[297mm] p-[16mm] flex flex-col">
+      <div className="print-sheet mx-auto my-6 print:my-0 bg-white shadow-lg print:shadow-none max-w-3xl w-full min-h-[280mm] p-6 sm:p-10 print:p-0 flex flex-col border border-slate-200 print:border-0">
         {/* Header — school logo top */}
         <header className="flex items-center gap-4 border-b-2 border-[#0D9488] pb-4">
           {schoolLogoUrl ? (
@@ -94,18 +94,6 @@ export const PrintDocument: React.FC<PrintDocumentProps> = ({
           </span>
         </footer>
       </div>
-
-      <style jsx global>{`
-        @media print {
-          .no-print {
-            display: none !important;
-          }
-          @page {
-            size: A4;
-            margin: 0;
-          }
-        }
-      `}</style>
     </div>
   );
 };
