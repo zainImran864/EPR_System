@@ -48,7 +48,8 @@ export class StudentsService {
       ];
     }
 
-    return this.prisma.student.findMany({
+    const readDb = this.prisma.read || this.prisma;
+    const students = await readDb.student.findMany({
       where,
       include: {
         class: true,
@@ -58,6 +59,28 @@ export class StudentsService {
       },
       orderBy: { fullName: 'asc' },
     });
+
+    return students.map((s) => {
+      const parts = (s.fullName || '').trim().split(/\s+/);
+      const firstName = parts[0] || '';
+      const lastName = parts.slice(1).join(' ') || '';
+      return {
+        ...s,
+        firstName,
+        lastName,
+        className: s.class?.name || '',
+        sectionName: s.section?.name || '',
+        guardianName: s.parent?.fullName || '',
+        guardianPhone: s.parent?.phone || '',
+        guardianEmail: s.parent?.email || '',
+      };
+    });
+  }
+
+  async getStudentByUserId(schoolId: string, userId: string) {
+    return this.prisma.student.findFirst({
+      where: { userId, schoolId },
+    });
   }
 
   async getStudentById(schoolId: string, id: string) {
@@ -66,7 +89,19 @@ export class StudentsService {
       include: {
         class: true,
         section: true,
-        user: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            status: true,
+            phone: true,
+            avatarUrl: true,
+            themeColor: true,
+            createdAt: true,
+          },
+        },
         parent: true,
         marks: {
           include: { examTerm: true, subject: true },
@@ -85,7 +120,17 @@ export class StudentsService {
       throw new NotFoundException('Student not found');
     }
 
-    return student;
+    const parts = (student.fullName || '').trim().split(/\s+/);
+    return {
+      ...student,
+      firstName: parts[0] || '',
+      lastName: parts.slice(1).join(' ') || '',
+      className: student.class?.name || '',
+      sectionName: student.section?.name || '',
+      guardianName: student.parent?.fullName || '',
+      guardianPhone: student.parent?.phone || '',
+      guardianEmail: student.parent?.email || '',
+    };
   }
 
   async nextAdmissionNumber(schoolId: string) {
@@ -98,15 +143,33 @@ export class StudentsService {
     const school = await this.prisma.school.findUnique({ where: { id: schoolId } });
     if (!school) throw new NotFoundException('School not found');
 
-    const studentEmail = dto.email.toLowerCase().trim();
-    const parentEmail = dto.parentEmail.toLowerCase().trim();
+    const resolvedFullName = (
+      dto.fullName ||
+      [dto.firstName, dto.lastName].filter(Boolean).join(' ')
+    ).trim();
+    if (!resolvedFullName) {
+      throw new BadRequestException('Student name (fullName or firstName/lastName) is required');
+    }
+
+    const admissionNumber = await this.nextAdmissionNumber(schoolId);
+    const schoolDomain = `${school.code.toLowerCase().replace(/[^a-z0-9]/g, '')}.edu`;
+    const slug = admissionNumber.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    const rawStudentEmail = dto.email || dto.studentContactEmail || `${slug}@${schoolDomain}`;
+    const studentEmail = rawStudentEmail.toLowerCase().trim();
+
+    const resolvedParentName = (dto.parentName || dto.guardianName || `Guardian of ${resolvedFullName}`).trim();
+    const resolvedParentPhone = dto.parentPhone || dto.guardianPhone;
+    const rawParentEmail =
+      dto.parentEmail ||
+      (dto.guardianEmail && dto.guardianEmail.trim() ? dto.guardianEmail : `parent.${slug}@${schoolDomain}`);
+    const parentEmail = rawParentEmail.toLowerCase().trim();
 
     const existingStudentUser = await this.prisma.user.findUnique({ where: { email: studentEmail } });
     if (existingStudentUser) {
       throw new ConflictException(`Student user with email ${studentEmail} already exists`);
     }
 
-    const admissionNumber = await this.nextAdmissionNumber(schoolId);
     const defaultPassword = dto.password || 'Student@123';
     const passwordHash = await bcrypt.hash(defaultPassword, 10);
 
@@ -120,11 +183,11 @@ export class StudentsService {
         parentUser = await tx.user.create({
           data: {
             schoolId,
-            name: dto.parentName,
+            name: resolvedParentName,
             email: parentEmail,
             passwordHash: parentPassHash,
             role: Role.PARENT,
-            phone: dto.parentPhone,
+            phone: resolvedParentPhone,
             status: UserStatus.ACTIVE,
           },
         });
@@ -135,9 +198,9 @@ export class StudentsService {
         parentRecord = await tx.parent.create({
           data: {
             userId: parentUser.id,
-            fullName: dto.parentName,
+            fullName: resolvedParentName,
             email: parentEmail,
-            phone: dto.parentPhone,
+            phone: resolvedParentPhone,
             relationship: dto.relationship || 'Guardian',
           },
         });
@@ -147,7 +210,7 @@ export class StudentsService {
       const studentUser = await tx.user.create({
         data: {
           schoolId,
-          name: dto.fullName,
+          name: resolvedFullName,
           email: studentEmail,
           passwordHash,
           role: Role.STUDENT,
@@ -162,7 +225,7 @@ export class StudentsService {
           schoolId,
           userId: studentUser.id,
           admissionNumber,
-          fullName: dto.fullName,
+          fullName: resolvedFullName,
           email: studentEmail,
           photoUrl: dto.photoUrl,
           classId: dto.classId,
@@ -171,7 +234,7 @@ export class StudentsService {
           dob: dto.dob ? new Date(dto.dob) : undefined,
           gender: dto.gender,
           address: dto.address,
-          emergencyContact: dto.emergencyContact,
+          emergencyContact: dto.emergencyContact || resolvedParentPhone,
           discountPercentage: dto.discountPercentage || 0,
           customMonthlyFee: dto.customMonthlyFee,
           discountReason: dto.discountReason,
@@ -188,7 +251,11 @@ export class StudentsService {
       await this.redisService.del(`dashboard:stats:${schoolId}`);
       this.logger.log(`🎓 [StudentsService] Created student "${student.fullName}" (ADM: ${student.admissionNumber})`);
 
-      return student;
+      return {
+        ...student,
+        generatedEmail: studentEmail,
+        generatedPassword: defaultPassword,
+      };
     });
   }
 
@@ -199,7 +266,12 @@ export class StudentsService {
     if (!student) throw new NotFoundException('Student not found');
 
     const updateData: any = {};
-    if (dto.fullName) updateData.fullName = dto.fullName;
+    const resolvedFullName =
+      dto.fullName ||
+      (dto.firstName || dto.lastName
+        ? [dto.firstName, dto.lastName].filter(Boolean).join(' ').trim()
+        : undefined);
+    if (resolvedFullName) updateData.fullName = resolvedFullName;
     if (dto.classId) updateData.classId = dto.classId;
     if (dto.sectionId) updateData.sectionId = dto.sectionId;
     if (dto.rollNumber !== undefined) updateData.rollNumber = dto.rollNumber;
@@ -208,9 +280,24 @@ export class StudentsService {
     if (dto.gender) updateData.gender = dto.gender;
     if (dto.address !== undefined) updateData.address = dto.address;
     if (dto.emergencyContact !== undefined) updateData.emergencyContact = dto.emergencyContact;
+    if (dto.status !== undefined) updateData.status = dto.status;
     if (dto.discountPercentage !== undefined) updateData.discountPercentage = dto.discountPercentage;
     if (dto.customMonthlyFee !== undefined) updateData.customMonthlyFee = dto.customMonthlyFee;
     if (dto.discountReason !== undefined) updateData.discountReason = dto.discountReason;
+
+    // Update linked parent/guardian details if provided
+    if (student.parentId && (dto.guardianName || dto.parentName || dto.guardianPhone || dto.parentPhone || dto.guardianEmail || dto.parentEmail)) {
+      const parentUpdate: any = {};
+      if (dto.guardianName || dto.parentName) parentUpdate.fullName = dto.guardianName || dto.parentName;
+      if (dto.guardianPhone !== undefined || dto.parentPhone !== undefined) {
+        parentUpdate.phone = dto.guardianPhone ?? dto.parentPhone;
+      }
+      if (dto.guardianEmail || dto.parentEmail) parentUpdate.email = dto.guardianEmail || dto.parentEmail;
+      await this.prisma.parent.update({
+        where: { id: student.parentId },
+        data: parentUpdate,
+      });
+    }
 
     const updated = await this.prisma.student.update({
       where: { id },
@@ -235,6 +322,17 @@ export class StudentsService {
 
     await this.redisService.del(`dashboard:stats:${schoolId}`);
     return updated;
+  }
+
+  async deleteStudent(schoolId: string, id: string) {
+    const student = await this.prisma.student.findFirst({
+      where: { id, schoolId },
+    });
+    if (!student) throw new NotFoundException('Student not found');
+
+    await this.prisma.user.delete({ where: { id: student.userId } });
+    await this.redisService.del(`dashboard:stats:${schoolId}`);
+    return { success: true, message: 'Student deleted successfully' };
   }
 
   // ─────────────────────────────────────────────────────────────────────────

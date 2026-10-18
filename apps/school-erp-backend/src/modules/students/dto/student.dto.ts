@@ -1,13 +1,25 @@
 import { IsDateString, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsBoolean } from 'class-validator';
 
 export class CreateStudentDto {
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  fullName: string;
+  fullName?: string;
 
+  @IsOptional()
+  @IsString()
+  firstName?: string;
+
+  @IsOptional()
+  @IsString()
+  lastName?: string;
+
+  @IsOptional()
   @IsEmail()
-  @IsNotEmpty()
-  email: string;
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  studentContactEmail?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -53,18 +65,30 @@ export class CreateStudentDto {
   @IsString()
   discountReason?: string;
 
-  // Parent Information
+  // Parent / Guardian Information (supports both parent* and guardian* field names)
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  parentName: string;
+  parentName?: string;
 
+  @IsOptional()
+  @IsString()
+  guardianName?: string;
+
+  @IsOptional()
   @IsEmail()
-  @IsNotEmpty()
-  parentEmail: string;
+  parentEmail?: string;
+
+  @IsOptional()
+  @IsString()
+  guardianEmail?: string;
 
   @IsOptional()
   @IsString()
   parentPhone?: string;
+
+  @IsOptional()
+  @IsString()
+  guardianPhone?: string;
 
   @IsOptional()
   @IsString()
@@ -79,6 +103,14 @@ export class UpdateStudentDto {
   @IsOptional()
   @IsString()
   fullName?: string;
+
+  @IsOptional()
+  @IsString()
+  firstName?: string;
+
+  @IsOptional()
+  @IsString()
+  lastName?: string;
 
   @IsOptional()
   @IsString()
@@ -111,6 +143,34 @@ export class UpdateStudentDto {
   @IsOptional()
   @IsString()
   emergencyContact?: string;
+
+  @IsOptional()
+  @IsString()
+  guardianName?: string;
+
+  @IsOptional()
+  @IsString()
+  guardianPhone?: string;
+
+  @IsOptional()
+  @IsString()
+  guardianEmail?: string;
+
+  @IsOptional()
+  @IsString()
+  parentName?: string;
+
+  @IsOptional()
+  @IsString()
+  parentPhone?: string;
+
+  @IsOptional()
+  @IsString()
+  parentEmail?: string;
+
+  @IsOptional()
+  @IsString()
+  status?: string;
 
   @IsOptional()
   @IsNumber()

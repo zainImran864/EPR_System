@@ -488,4 +488,104 @@ describe("School ERP Full Backend & DB End-to-End Integration Suite", () => {
       expect([200, 201]).toContain(payRes.status);
     });
   });
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 6. Teacher Daily Self-Attendance (GPS Map Match -> Auto-PRESENT, 3-Day Image Cleanup) & Leave Approval
+  // ─────────────────────────────────────────────────────────────────────────────
+  describe("6. Teacher Self-Attendance (Live School Map GPS Geofence, Auto-PRESENT & 3-Day Photo Retention) & Leave Workflow", () => {
+    it("should allow School Admin to configure school map location & geofence radius", async () => {
+      const res = await api(
+        "/attendance/teacher/school-location",
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            latitude: 31.5204,
+            longitude: 74.3587,
+            geofenceRadiusMeters: 250,
+            address: "Oakridge Main Campus",
+          }),
+        },
+        adminToken
+      );
+      expect(res.status).toBe(200);
+      expect(res.data.geofenceRadiusMeters).toBe(250);
+    });
+
+    it("should reject teacher check-in when GPS location does not match school map geofence", async () => {
+      const res = await api(
+        "/attendance/teacher/check-in",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            photoUrl:
+              "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+            latitude: 31.56,
+            longitude: 74.41,
+          }),
+        },
+        teacherToken
+      );
+      expect(res.status).toBe(400);
+    });
+
+    it("should automatically mark teacher PRESENT when GPS matches school map location and purge photos older than 3 days", async () => {
+      const checkInRes = await api(
+        "/attendance/teacher/check-in",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            photoUrl:
+              "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+            latitude: 31.5205,
+            longitude: 74.3588,
+            remarks: "Verified at School Campus Gate",
+          }),
+        },
+        teacherToken
+      );
+      expect([200, 201]).toContain(checkInRes.status);
+      expect(checkInRes.data.locationVerified).toBe(true);
+      expect(checkInRes.data.status).toBe("PRESENT");
+
+      const purgeRes = await api(
+        "/attendance/teacher/purge-old-photos",
+        { method: "POST" },
+        adminToken
+      );
+      expect([200, 201]).toContain(purgeRes.status);
+      expect(purgeRes.data.retentionDays).toBe(3);
+    });
+
+    it("should allow teacher to apply for leave and School Admin to approve it", async () => {
+      const leaveRes = await api(
+        "/attendance/teacher/leaves",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            leaveType: "CASUAL",
+            startDate: "2026-11-20",
+            endDate: "2026-11-21",
+            reason: "Personal family event",
+          }),
+        },
+        teacherToken
+      );
+      expect([200, 201]).toContain(leaveRes.status);
+      expect(leaveRes.data.status).toBe("PENDING");
+
+      const approveRes = await api(
+        `/attendance/teacher/leaves/${leaveRes.data.id}/review`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            status: "APPROVED",
+            adminRemarks: "Approved by Principal",
+          }),
+        },
+        adminToken
+      );
+      expect(approveRes.status).toBe(200);
+      expect(approveRes.data.status).toBe("APPROVED");
+    });
+  });
 });

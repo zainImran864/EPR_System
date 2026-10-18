@@ -72,7 +72,7 @@ export const Pagination: React.FC<PaginationProps> = ({
             <select
               value={pageSize}
               onChange={(e) => onPageSizeChange(Number(e.target.value))}
-              className="bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-lg px-2 py-1 focus:outline-none focus:border-[#0D9488] cursor-pointer"
+              className="bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-lg px-2 py-1 focus:outline-none focus:border-primary cursor-pointer"
             >
               {pageSizeOptions.map((opt) => (
                 <option key={opt} value={opt}>
@@ -99,7 +99,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           type="button"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage <= 1}
-          className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
         >
           <ChevronLeft className="w-4 h-4" />
           <span className="hidden sm:inline">Prev</span>
@@ -125,9 +125,9 @@ export const Pagination: React.FC<PaginationProps> = ({
               type="button"
               onClick={() => onPageChange(Number(p))}
               className={cn(
-                "min-w-8 h-8 px-2 flex items-center justify-center text-xs font-semibold rounded-lg font-mono-data transition-all",
+                "min-w-8 h-8 px-2 flex items-center justify-center text-xs font-semibold rounded-lg font-mono-data transition-all cursor-pointer",
                 isCurrent
-                  ? "bg-[#0D9488] text-white shadow-xs"
+                  ? "bg-primary text-white shadow-xs"
                   : "text-slate-600 hover:bg-slate-100"
               )}
             >

@@ -6,7 +6,7 @@ import { useAppStore } from "@/app/store/useAppStore";
 import { cn } from "@/app/lib/utils";
 import { AppSidebar } from "./AppSidebar";
 import { Topbar } from "./Topbar";
-import { navTitle, type NavLink } from "./navConfig";
+import { navTitle, navGroup, type NavLink } from "./navConfig";
 import { useAuth } from "@/app/hooks/useAuth";
 
 export interface AppShellProps {
@@ -37,13 +37,14 @@ export const AppShell: React.FC<AppShellProps> = ({
   const { user, logout } = useAuth();
 
   const title = navTitle(nav, pathname);
+  const sectionGroup = navGroup(nav, pathname);
   const schoolName = user?.school?.name ?? "AcademiX";
   const schoolCode = user?.school?.code;
   const schoolLogoUrl = user?.school?.logoUrl ?? null;
   const userName = user?.name ?? roleLabel;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-bg">
       <AppSidebar
         nav={nav}
         schoolName={schoolName}
@@ -56,6 +57,8 @@ export const AppShell: React.FC<AppShellProps> = ({
       <Topbar
         title={title}
         subtitle={subtitle ?? schoolName}
+        sectionGroup={sectionGroup}
+        nav={nav}
         userName={userName}
         userRole={roleLabel}
         onLogout={logout}
@@ -76,3 +79,4 @@ export const AppShell: React.FC<AppShellProps> = ({
     </div>
   );
 };
+

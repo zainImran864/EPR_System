@@ -102,7 +102,7 @@ describe('AuthService', () => {
         },
       });
 
-      const result = await service.login({
+      const result: any = await service.login({
         email: 'admin@oakridge.edu',
         password: 'secret123',
       });

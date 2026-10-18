@@ -70,11 +70,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             type={effectiveType}
             ref={ref}
             disabled={disabled}
+            suppressHydrationWarning
             min={type === "number" && !allowNegative ? (min ?? 0) : min}
             onKeyDown={handleKeyDown}
             className={cn(
               "w-full rounded-lg border bg-white px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 transition-all duration-150",
-              "border-slate-300 hover:border-slate-400 focus:border-[#0D9488] focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20",
+              "border-slate-300 hover:border-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20",
               "disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed",
               leftIcon && "pl-10",
               (rightIcon || showEyeToggle) && "pr-10",

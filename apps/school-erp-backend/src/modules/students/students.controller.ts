@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { StudentsService } from './students.service';
+import { AchievementsService } from './achievements.service';
 import {
   CreateStudentDto,
   UpdateStudentDto,
@@ -18,7 +19,10 @@ import { Role } from '@prisma/client';
 @UseGuards(JwtAuthGuard)
 @Controller('students')
 export class StudentsController {
-  constructor(private readonly studentsService: StudentsService) {}
+  constructor(
+    private readonly studentsService: StudentsService,
+    private readonly achievementsService: AchievementsService,
+  ) {}
 
   @Get()
   async listStudents(
@@ -88,6 +92,16 @@ export class StudentsController {
 
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
+  @Delete(':id')
+  async deleteStudent(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    return this.studentsService.deleteStudent(user.schoolId!, id);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @Post(':id/promote')
   async promoteStudent(
     @CurrentUser() user: CurrentUserPayload,
@@ -126,5 +140,37 @@ export class StudentsController {
     @Body('decisions') decisions: ProgressionDecisionDto[],
   ) {
     return this.studentsService.applyProgressionDecisions(user.schoolId!, decisions);
+  }
+
+  @Get('me/achievements')
+  async getMyAchievements(@CurrentUser() user: CurrentUserPayload) {
+    let studentId = user.studentContext?.studentId;
+    if (!studentId && user.role === 'STUDENT') {
+      const student = await this.studentsService.getStudentByUserId(user.schoolId!, user.userId);
+      studentId = student?.id;
+    }
+    if (!studentId) {
+      return [];
+    }
+    return this.achievementsService.getStudentAchievements(studentId, user.schoolId!);
+  }
+
+  @Get(':id/achievements')
+  async getStudentAchievements(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.achievementsService.getStudentAchievements(id, user.schoolId!);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.TEACHER)
+  @Post(':id/achievements')
+  async awardAchievement(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: { badgeType: string; title: string; description: string; icon?: string },
+  ) {
+    return this.achievementsService.manualAward(id, user.schoolId!, dto);
   }
 }

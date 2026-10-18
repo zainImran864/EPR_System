@@ -1,14 +1,30 @@
-import { IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class CreateClassDto {
+  @IsOptional()
   @IsInt()
   @Min(1)
   @Max(12)
-  grade: number;
+  grade?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(12)
+  numericGrade?: number;
 
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @IsOptional()
+  @IsString()
+  academicYear?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  sections?: string[];
 }
 
 export class CreateSectionDto {
@@ -23,6 +39,10 @@ export class CreateSectionDto {
   @IsOptional()
   @IsString()
   room?: string;
+
+  @IsOptional()
+  @IsString()
+  roomNumber?: string;
 
   @IsOptional()
   @IsInt()
@@ -43,6 +63,10 @@ export class UpdateSectionDto {
   room?: string;
 
   @IsOptional()
+  @IsString()
+  roomNumber?: string;
+
+  @IsOptional()
   @IsInt()
   capacity?: number;
 
@@ -61,6 +85,12 @@ export class UpdateClassDto {
   @Min(1)
   @Max(12)
   grade?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(12)
+  numericGrade?: number;
 }
 
 export class CreateSubjectDto {

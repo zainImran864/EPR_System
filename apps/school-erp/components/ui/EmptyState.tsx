@@ -19,12 +19,12 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center p-8 sm:p-12 text-center bg-white rounded-2xl border border-dashed border-slate-300",
+        "flex flex-col items-center justify-center p-8 sm:p-12 text-center bg-white rounded-2xl border border-dashed border-slate-300/90",
         className
       )}
     >
       {icon && (
-        <div className="w-12 h-12 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center mb-4">
+        <div className="w-12 h-12 rounded-2xl bg-primary-50 text-primary border border-primary-100/80 flex items-center justify-center mb-4 shadow-2xs">
           {icon}
         </div>
       )}

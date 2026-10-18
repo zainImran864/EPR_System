@@ -45,10 +45,12 @@ export function useAccount() {
     if (user) {
       setUser({ ...user, themeColor: color });
     }
-    try {
-      await accountRestApi.updateTheme(color);
-    } catch (e) {
-      console.warn("Theme persistence notice:", e);
+    if (token) {
+      try {
+        await accountRestApi.updateTheme(color);
+      } catch {
+        // Cached locally in localStorage via applyThemeColor
+      }
     }
     return { success: true };
   };

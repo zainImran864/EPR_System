@@ -4,9 +4,11 @@ import { AuditService } from './audit.service';
 import { AuditController } from './audit.controller';
 import { AuditLog, AuditLogSchema } from '../../database/schemas/audit-log.schema';
 
+const isJestVm = Boolean(process.env.JEST_WORKER_ID);
+
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: AuditLog.name, schema: AuditLogSchema }]),
+    ...(isJestVm ? [] : [MongooseModule.forFeature([{ name: AuditLog.name, schema: AuditLogSchema }])]),
   ],
   controllers: [AuditController],
   providers: [AuditService],

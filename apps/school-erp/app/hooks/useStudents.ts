@@ -41,15 +41,20 @@ export function useStudents() {
       });
       if (Array.isArray(data)) {
         // Normalize fields for frontend compatibility
-        const normalized = data.map((s) => ({
-          ...s,
-          _id: s.id || s._id,
-          className: s.className || s.class?.name || "",
-          sectionName: s.sectionName || s.section?.name || "",
-          guardianName: s.guardianName || s.parent?.fullName || "",
-          guardianPhone: s.guardianPhone || s.parent?.phone || "",
-          guardianEmail: s.guardianEmail || s.parent?.email || "",
-        }));
+        const normalized = data.map((s) => {
+          const parts = (s.fullName || "").trim().split(/\s+/);
+          return {
+            ...s,
+            _id: s.id || s._id,
+            firstName: s.firstName || parts[0] || "",
+            lastName: s.lastName || parts.slice(1).join(" ") || "",
+            className: s.className || s.class?.name || "",
+            sectionName: s.sectionName || s.section?.name || "",
+            guardianName: s.guardianName || s.parent?.fullName || "",
+            guardianPhone: s.guardianPhone || s.parent?.phone || "",
+            guardianEmail: s.guardianEmail || s.parent?.email || "",
+          };
+        });
         setRawStudents(normalized);
       }
     } catch (e) {

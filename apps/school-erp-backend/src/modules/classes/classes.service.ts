@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { RedisService } from '../../database/redis.service';
 import { CreateClassDto, CreateSectionDto, CreateSubjectDto } from './dto/class.dto';
@@ -13,7 +13,8 @@ export class ClassesService {
   ) {}
 
   async listClasses(schoolId: string) {
-    return this.prisma.class.findMany({
+    const readDb = this.prisma.read || this.prisma;
+    const classes = await readDb.class.findMany({
       where: { schoolId },
       include: {
         sections: {
@@ -35,39 +36,64 @@ export class ClassesService {
       },
       orderBy: { grade: 'asc' },
     });
+
+    return classes.map((c) => ({
+      ...c,
+      numericGrade: c.grade,
+      academicYear: '2026-2027',
+      totalStudents: c._count?.students ?? 0,
+      sections: c.sections.map((s) => ({
+        ...s,
+        roomNumber: s.room,
+        studentCount: s._count?.students ?? 0,
+      })),
+    }));
   }
 
   async createClass(schoolId: string, dto: CreateClassDto) {
+    const grade = dto.grade ?? dto.numericGrade;
+    if (!grade) {
+      throw new BadRequestException('Either grade or numericGrade is required');
+    }
+
     const existing = await this.prisma.class.findUnique({
-      where: { schoolId_grade: { schoolId, grade: dto.grade } },
+      where: { schoolId_grade: { schoolId, grade } },
     });
 
     if (existing) {
-      throw new ConflictException(`Grade ${dto.grade} already exists in this school`);
+      throw new ConflictException(`Grade ${grade} already exists in this school`);
     }
 
     const createdClass = await this.prisma.class.create({
       data: {
         schoolId,
-        grade: dto.grade,
+        grade,
         name: dto.name,
       },
     });
 
-    // Create default section 'A'
-    await this.prisma.section.create({
-      data: {
-        classId: createdClass.id,
-        schoolId,
-        name: 'A',
-        capacity: 40,
-      },
-    });
+    const sectionNames =
+      Array.isArray(dto.sections) && dto.sections.length > 0 ? dto.sections : ['A'];
+
+    for (const secName of sectionNames) {
+      await this.prisma.section.create({
+        data: {
+          classId: createdClass.id,
+          schoolId,
+          name: secName.trim(),
+          capacity: 40,
+        },
+      });
+    }
 
     await this.redisService.del(`dashboard:stats:${schoolId}`);
     await this.redisService.delPattern(`school:code:*`);
 
-    return createdClass;
+    return {
+      ...createdClass,
+      numericGrade: createdClass.grade,
+      academicYear: dto.academicYear || '2026-2027',
+    };
   }
 
   async updateClass(schoolId: string, classId: string, dto: any) {
@@ -78,11 +104,13 @@ export class ClassesService {
       throw new NotFoundException('Class not found');
     }
 
+    const nextGrade = dto.grade ?? dto.numericGrade;
+
     return this.prisma.class.update({
       where: { id: classId },
       data: {
         name: dto.name ?? cls.name,
-        grade: dto.grade !== undefined ? Number(dto.grade) : cls.grade,
+        grade: nextGrade !== undefined ? Number(nextGrade) : cls.grade,
       },
     });
   }
@@ -110,7 +138,7 @@ export class ClassesService {
         classId: dto.classId,
         schoolId,
         name: dto.name,
-        room: dto.room,
+        room: dto.room ?? dto.roomNumber,
         capacity: dto.capacity || 40,
         classTeacherId: dto.classTeacherId || null,
       },
@@ -145,11 +173,13 @@ export class ClassesService {
       }
     }
 
+    const resolvedRoom = dto.room !== undefined ? dto.room : dto.roomNumber;
+
     return this.prisma.section.update({
       where: { id: sectionId },
       data: {
         name: dto.name !== undefined ? dto.name : section.name,
-        room: dto.room !== undefined ? dto.room : section.room,
+        room: resolvedRoom !== undefined ? resolvedRoom : section.room,
         capacity: dto.capacity !== undefined ? Number(dto.capacity) : section.capacity,
         classTeacherId: dto.classTeacherId !== undefined ? (dto.classTeacherId || null) : section.classTeacherId,
       },

@@ -87,9 +87,13 @@ interface SlipData {
 }
 
 function SingleSlipCard({ slip, isLast }: { slip: SlipData; isLast: boolean }) {
+  useEffect(() => {
+    document.title = `${slip.school?.name || "School"} — Official Roll No Slip`;
+  }, [slip.school?.name]);
+
   return (
     <div
-      className={`print-sheet max-w-3xl w-full mx-auto my-6 print:my-0 bg-white border-2 border-slate-800 rounded-2xl print:rounded-none p-6 sm:p-8 print:p-0 shadow-sm print:shadow-none print:max-w-none ${
+      className={`print-sheet max-w-3xl w-full mx-auto my-6 print:my-0 bg-white border-2 border-slate-800 rounded-2xl print:rounded-none p-6 sm:p-8 shadow-sm print:shadow-none print:max-w-none avoid-break ${
         !isLast ? "page-break" : ""
       }`}
     >

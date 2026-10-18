@@ -7,7 +7,7 @@ export const Table: React.FC<React.HTMLAttributes<HTMLTableElement>> = ({
   ...props
 }) => {
   return (
-    <div className="w-full overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div className="w-full overflow-x-auto rounded-2xl border border-slate-200/80 bg-white shadow-xs">
       <table
         className={cn("w-full text-left border-collapse text-sm", className)}
         {...props}
@@ -25,7 +25,7 @@ export const TableHeader: React.FC<React.HTMLAttributes<HTMLTableSectionElement>
 }) => {
   return (
     <thead
-      className={cn("bg-slate-50/80 border-b border-slate-200 text-xs font-semibold uppercase tracking-wider text-slate-500", className)}
+      className={cn("bg-slate-50/90 border-b border-slate-200/80 text-[11px] font-bold uppercase tracking-wider text-slate-500", className)}
       {...props}
     >
       {children}
@@ -57,8 +57,8 @@ export const TableRow: React.FC<React.HTMLAttributes<HTMLTableRowElement> & { is
   return (
     <tr
       className={cn(
-        "transition-colors duration-100 hover:bg-slate-50/70",
-        isSelected && "bg-[#F0FDFA]/70",
+        "transition-colors duration-100 hover:bg-slate-50/80",
+        isSelected && "bg-primary-50/80",
         className
       )}
       {...props}

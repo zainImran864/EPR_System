@@ -28,6 +28,46 @@ export class UpdateSchoolDto {
   @IsOptional()
   @IsString()
   activeYear?: string;
+
+  @IsOptional()
+  @IsNumber()
+  latitude?: number;
+
+  @IsOptional()
+  @IsNumber()
+  longitude?: number;
+
+  @IsOptional()
+  @IsNumber()
+  geofenceRadiusMeters?: number;
+
+  @IsOptional()
+  @IsString()
+  currencySymbol?: string;
+
+  @IsOptional()
+  @IsString()
+  currencyCode?: string;
+
+  @IsOptional()
+  @IsString()
+  schoolStartTime?: string;
+
+  @IsOptional()
+  @IsString()
+  schoolEndTime?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  autoBackupEnabled?: boolean;
+
+  @IsOptional()
+  @IsString()
+  backupScheduleTime?: string;
+
+  @IsOptional()
+  @IsString()
+  backupFrequency?: string;
 }
 
 export class UpdateSmtpDto {

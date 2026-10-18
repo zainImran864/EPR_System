@@ -94,7 +94,7 @@ const SectionCard: React.FC<{ section: Section; onEdit: () => void }> = ({
   const teacherName = section.classTeacher?.fullName;
 
   return (
-    <div className="p-4 rounded-xl border border-slate-200/80 bg-white hover:border-[#0D9488]/40 hover:shadow-xs transition-all duration-150 flex flex-col justify-between space-y-3">
+    <div className="p-4 rounded-xl border border-slate-200/80 bg-white hover:border-primary/40 hover:shadow-xs transition-all duration-150 flex flex-col justify-between space-y-3">
       <div className="flex items-center justify-between">
         <span className="font-bold text-sm text-slate-900">{section.name}</span>
         <div className="flex items-center gap-2">
@@ -107,7 +107,8 @@ const SectionCard: React.FC<{ section: Section; onEdit: () => void }> = ({
           <button
             onClick={onEdit}
             title="Edit section"
-            className="p-1 rounded text-slate-400 hover:text-[#0D9488] hover:bg-slate-50 transition-colors"
+            aria-label={`Edit ${section.name}`}
+            className="p-1 rounded text-slate-400 hover:text-primary hover:bg-slate-50 transition-colors"
           >
             <Pencil className="w-3.5 h-3.5" />
           </button>
@@ -118,7 +119,7 @@ const SectionCard: React.FC<{ section: Section; onEdit: () => void }> = ({
         <div className="flex items-center gap-1.5 text-slate-700 min-w-0 pr-2">
           <UserCheck
             className={`w-3.5 h-3.5 shrink-0 ${
-              teacherName || section.classTeacherId ? "text-[#0D9488]" : "text-slate-300"
+              teacherName || section.classTeacherId ? "text-primary" : "text-slate-300"
             }`}
           />
           <span className="truncate font-medium text-[11px]">
@@ -302,7 +303,7 @@ const ClassCard: React.FC<ClassCardProps> = ({
         <CardHeader className="bg-slate-50/60 flex-row items-center justify-between">
           <div className="flex items-center gap-3">
             <div
-              className="w-8 h-8 rounded-lg bg-[#CCFBF1] text-[#0D9488] flex items-center justify-center font-bold text-sm"
+              className="w-8 h-8 rounded-lg bg-primary-100 text-primary flex items-center justify-center font-bold text-sm font-mono-data"
               aria-hidden="true"
             >
               {cls.numericGrade}
@@ -313,7 +314,8 @@ const ClassCard: React.FC<ClassCardProps> = ({
                 <button
                   onClick={openClassEdit}
                   title="Edit class"
-                  className="p-0.5 rounded text-slate-400 hover:text-[#0D9488]"
+                  aria-label={`Edit ${cls.name}`}
+                  className="p-0.5 rounded text-slate-400 hover:text-primary"
                 >
                   <Pencil className="w-3.5 h-3.5" />
                 </button>
@@ -506,7 +508,7 @@ export const ClassManager: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-[#0D9488]" aria-hidden="true" />
+            <BookOpen className="w-5 h-5 text-primary" aria-hidden="true" />
             Academic Classes &amp; Sections
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">

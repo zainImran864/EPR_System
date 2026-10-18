@@ -5,9 +5,20 @@ import { attendanceRestApi, studentsRestApi } from "@/app/api/client";
 import { useAttendanceStore } from "@/app/store/useAttendanceStore";
 import { useActiveSchool } from "./useActiveSchool";
 
+const OFFLINE_QUEUE_KEY = "academix_offline_attendance_queue";
+
+interface QueuedAttendance {
+  id: string;
+  sectionId: string;
+  date: string;
+  records: { studentId: string; status: string; remarks?: string }[];
+  queuedAt: string;
+}
+
 /**
- * REST-powered attendance roster manager. Loads existing attendance or
- * generates active students roster for the chosen class/section & date.
+ * REST-powered attendance roster manager with offline resilience.
+ * When connectivity drops, attendance sheets are stored locally in IndexedDB/localStorage
+ * and auto-synced the instant internet connectivity is restored.
  */
 export function useAttendance() {
   const { schoolId } = useActiveSchool();
@@ -30,6 +41,83 @@ export function useAttendance() {
   } = useAttendanceStore();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isOnline, setIsOnline] = useState<boolean>(
+    typeof navigator !== "undefined" ? navigator.onLine : true
+  );
+  const [offlineQueueCount, setOfflineQueueCount] = useState<number>(0);
+  const [isSyncingOffline, setIsSyncingOffline] = useState(false);
+
+  const getOfflineQueue = (): QueuedAttendance[] => {
+    if (typeof window === "undefined") return [];
+    try {
+      const data = localStorage.getItem(OFFLINE_QUEUE_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const saveOfflineQueue = (queue: QueuedAttendance[]) => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
+      setOfflineQueueCount(queue.length);
+    } catch (err) {
+      console.error("Failed to update offline attendance queue:", err);
+    }
+  };
+
+  const updateQueueCount = useCallback(() => {
+    setOfflineQueueCount(getOfflineQueue().length);
+  }, []);
+
+  const syncOfflineQueue = useCallback(async () => {
+    const queue = getOfflineQueue();
+    if (queue.length === 0 || isSyncingOffline) return;
+
+    setIsSyncingOffline(true);
+    const remaining: QueuedAttendance[] = [];
+
+    for (const item of queue) {
+      try {
+        await attendanceRestApi.recordBulk({
+          sectionId: item.sectionId,
+          date: item.date,
+          records: item.records,
+        });
+      } catch (err) {
+        console.warn("Failed to sync queued item:", item.id, err);
+        remaining.push(item);
+      }
+    }
+
+    saveOfflineQueue(remaining);
+    setIsSyncingOffline(false);
+  }, [isSyncingOffline]);
+
+  // Online / Offline listener
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    updateQueueCount();
+
+    const handleOnline = () => {
+      setIsOnline(true);
+      syncOfflineQueue();
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, [syncOfflineQueue, updateQueueCount]);
 
   const ready = Boolean(
     schoolId && selectedClassId && selectedSectionId && selectedDate
@@ -82,21 +170,46 @@ export function useAttendance() {
   const saveRoster = async () => {
     if (!ready || !selectedSectionId) return false;
     setIsSaving(true);
-    try {
-      await attendanceRestApi.recordBulk({
-        sectionId: selectedSectionId,
-        date: selectedDate,
-        records: roster.map((r) => ({
-          studentId: r.studentId,
-          status: r.status.toUpperCase(),
-          remarks: r.remarks,
-        })),
+
+    const payload = {
+      sectionId: selectedSectionId,
+      date: selectedDate,
+      records: roster.map((r) => ({
+        studentId: r.studentId,
+        status: r.status.toUpperCase(),
+        remarks: r.remarks,
+      })),
+    };
+
+    // If offline or network call fails, queue locally
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      const queue = getOfflineQueue();
+      queue.push({
+        id: `offline_att_${Date.now()}`,
+        ...payload,
+        queuedAt: new Date().toISOString(),
       });
+      saveOfflineQueue(queue);
+      setHasUnsavedChanges(false);
+      setIsSaving(false);
+      return "offline";
+    }
+
+    try {
+      await attendanceRestApi.recordBulk(payload);
       setHasUnsavedChanges(false);
       return true;
     } catch (err) {
-      console.error("Failed to save attendance:", err);
-      return false;
+      console.warn("Network error during save, falling back to offline queue:", err);
+      const queue = getOfflineQueue();
+      queue.push({
+        id: `offline_att_${Date.now()}`,
+        ...payload,
+        queuedAt: new Date().toISOString(),
+      });
+      saveOfflineQueue(queue);
+      setHasUnsavedChanges(false);
+      return "offline";
     } finally {
       setIsSaving(false);
     }
@@ -119,6 +232,10 @@ export function useAttendance() {
     summary,
     isLoading,
     isSaving,
+    isOnline,
+    offlineQueueCount,
+    isSyncingOffline,
+    syncOfflineQueue,
     hasUnsavedChanges,
     setSelectedDate,
     setSelectedClass,

@@ -35,9 +35,14 @@ export function useClasses() {
         const normalized = data.map((c) => ({
           ...c,
           _id: c.id || c._id,
+          numericGrade: c.numericGrade ?? c.grade,
+          academicYear: c.academicYear || "2026-2027",
+          totalStudents: c.totalStudents ?? c._count?.students ?? 0,
           sections: (c.sections || []).map((s: any) => ({
             ...s,
             _id: s.id || s._id,
+            roomNumber: s.roomNumber ?? s.room,
+            studentCount: s.studentCount ?? s._count?.students ?? 0,
           })),
         }));
         setClasses(normalized);
@@ -125,5 +130,6 @@ export function useClasses() {
     addSection,
     editClass,
     editSection,
+    deleteSection,
   };
 }

@@ -34,12 +34,14 @@ export default function RootLayout({
       className="h-full antialiased"
       suppressHydrationWarning
     >
+      <head>
+        {/* Applies the cached sidebar colour before first paint (no flash). */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
+      </head>
       <body
         className="min-h-full flex flex-col bg-[#F8FAFC] text-[#0F172A] font-sans"
         suppressHydrationWarning
       >
-        {/* Applies the cached sidebar colour before first paint (no flash). */}
-        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         {children}
         <Toaster />
         <PWARegister />

@@ -54,6 +54,7 @@ export class DashboardService {
     this.logger.log(`📊 [DashboardService] ${forceFresh ? 'Force re-fetching (cache bypassed)' : 'Computing fresh'} admin stats for school "${targetSchoolId}"`);
     
     const today = new Date().toISOString().split('T')[0];
+    const readDb = this.prisma.read || this.prisma;
 
     const [
       totalStudents,
@@ -61,92 +62,108 @@ export class DashboardService {
       totalClasses,
       totalSections,
       activeStudents,
-      studentsList,
-      todayAttendance,
-      allMarks,
-      feeChallans,
+      genderGroups,
+      attendanceGroups,
+      marksAgg,
+      gradeGroups,
+      feesAgg,
       recentAdmissionsList,
     ] = await Promise.all([
-      this.prisma.student.count({ where: { schoolId: targetSchoolId } }),
-      this.prisma.teacher.count({ where: { schoolId: targetSchoolId } }),
-      this.prisma.class.count({ where: { schoolId: targetSchoolId } }),
-      this.prisma.section.count({ where: { schoolId: targetSchoolId } }),
-      this.prisma.student.count({ where: { schoolId: targetSchoolId, status: 'active' } }),
-      this.prisma.student.findMany({
+      readDb.student.count({ where: { schoolId: targetSchoolId } }),
+      readDb.teacher.count({ where: { schoolId: targetSchoolId } }),
+      readDb.class.count({ where: { schoolId: targetSchoolId } }),
+      readDb.section.count({ where: { schoolId: targetSchoolId } }),
+      readDb.student.count({ where: { schoolId: targetSchoolId, status: 'active' } }),
+      readDb.student.groupBy({
+        by: ['gender'],
         where: { schoolId: targetSchoolId, status: 'active' },
-        select: { gender: true },
+        _count: { _all: true },
       }),
-      this.prisma.attendance.findMany({
+      readDb.attendance.groupBy({
+        by: ['status'],
         where: { schoolId: targetSchoolId, date: today },
-        select: { status: true },
+        _count: { _all: true },
       }),
-      this.prisma.mark.findMany({
+      readDb.mark.aggregate({
         where: { schoolId: targetSchoolId },
-        select: { obtainedMarks: true, totalMarks: true, grade: true },
+        _sum: { obtainedMarks: true, totalMarks: true },
+        _count: { _all: true },
       }),
-      this.prisma.feeChallan.findMany({
+      readDb.mark.groupBy({
+        by: ['grade'],
+        where: { schoolId: targetSchoolId, grade: { not: null } },
+        _count: { _all: true },
+      }),
+      readDb.feeChallan.aggregate({
         where: { schoolId: targetSchoolId },
-        select: { amount: true, paidAmount: true, status: true },
+        _sum: { amount: true, paidAmount: true },
       }),
-      this.prisma.student.findMany({
+      readDb.student.findMany({
         where: { schoolId: targetSchoolId },
         orderBy: { createdAt: 'desc' },
         take: 5,
-        include: { class: true, section: true },
+        include: { class: true, section: true, parent: true },
       }),
     ]);
 
-    // Gender breakdown
+    // Gender breakdown via SQL groupBy
     const genderBreakdown = { male: 0, female: 0, other: 0 };
-    studentsList.forEach((s) => {
-      const g = (s.gender || 'other').toLowerCase() as 'male' | 'female' | 'other';
-      if (genderBreakdown[g] !== undefined) genderBreakdown[g]++;
-      else genderBreakdown.other++;
+    genderGroups.forEach((g) => {
+      const key = (g.gender || 'other').toLowerCase() as 'male' | 'female' | 'other';
+      if (genderBreakdown[key] !== undefined) genderBreakdown[key] += g._count._all;
+      else genderBreakdown.other += g._count._all;
     });
 
-    // Attendance breakdown
+    // Attendance breakdown via SQL groupBy
     const attendanceByStatus = { present: 0, absent: 0, late: 0, excused: 0 };
-    todayAttendance.forEach((a) => {
+    attendanceGroups.forEach((a) => {
       const st = a.status.toLowerCase() as 'present' | 'absent' | 'late' | 'excused';
-      if (attendanceByStatus[st] !== undefined) attendanceByStatus[st]++;
+      if (attendanceByStatus[st] !== undefined) attendanceByStatus[st] += a._count._all;
     });
-    const totalMarked = todayAttendance.length;
+    const totalMarked =
+      attendanceByStatus.present +
+      attendanceByStatus.absent +
+      attendanceByStatus.late +
+      attendanceByStatus.excused;
     const presentCount = attendanceByStatus.present + attendanceByStatus.late;
     const todayAttendanceRate = totalMarked > 0 ? Math.round((presentCount / totalMarked) * 100) : null;
 
-    // Exam marks & grade distribution
+    // Exam marks & grade distribution via SQL aggregate + groupBy
     let avgExamScore: number | null = null;
     const gradeDistribution: Record<string, number> = {};
-    if (allMarks.length > 0) {
-      const totalPct = allMarks.reduce(
-        (sum, m) => sum + (m.totalMarks > 0 ? (m.obtainedMarks / m.totalMarks) * 100 : 0),
-        0,
-      );
-      avgExamScore = Math.round((totalPct / allMarks.length) * 10) / 10;
-      allMarks.forEach((m) => {
-        if (m.grade) {
-          gradeDistribution[m.grade] = (gradeDistribution[m.grade] ?? 0) + 1;
-        }
-      });
+    if (marksAgg._count._all > 0 && (marksAgg._sum.totalMarks ?? 0) > 0) {
+      const pct = ((marksAgg._sum.obtainedMarks ?? 0) / (marksAgg._sum.totalMarks ?? 1)) * 100;
+      avgExamScore = Math.round(pct * 10) / 10;
     }
+    gradeGroups.forEach((g) => {
+      if (g.grade) {
+        gradeDistribution[g.grade] = g._count._all;
+      }
+    });
 
-    // Fee financials
-    const totalFees = feeChallans.reduce((sum, f) => sum + f.amount, 0);
-    const collectedFees = feeChallans.reduce((sum, f) => sum + f.paidAmount, 0);
+    // Fee financials via SQL aggregate
+    const totalFees = feesAgg._sum.amount ?? 0;
+    const collectedFees = feesAgg._sum.paidAmount ?? 0;
     const pendingFees = Math.max(0, totalFees - collectedFees);
 
-    const recentAdmissions = recentAdmissionsList.map((s) => ({
-      _id: s.id,
-      id: s.id,
-      fullName: s.fullName,
-      admissionNumber: s.admissionNumber,
-      rollNumber: s.rollNumber,
-      className: s.class?.name || '',
-      sectionName: s.section?.name || '',
-      status: s.status,
-      gender: s.gender,
-      createdAt: s.createdAt,
-    }));
+    const recentAdmissions = recentAdmissionsList.map((s) => {
+      const parts = (s.fullName || '').trim().split(/\s+/);
+      return {
+        _id: s.id,
+        id: s.id,
+        fullName: s.fullName,
+        firstName: parts[0] || '',
+        lastName: parts.slice(1).join(' ') || '',
+        admissionNumber: s.admissionNumber,
+        rollNumber: s.rollNumber,
+        className: s.class?.name || '',
+        sectionName: s.section?.name || '',
+        guardianName: s.parent?.fullName || 'Guardian',
+        status: s.status,
+        gender: s.gender,
+        createdAt: s.createdAt,
+      };
+    });
 
     const stats = {
       studentCount: totalStudents,
@@ -171,10 +188,11 @@ export class DashboardService {
         pendingFees,
         collectionRate: totalFees > 0 ? Math.round((collectedFees / totalFees) * 100) : 100,
       },
+      dbLoadBalancer: this.prisma.getLoadBalancerStatus ? this.prisma.getLoadBalancerStatus() : undefined,
     };
 
-    // Cache for 30 seconds for optimal live updates
-    await this.redisService.set(cacheKey, stats, 30);
+    // Keep cache TTL low (5 seconds) so database stays fast without serving stale data
+    await this.redisService.set(cacheKey, stats, 5);
     return stats;
   }
 
@@ -194,23 +212,37 @@ export class DashboardService {
     };
   }
 
-  async getStudentDashboard(schoolId: string, studentUserId: string) {
-    const student = await this.prisma.student.findUnique({
-      where: { userId: studentUserId },
-      include: {
-        class: true,
-        section: true,
-        school: true,
-        marks: {
-          include: { examTerm: true, subject: true },
-          take: 10,
-        },
-        feeChallans: {
-          orderBy: { dueDate: 'asc' },
-          take: 5,
-        },
+  async getStudentDashboard(schoolId: string, studentOrParentUserId: string) {
+    const includeConfig = {
+      class: true,
+      section: true,
+      school: true,
+      marks: {
+        include: { examTerm: true, subject: true },
+        take: 10,
       },
+      feeChallans: {
+        orderBy: { dueDate: 'asc' as const },
+        take: 5,
+      },
+    };
+
+    let student = await this.prisma.student.findUnique({
+      where: { userId: studentOrParentUserId },
+      include: includeConfig,
     });
+
+    if (!student) {
+      const parent = await this.prisma.parent.findUnique({
+        where: { userId: studentOrParentUserId },
+      });
+      if (parent) {
+        student = await this.prisma.student.findFirst({
+          where: { parentId: parent.id, schoolId },
+          include: includeConfig,
+        });
+      }
+    }
 
     return student;
   }

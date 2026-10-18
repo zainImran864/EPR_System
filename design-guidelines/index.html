@@ -1157,32 +1157,51 @@ tbody tr:hover { background: var(--color-bg); }
 
     <div class="ds-nav-section">Patterns</div>
     <li class="ds-nav-item"><a href="#sidebar-pattern">Sidebar</a></li>
-    <li class="ds-nav-item"><a href="#topbar-pattern">Topbar</a></li>
+    <li class="ds-nav-item"><a href="#topbar-pattern">Topbar &amp; Command (⌘K)</a></li>
+    <li class="ds-nav-item"><a href="#hero-pattern">Hero &amp; Filter Toolbar</a></li>
   </aside>
 
   <!-- ═══ MAIN CONTENT ═══ -->
   <main class="ds-main">
 
-    <h1 style="font-size:var(--text-3xl);font-weight:var(--fw-bold);margin-bottom:var(--space-2);">School ERP — Design System</h1>
-    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-10);font-size:var(--text-md);">Default theme: <strong>Teal</strong>. All colors are CSS custom properties — swapping themes is a single <code style="font-family:var(--font-mono);font-size:var(--text-sm);background:var(--color-bg);padding:2px 6px;border-radius:4px;">:root</code> override.</p>
+    <!-- Sticky Live Multi-Tenant Theme Switcher -->
+    <div style="position:sticky;top:16px;z-index:40;background:rgba(255,255,255,0.92);backdrop-filter:blur(10px);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:var(--space-3) var(--space-5);margin-bottom:var(--space-8);box-shadow:var(--shadow-md);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-3);">
+      <div style="display:flex;align-items:center;gap:var(--space-2);">
+        <span style="width:10px;height:10px;border-radius:50%;background:var(--color-primary);display:inline-block;"></span>
+        <span style="font-size:var(--text-xs);font-weight:var(--fw-bold);text-transform:uppercase;letter-spacing:0.06em;color:var(--color-text-secondary);">Live Multi-Tenant Theme Preview:</span>
+      </div>
+      <div id="ds-theme-switcher" style="display:flex;flex-wrap:wrap;gap:6px;">
+        <button type="button" onclick="setDsTheme('teal')" class="btn btn-xs" style="background:#0D9488;color:#fff;border-radius:999px;">Teal (Default)</button>
+        <button type="button" onclick="setDsTheme('blue')" class="btn btn-xs" style="background:#2563EB;color:#fff;border-radius:999px;">Royal Blue</button>
+        <button type="button" onclick="setDsTheme('indigo')" class="btn btn-xs" style="background:#4F46E5;color:#fff;border-radius:999px;">Indigo</button>
+        <button type="button" onclick="setDsTheme('emerald')" class="btn btn-xs" style="background:#059669;color:#fff;border-radius:999px;">Emerald</button>
+        <button type="button" onclick="setDsTheme('violet')" class="btn btn-xs" style="background:#7C3AED;color:#fff;border-radius:999px;">Violet</button>
+        <button type="button" onclick="setDsTheme('amber')" class="btn btn-xs" style="background:#D97706;color:#fff;border-radius:999px;">Amber</button>
+        <button type="button" onclick="setDsTheme('crimson')" class="btn btn-xs" style="background:#DC2626;color:#fff;border-radius:999px;">Crimson</button>
+        <button type="button" onclick="setDsTheme('slate')" class="btn btn-xs" style="background:#334155;color:#fff;border-radius:999px;">Slate</button>
+      </div>
+    </div>
+
+    <h1 style="font-size:var(--text-3xl);font-weight:var(--fw-bold);margin-bottom:var(--space-2);letter-spacing:-0.02em;">School ERP — Design System</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-10);font-size:var(--text-md);">Default theme: <strong id="ds-active-theme-name">Teal (#0D9488)</strong>. All colors are CSS custom properties — swapping a school's brand or user accent theme is a single <code style="font-family:var(--font-mono);font-size:var(--text-sm);background:var(--color-bg);padding:2px 6px;border-radius:4px;">:root</code> override.</p>
 
     <!-- ══ COLORS ══ -->
     <section class="ds-section" id="colors">
       <h2 class="ds-section-title">Colors</h2>
       <p class="ds-section-desc">All color values are exposed as CSS custom properties. Changing a theme means overriding the <code>--color-primary-*</code> ramp and the semantic aliases.</p>
 
-      <h3 class="ds-subsection-title">Primary — Teal</h3>
+      <h3 class="ds-subsection-title">Primary — Dynamic Brand Ramp</h3>
       <div class="token-grid">
-        <div class="token-swatch"><div class="token-swatch-color" style="background:#F0FDFA"></div><div class="token-swatch-info"><div class="token-swatch-name">primary-50</div><div class="token-swatch-hex">#F0FDFA</div></div></div>
-        <div class="token-swatch"><div class="token-swatch-color" style="background:#CCFBF1"></div><div class="token-swatch-info"><div class="token-swatch-name">primary-100</div><div class="token-swatch-hex">#CCFBF1</div></div></div>
-        <div class="token-swatch"><div class="token-swatch-color" style="background:#99F6E4"></div><div class="token-swatch-info"><div class="token-swatch-name">primary-200</div><div class="token-swatch-hex">#99F6E4</div></div></div>
-        <div class="token-swatch"><div class="token-swatch-color" style="background:#5EEAD4"></div><div class="token-swatch-info"><div class="token-swatch-name">primary-300</div><div class="token-swatch-hex">#5EEAD4</div></div></div>
-        <div class="token-swatch"><div class="token-swatch-color" style="background:#2DD4BF"></div><div class="token-swatch-info"><div class="token-swatch-name">primary-400</div><div class="token-swatch-hex">#2DD4BF</div></div></div>
-        <div class="token-swatch"><div class="token-swatch-color" style="background:#14B8A6"></div><div class="token-swatch-info"><div class="token-swatch-name">primary-500</div><div class="token-swatch-hex">#14B8A6</div></div></div>
-        <div class="token-swatch" style="outline:2px solid #0D9488;outline-offset:2px;"><div class="token-swatch-color" style="background:#0D9488"></div><div class="token-swatch-info"><div class="token-swatch-name">primary-600 ★</div><div class="token-swatch-hex">#0D9488</div></div></div>
-        <div class="token-swatch"><div class="token-swatch-color" style="background:#0F766E"></div><div class="token-swatch-info"><div class="token-swatch-name">primary-700</div><div class="token-swatch-hex">#0F766E</div></div></div>
-        <div class="token-swatch"><div class="token-swatch-color" style="background:#115E59"></div><div class="token-swatch-info"><div class="token-swatch-name">primary-800</div><div class="token-swatch-hex">#115E59</div></div></div>
-        <div class="token-swatch"><div class="token-swatch-color" style="background:#134E4A"></div><div class="token-swatch-info"><div class="token-swatch-name">primary-900</div><div class="token-swatch-hex">#134E4A</div></div></div>
+        <div class="token-swatch"><div class="token-swatch-color" style="background:var(--color-primary-50)"></div><div class="token-swatch-info"><div class="token-swatch-name">primary-50</div><div class="token-swatch-hex">--color-primary-50</div></div></div>
+        <div class="token-swatch"><div class="token-swatch-color" style="background:var(--color-primary-100)"></div><div class="token-swatch-info"><div class="token-swatch-name">primary-100</div><div class="token-swatch-hex">--color-primary-100</div></div></div>
+        <div class="token-swatch"><div class="token-swatch-color" style="background:var(--color-primary-200)"></div><div class="token-swatch-info"><div class="token-swatch-name">primary-200</div><div class="token-swatch-hex">--color-primary-200</div></div></div>
+        <div class="token-swatch"><div class="token-swatch-color" style="background:var(--color-primary-300)"></div><div class="token-swatch-info"><div class="token-swatch-name">primary-300</div><div class="token-swatch-hex">--color-primary-300</div></div></div>
+        <div class="token-swatch"><div class="token-swatch-color" style="background:var(--color-primary-400)"></div><div class="token-swatch-info"><div class="token-swatch-name">primary-400</div><div class="token-swatch-hex">--color-primary-400</div></div></div>
+        <div class="token-swatch"><div class="token-swatch-color" style="background:var(--color-primary-500)"></div><div class="token-swatch-info"><div class="token-swatch-name">primary-500</div><div class="token-swatch-hex">--color-primary-500</div></div></div>
+        <div class="token-swatch" style="outline:2px solid var(--color-primary);outline-offset:2px;"><div class="token-swatch-color" style="background:var(--color-primary-600)"></div><div class="token-swatch-info"><div class="token-swatch-name">primary-600 ★</div><div class="token-swatch-hex">--color-primary</div></div></div>
+        <div class="token-swatch"><div class="token-swatch-color" style="background:var(--color-primary-700)"></div><div class="token-swatch-info"><div class="token-swatch-name">primary-700</div><div class="token-swatch-hex">--color-primary-700</div></div></div>
+        <div class="token-swatch"><div class="token-swatch-color" style="background:var(--color-primary-800)"></div><div class="token-swatch-info"><div class="token-swatch-name">primary-800</div><div class="token-swatch-hex">--color-primary-800</div></div></div>
+        <div class="token-swatch"><div class="token-swatch-color" style="background:var(--color-primary-900)"></div><div class="token-swatch-info"><div class="token-swatch-name">primary-900</div><div class="token-swatch-hex">--color-primary-900</div></div></div>
       </div>
 
       <h3 class="ds-subsection-title">Semantic</h3>
@@ -2019,21 +2038,28 @@ tbody tr:hover { background: var(--color-bg); }
       </div>
     </section>
 
-    <!-- ══ TOPBAR PATTERN ══ -->
+    <!-- ══ TOPBAR & COMMAND PALETTE PATTERN ══ -->
     <section class="ds-section" id="topbar-pattern">
-      <h2 class="ds-section-title">Topbar Pattern</h2>
+      <h2 class="ds-section-title">Topbar &amp; Command Palette (⌘K) Pattern</h2>
+      <p class="ds-section-desc">Combines contextual breadcrumbs, an instant keyboard-accessible module jumper (<code>⌘K</code> / <code>Ctrl+K</code>), notification center, and role badge.</p>
       <div class="ds-canvas" style="padding:0;overflow:hidden;">
         <div class="topbar">
-          <div class="topbar-search">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            Search students, classes…
+          <div style="display:flex;align-items:center;gap:var(--space-3);">
+            <span style="font-weight:var(--fw-bold);font-size:var(--text-base);">Dashboard</span>
+            <span class="badge badge-primary" style="font-family:var(--font-mono);">2026-2027</span>
+          </div>
+          <div class="topbar-search" style="justify-content:space-between;width:280px;">
+            <span style="display:flex;align-items:center;gap:var(--space-2);">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              Quick jump to module…
+            </span>
+            <kbd style="font-family:var(--font-mono);font-size:10px;padding:1px 6px;border-radius:4px;background:var(--color-surface);border:1px solid var(--color-border);color:var(--color-text-secondary);">⌘K</kbd>
           </div>
           <div class="topbar-actions">
             <button class="topbar-icon-btn" title="Notifications">
               🔔
               <span class="topbar-notif-dot"></span>
             </button>
-            <button class="topbar-icon-btn" title="Help">❓</button>
             <div class="avatar avatar-sm avatar-a" style="cursor:pointer;">AK</div>
           </div>
         </div>
@@ -2041,7 +2067,65 @@ tbody tr:hover { background: var(--color-bg); }
       </div>
     </section>
 
+    <!-- ══ HERO BANNER & FILTER TOOLBAR PATTERN ══ -->
+    <section class="ds-section" id="hero-pattern">
+      <h2 class="ds-section-title">Hero Welcome Banner &amp; Filter Toolbar</h2>
+      <p class="ds-section-desc">Dynamic brand gradient hero banner with quick actions, paired with a high-ergonomics filter bar featuring status pills and one-click filter reset.</p>
+      <div class="ds-canvas" style="background:linear-gradient(135deg, var(--color-primary-600), var(--color-primary-800));color:#fff;border:none;box-shadow:var(--shadow-lg);">
+        <span class="badge" style="background:rgba(255,255,255,0.16);color:#fff;margin-bottom:var(--space-3);">Academic Session 2026-2027</span>
+        <h3 style="font-size:var(--text-2xl);font-weight:var(--fw-bold);margin-bottom:var(--space-1);">Oakridge Grammar Academy</h3>
+        <p style="font-size:var(--text-sm);opacity:0.9;max-width:540px;margin-bottom:var(--space-5);">Manage student enrollments, daily attendance, examination grades, and fee challans from one unified command center.</p>
+        <div class="ds-row">
+          <button class="btn btn-sm" style="background:#fff;color:var(--color-primary-700);font-weight:var(--fw-semibold);">+ Enroll New Student</button>
+          <button class="btn btn-sm" style="background:rgba(255,255,255,0.14);color:#fff;border:1px solid rgba(255,255,255,0.28);">Record Attendance</button>
+        </div>
+      </div>
+
+      <div class="ds-canvas" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-3);">
+        <div class="tabs-pill">
+          <div class="tab-pill active">All (248)</div>
+          <div class="tab-pill">Active (236)</div>
+          <div class="tab-pill">Transferred (8)</div>
+          <div class="tab-pill">Inactive (4)</div>
+        </div>
+        <div class="ds-row">
+          <span class="chip">Grade: 10-A <button class="chip-remove">×</button></span>
+          <button class="btn btn-ghost btn-xs">Reset Filters</button>
+        </div>
+      </div>
+    </section>
+
   </main>
 </div>
+
+<script>
+const DS_THEMES = {
+  teal:    { name: 'Teal (#0D9488)',       p50:'#F0FDFA', p100:'#CCFBF1', p200:'#99F6E4', p300:'#5EEAD4', p400:'#2DD4BF', p500:'#14B8A6', p600:'#0D9488', p700:'#0F766E', p800:'#115E59', p900:'#134E4A' },
+  blue:    { name: 'Royal Blue (#2563EB)', p50:'#EFF6FF', p100:'#DBEAFE', p200:'#BFDBFE', p300:'#93C5FD', p400:'#60A5FA', p500:'#3B82F6', p600:'#2563EB', p700:'#1D4ED8', p800:'#1E40AF', p900:'#1E3A8A' },
+  indigo:  { name: 'Indigo (#4F46E5)',     p50:'#EEF2FF', p100:'#E0E7FF', p200:'#C7D2FE', p300:'#A5B4FC', p400:'#818CF8', p500:'#6366F1', p600:'#4F46E5', p700:'#4338CA', p800:'#3730A3', p900:'#312E81' },
+  emerald: { name: 'Emerald (#059669)',    p50:'#ECFDF5', p100:'#D1FAE5', p200:'#A7F3D0', p300:'#6EE7B7', p400:'#34D399', p500:'#10B981', p600:'#059669', p700:'#047857', p800:'#065F46', p900:'#064E3B' },
+  violet:  { name: 'Violet (#7C3AED)',     p50:'#F5F3FF', p100:'#EDE9FE', p200:'#DDD6FE', p300:'#C4B5FD', p400:'#A78BFA', p500:'#8B5CF6', p600:'#7C3AED', p700:'#6D28D9', p800:'#5B21B6', p900:'#4C1D95' },
+  amber:   { name: 'Amber (#D97706)',      p50:'#FFFBEB', p100:'#FEF3C7', p200:'#FDE68A', p300:'#FCD34D', p400:'#FBBF24', p500:'#F59E0B', p600:'#D97706', p700:'#B45309', p800:'#92400E', p900:'#78350F' },
+  crimson: { name: 'Crimson (#DC2626)',    p50:'#FEF2F2', p100:'#FEE2E2', p200:'#FECACA', p300:'#FCA5A5', p400:'#F87171', p500:'#EF4444', p600:'#DC2626', p700:'#B91C1C', p800:'#991B1B', p900:'#7F1D1D' },
+  slate:   { name: 'Slate (#334155)',      p50:'#F8FAFC', p100:'#F1F5F9', p200:'#E2E8F0', p300:'#CBD5E1', p400:'#94A3B8', p500:'#64748B', p600:'#334155', p700:'#1E293B', p800:'#0F172A', p900:'#020617' }
+};
+function setDsTheme(key) {
+  const t = DS_THEMES[key];
+  if (!t) return;
+  const r = document.documentElement.style;
+  r.setProperty('--color-primary-50', t.p50);
+  r.setProperty('--color-primary-100', t.p100);
+  r.setProperty('--color-primary-200', t.p200);
+  r.setProperty('--color-primary-300', t.p300);
+  r.setProperty('--color-primary-400', t.p400);
+  r.setProperty('--color-primary-500', t.p500);
+  r.setProperty('--color-primary-600', t.p600);
+  r.setProperty('--color-primary-700', t.p700);
+  r.setProperty('--color-primary-800', t.p800);
+  r.setProperty('--color-primary-900', t.p900);
+  const label = document.getElementById('ds-active-theme-name');
+  if (label) label.textContent = t.name;
+}
+</script>
 </body>
 </html>

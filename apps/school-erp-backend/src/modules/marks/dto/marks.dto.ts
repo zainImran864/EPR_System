@@ -37,6 +37,10 @@ export class StudentMarkEntryDto {
 
   @IsOptional()
   @IsString()
+  grade?: string;
+
+  @IsOptional()
+  @IsString()
   comments?: string;
 }
 

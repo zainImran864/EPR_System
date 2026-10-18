@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Printer, ArrowLeft } from "lucide-react";
-import { AcademiXMark } from "@/components/brand/AcademiXLogo";
 
 export interface PrintDocumentProps {
   schoolName?: string;
@@ -14,9 +13,8 @@ export interface PrintDocumentProps {
 }
 
 /**
- * A4-styled printable document with the school logo at the TOP and the AcademiX
- * mark small at the BOTTOM. The toolbar (Back / Print) is hidden when printing.
- * Uses the browser's native print-to-PDF — reliable and dependency-free.
+ * A4-styled printable document with the school logo at the TOP and school
+ * verification footer at the BOTTOM. The toolbar (Back / Print) is hidden when printing.
  */
 export const PrintDocument: React.FC<PrintDocumentProps> = ({
   schoolName = "School",
@@ -26,6 +24,10 @@ export const PrintDocument: React.FC<PrintDocumentProps> = ({
   docSubtitle,
   children,
 }) => {
+  useEffect(() => {
+    document.title = `${schoolName} — ${docTitle}`;
+  }, [schoolName, docTitle]);
+
   return (
     <div className="print-page-container min-h-screen bg-slate-100 print:bg-white">
       {/* Toolbar */}
@@ -47,7 +49,7 @@ export const PrintDocument: React.FC<PrintDocumentProps> = ({
       </div>
 
       {/* A4 sheet */}
-      <div className="print-sheet mx-auto my-6 print:my-0 bg-white shadow-lg print:shadow-none max-w-3xl w-full min-h-[280mm] p-6 sm:p-10 print:p-0 flex flex-col border border-slate-200 print:border-0">
+      <div className="print-sheet mx-auto my-6 print:my-0 bg-white shadow-lg print:shadow-none max-w-3xl w-full min-h-[260mm] print:min-h-0 p-6 sm:p-10 flex flex-col border border-slate-200 print:border-0">
         {/* Header — school logo top */}
         <header className="flex items-center gap-4 border-b-2 border-[#0D9488] pb-4">
           {schoolLogoUrl ? (
@@ -81,17 +83,12 @@ export const PrintDocument: React.FC<PrintDocumentProps> = ({
         {/* Body */}
         <main className="flex-1 py-6">{children}</main>
 
-        {/* Footer — AcademiX mark small at bottom */}
+        {/* Footer — Official School Record */}
         <footer className="border-t border-slate-200 pt-3 flex items-center justify-between text-[10px] text-slate-400">
           <span>
-            Generated on {new Date().toLocaleDateString()} · This is a
-            computer-generated document.
+            Generated on {new Date().toLocaleDateString()} · Official Institutional Document
           </span>
-          <span className="flex items-center gap-1.5">
-            Powered by
-            <AcademiXMark className="w-4 h-4" />
-            <span className="font-semibold text-slate-500">AcademiX</span>
-          </span>
+          <span className="font-semibold text-slate-500">{schoolName}</span>
         </footer>
       </div>
     </div>

@@ -65,6 +65,10 @@ function QuestionPaperContent() {
 
   const { school, examination, instructions, sections } = paper;
 
+  if (typeof document !== "undefined" && school?.name) {
+    document.title = `${school.name} — ${examination?.subjectName || "Question Paper"}`;
+  }
+
   return (
     <div className="print-page-container min-h-screen bg-slate-200/70 p-4 sm:p-8 font-sans print:p-0 print:bg-white text-slate-900">
       {/* Floating Print Bar - Hidden during printing */}

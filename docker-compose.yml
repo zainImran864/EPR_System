@@ -1,9 +1,16 @@
 services:
-  # 1. PostgreSQL (Relational Data Store)
+  # 1. PostgreSQL Primary (Relational Data Store — Low Cache Footprint & High Concurrency)
   postgres:
     image: postgres:16-alpine
     container_name: academix_postgres
     restart: always
+    command: >
+      postgres
+      -c shared_buffers=64MB
+      -c work_mem=4MB
+      -c maintenance_work_mem=32MB
+      -c effective_cache_size=192MB
+      -c max_connections=200
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -17,6 +24,28 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  # 1b. PostgreSQL Read Replica & PgBouncer Load Balancer (Optional High-Scale Profile)
+  postgres_replica:
+    image: postgres:16-alpine
+    container_name: academix_postgres_replica
+    restart: always
+    profiles: ["ha"]
+    command: >
+      postgres
+      -c shared_buffers=64MB
+      -c work_mem=4MB
+      -c effective_cache_size=192MB
+      -c max_connections=200
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: school_erp
+    ports:
+      - "127.0.0.1:5433:5432"
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   # 2. MongoDB (Audit Logs, Notifications & Document Store)
   mongodb:
@@ -33,11 +62,12 @@ services:
       timeout: 5s
       retries: 5
 
-  # 3. Redis (Cache, Sessions & Real-Time Pub/Sub)
+  # 3. Redis (Low-TTL Cache, Sessions & Real-Time Pub/Sub)
   redis:
     image: redis:7-alpine
     container_name: academix_redis
     restart: always
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
     ports:
       - "127.0.0.1:6379:6379"
     volumes:

@@ -18,12 +18,15 @@ import {
   BookOpen,
   Users,
   Sparkles,
+  CheckCircle2,
+  ArrowRight,
 } from "lucide-react";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Switch } from "@/components/ui/Switch";
 import { useAuth } from "@/app/hooks/useAuth";
+import { useToast } from "@/app/hooks/useToast";
 import { ROLE_HOME } from "@/components/auth/RoleGate";
 
 const DEMO_ACCOUNTS = [
@@ -76,6 +79,7 @@ const DEMO_ACCOUNTS = [
 
 export default function LoginPage() {
   const { login, verifyLoginTwoFactor, user, role, isLoading } = useAuth();
+  const { success: toastSuccess } = useToast();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -84,6 +88,7 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [loginSuccessRole, setLoginSuccessRole] = useState<string | null>(null);
 
   // Two-factor challenge state
   const [pendingToken, setPendingToken] = useState<string | null>(null);
@@ -98,10 +103,20 @@ export default function LoginPage() {
 
   // Bounce logged-in users to their respective dashboard
   useEffect(() => {
-    if (mounted && !isLoading && user && role) {
+    if (mounted && !isLoading && user && role && !loginSuccessRole) {
       router.replace(ROLE_HOME[role]);
     }
-  }, [mounted, isLoading, user, role, router]);
+  }, [mounted, isLoading, user, role, router, loginSuccessRole]);
+
+  const triggerSuccessRedirect = (resolvedRole: keyof typeof ROLE_HOME, userEmail: string) => {
+    setLoginSuccessRole(resolvedRole);
+    toastSuccess(`Signed in as ${userEmail}. Loading your workspace...`, {
+      title: "Authentication Verified",
+    });
+    setTimeout(() => {
+      router.replace(ROLE_HOME[resolvedRole]);
+    }, 250);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,7 +125,7 @@ export default function LoginPage() {
     try {
       const res = await login(email.trim(), password);
       if (res.ok && res.role) {
-        router.replace(ROLE_HOME[res.role]);
+        triggerSuccessRedirect(res.role, email.trim());
       } else if ("status" in res && res.status === "2fa" && res.token) {
         setPendingToken(res.token);
       } else if ("status" in res && res.status === "pending") {
@@ -136,7 +151,7 @@ export default function LoginPage() {
     try {
       const res = await verifyLoginTwoFactor(pendingToken, code, rememberDevice);
       if (res.ok && res.role) {
-        router.replace(ROLE_HOME[res.role]);
+        triggerSuccessRedirect(res.role, email.trim() || "Verified User");
       } else if ("error" in res && res.error === "expired") {
         setError("The login session timed out. Please sign in again.");
         setPendingToken(null);
@@ -160,7 +175,7 @@ export default function LoginPage() {
     try {
       const res = await login(demo.email, demo.pass);
       if (res.ok && res.role) {
-        router.replace(ROLE_HOME[res.role]);
+        triggerSuccessRedirect(res.role, demo.email);
       }
     } catch (err) {
       console.error(err);
@@ -168,6 +183,33 @@ export default function LoginPage() {
       setSubmitting(false);
     }
   };
+
+  // ── Smooth Login Success Transition State ──
+  if (loginSuccessRole) {
+    return (
+      <AuthShell>
+        <div className="py-6 text-center space-y-4">
+          <div className="w-16 h-16 rounded-2xl bg-teal-50 border border-teal-200 text-teal-600 flex items-center justify-center mx-auto shadow-inner animate-pulse">
+            <CheckCircle2 className="w-8 h-8" />
+          </div>
+          <div>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-teal-50 border border-teal-200 text-teal-700 text-[10px] font-bold uppercase tracking-wider">
+              Session Authenticated &middot; {loginSuccessRole.replace("_", " ")}
+            </span>
+            <h2 className="text-xl font-bold text-slate-900 mt-2 tracking-tight">
+              Launching Your ERP Workspace
+            </h2>
+            <p className="text-xs text-slate-500 mt-1">
+              Syncing live institutional telemetry &amp; role permissions...
+            </p>
+          </div>
+          <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-teal-600 via-emerald-500 to-cyan-500 w-full animate-pulse rounded-full" />
+          </div>
+        </div>
+      </AuthShell>
+    );
+  }
 
   // ── Two-factor challenge step ──
   if (pendingToken) {
@@ -247,7 +289,7 @@ export default function LoginPage() {
     <AuthShell>
       {/* Header */}
       <div className="mb-6">
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 text-[11px] font-medium mb-3">
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-teal-50/80 border border-teal-200/80 text-teal-700 text-[11px] font-semibold mb-3">
           <Sparkles className="w-3 h-3 text-teal-600" />
           Enterprise Multi-Tenant Portal
         </div>
@@ -255,7 +297,7 @@ export default function LoginPage() {
           Welcome to AcademiX
         </h1>
         <p className="text-xs text-slate-500 mt-1">
-          Enter your credentials or select a demo profile to continue.
+          Sign in with your institutional credentials or launch a one-click demo role below.
         </p>
       </div>
 
@@ -269,7 +311,7 @@ export default function LoginPage() {
       {/* Main Login Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
-          label="Email Address"
+          label="Institutional Email"
           type="email"
           placeholder="name@school.edu"
           value={email}
@@ -281,18 +323,30 @@ export default function LoginPage() {
           required
         />
 
-        <Input
-          label="Password"
-          type="password"
-          placeholder="••••••••••••"
-          value={password}
-          onChange={(e) => {
-            setPassword(e.target.value);
-            setSelectedRole(null);
-          }}
-          leftIcon={<Lock className="w-4 h-4 text-slate-400" />}
-          required
-        />
+        <div className="relative">
+          <Input
+            label="Password"
+            type={showPassword ? "text" : "password"}
+            placeholder="••••••••••••"
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setSelectedRole(null);
+            }}
+            leftIcon={<Lock className="w-4 h-4 text-slate-400" />}
+            rightIcon={
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                className="text-slate-400 hover:text-slate-600 transition-colors focus:outline-none"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            }
+            required
+          />
+        </div>
 
         <Button
           type="submit"
@@ -312,8 +366,8 @@ export default function LoginPage() {
           <span className="text-[11px] uppercase tracking-wider font-bold text-slate-400">
             One-Click Demo Profiles
           </span>
-          <span className="text-[10px] text-teal-600 font-medium bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200/50">
-            Ready to test
+          <span className="text-[10px] text-teal-700 font-semibold bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200/60">
+            Instant Sandbox Login
           </span>
         </div>
 
@@ -328,23 +382,26 @@ export default function LoginPage() {
                 onClick={() => selectDemoRole(demo)}
                 className={`group relative p-2.5 rounded-xl border text-left transition-all duration-150 flex items-start gap-2.5 ${
                   isSelected
-                    ? "bg-teal-50/80 border-teal-500/80 shadow-sm ring-2 ring-teal-500/20"
-                    : "bg-slate-50/70 border-slate-200 hover:bg-white hover:border-slate-300 hover:shadow-sm"
+                    ? "bg-teal-50/90 border-teal-500 shadow-sm ring-2 ring-teal-500/20"
+                    : "bg-slate-50/70 border-slate-200 hover:bg-white hover:border-teal-300 hover:shadow-sm"
                 }`}
               >
                 <div
-                  className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border transition-colors ${demo.accent}`}
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border transition-colors ${demo.accent}`}
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <Icon className="w-4 h-4" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-1">
                     <span className="font-semibold text-[11px] text-slate-800 truncate">
                       {demo.label}
                     </span>
+                    <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-white/80 text-slate-500 border border-slate-200/70 shrink-0">
+                      {demo.badge}
+                    </span>
                   </div>
-                  <span className="text-[10px] text-slate-400 block truncate font-mono">
-                    {demo.email.split("@")[0]}
+                  <span className="text-[10px] text-slate-400 block truncate font-mono mt-0.5">
+                    {demo.email}
                   </span>
                 </div>
               </button>
@@ -355,12 +412,12 @@ export default function LoginPage() {
 
       {/* Footer Registration Link */}
       <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-        <span>Need a school workspace?</span>
+        <span>Onboarding a new institution?</span>
         <Link
           href="/register"
-          className="font-semibold text-teal-600 hover:text-teal-700 hover:underline transition-colors"
+          className="inline-flex items-center gap-1 font-semibold text-teal-600 hover:text-teal-700 hover:underline transition-colors"
         >
-          Register School →
+          Register School <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>
     </AuthShell>
