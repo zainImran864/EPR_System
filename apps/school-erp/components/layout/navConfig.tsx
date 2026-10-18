@@ -49,6 +49,7 @@ export const TEACHER_NAV: NavLink[] = [
   { href: "/teacher/dashboard", label: "Dashboard", icon: ico(LayoutDashboard), group: "Overview", description: "Teaching overview & quick actions" },
   { href: "/teacher/my-attendance", label: "My Attendance & Leave", icon: ico(MapPin), group: "Operations", description: "Mark daily school attendance with photo & live GPS + apply leave" },
   { href: "/teacher/student-leaves", label: "Student Leaves", icon: ico(CalendarPlus), group: "Operations", description: "Review & approve parent leave applications to auto-mark attendance" },
+  { href: "/teacher/homework", label: "Homework & Assignments", icon: ico(BookOpen), group: "Academics", description: "Create homework, track deadlines & grade submissions" },
   { href: "/teacher/marks", label: "Marks Upload", icon: ico(Award), group: "Academics", description: "Enter & publish subject examination scores" },
   { href: "/teacher/attendance", label: "Class Attendance", icon: ico(CalendarCheck), group: "Academics", description: "Record daily class & section attendance" },
   { href: "/teacher/timetable", label: "Timetable", icon: ico(CalendarDays), group: "Academics", description: "View assigned teaching schedule" },
@@ -60,6 +61,7 @@ export const TEACHER_NAV: NavLink[] = [
 
 export const STUDENT_NAV: NavLink[] = [
   { href: "/student/dashboard", label: "Dashboard", icon: ico(LayoutDashboard), group: "Overview", description: "Student portal overview & shortcuts" },
+  { href: "/student/homework", label: "My Homework", icon: ico(BookOpen), group: "Academics", description: "Assignments, question worksheets & solution upload" },
   { href: "/student/results", label: "My Results", icon: ico(Award), group: "Academics", description: "Exam scores, grades & printable report card" },
   { href: "/student/attendance", label: "My Attendance", icon: ico(CalendarCheck), group: "Academics", description: "Daily attendance log & rate" },
   { href: "/student/timetable", label: "My Timetable", icon: ico(CalendarDays), group: "Academics", description: "Weekly class timetable" },
@@ -72,6 +74,7 @@ export const STUDENT_NAV: NavLink[] = [
 export const PARENT_NAV: NavLink[] = [
   { href: "/parent/dashboard", label: "Dashboard", icon: ico(LayoutDashboard), group: "Overview", description: "Parent portal overview & child progress" },
   { href: "/parent/leaves", label: "Apply Leave", icon: ico(CalendarPlus), group: "Academics", description: "Apply for child leave and track approval" },
+  { href: "/parent/homework", label: "Homework", icon: ico(BookOpen), group: "Academics", description: "Child homework assignments, deadlines & grades" },
   { href: "/parent/results", label: "Results", icon: ico(Award), group: "Academics", description: "Child exam marks & report cards" },
   { href: "/parent/attendance", label: "Attendance", icon: ico(CalendarCheck), group: "Academics", description: "Child attendance history & alerts" },
   { href: "/parent/timetable", label: "Timetable", icon: ico(CalendarDays), group: "Academics", description: "Weekly class schedule" },

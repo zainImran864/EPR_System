@@ -566,3 +566,25 @@ export const circularsRestApi = {
   delete: (id: string) => apiClient.delete<any>(`/circulars/${id}`),
 };
 
+export const homeworkRestApi = {
+  list: (params?: { classId?: string; sectionId?: string; subjectId?: string }) =>
+    apiClient.get<any[]>('/homework', params),
+  getById: (id: string) => apiClient.get<any>(`/homework/${id}`),
+  create: (data: {
+    classId: string;
+    sectionId: string;
+    subjectId: string;
+    title: string;
+    description: string;
+    dueDate: string;
+    maxMarks?: number;
+    attachmentUrl?: string;
+  }) => apiClient.post<any>('/homework', data),
+  submit: (homeworkId: string, data: { submissionUrl?: string; content?: string }) =>
+    apiClient.post<any>(`/homework/${homeworkId}/submit`, data),
+  grade: (submissionId: string, data: { marksObtained: number; feedback?: string }) =>
+    apiClient.patch<any>(`/homework/submission/${submissionId}/grade`, data),
+  delete: (id: string) => apiClient.delete<any>(`/homework/${id}`),
+};
+
+
