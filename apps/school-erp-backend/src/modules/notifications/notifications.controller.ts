@@ -52,4 +52,19 @@ export class NotificationsController {
   ) {
     return this.notificationsService.markAsRead(id, user.userId);
   }
+
+  @Post('read-all')
+  async markAllAsRead(@CurrentUser() user: CurrentUserPayload) {
+    return this.notificationsService.markAllAsRead(user.schoolId!, user.userId, user.role);
+  }
+
+  @Post('clear-all')
+  async clearAllNotificationsPost(@CurrentUser() user: CurrentUserPayload) {
+    return this.notificationsService.clearAllNotifications(user.schoolId!, user.userId, user.role);
+  }
+
+  @Get('clear-all')
+  async clearAllNotificationsGet(@CurrentUser() user: CurrentUserPayload) {
+    return this.notificationsService.clearAllNotifications(user.schoolId!, user.userId, user.role);
+  }
 }

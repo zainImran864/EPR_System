@@ -83,7 +83,22 @@ export function useNotifications() {
   };
 
   const markAllRead = async () => {
+    try {
+      await notificationsRestApi.markAllAsRead();
+    } catch (e) {
+      console.warn("Failed to mark all notifications as read:", e);
+    }
     setFeed((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    setUnreadCount(0);
+  };
+
+  const clearAll = async () => {
+    try {
+      await notificationsRestApi.clearAll();
+    } catch (e) {
+      console.warn("Failed to clear all notifications:", e);
+    }
+    setFeed([]);
     setUnreadCount(0);
   };
 
@@ -100,7 +115,7 @@ export function useNotifications() {
     broadcast,
     markRead,
     markAllRead,
-    clearAll: markAllRead,
+    clearAll,
     refetch: fetchNotifications,
   };
 }

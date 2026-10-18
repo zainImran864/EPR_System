@@ -12,6 +12,7 @@ import { MarksModule } from './modules/marks/marks.module';
 import { FeesModule } from './modules/fees/fees.module';
 import { TimetableModule } from './modules/timetable/timetable.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ExpensesModule } from './modules/expenses/expenses.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { SeedModule } from './modules/seed/seed.module';
@@ -36,6 +37,7 @@ import { AppService } from './app.service';
     AttendanceModule,
     MarksModule,
     FeesModule,
+    ExpensesModule,
     TimetableModule,
     NotificationsModule,
     WhatsAppModule,

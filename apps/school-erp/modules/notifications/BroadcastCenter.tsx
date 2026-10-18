@@ -40,13 +40,26 @@ const KINDS = [
 ];
 
 function formatTime(val: any): string {
-  if (!val) return "just now";
-  try {
-    const d = new Date(val);
-    return isNaN(d.getTime()) ? "recently" : d.toLocaleString();
-  } catch {
-    return "recently";
+  if (!val) return "Just now";
+  let time = typeof val === "string" ? new Date(val).getTime() : Number(val);
+  if (isNaN(time)) return "Just now";
+  if (time < 10000000000) {
+    time *= 1000;
   }
+  const d = new Date(time);
+  if (isNaN(d.getTime())) return "Just now";
+
+  const diffMs = Date.now() - time;
+  if (diffMs < 45000) return "Just now";
+
+  return d.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
 }
 
 export const BroadcastCenter: React.FC = () => {

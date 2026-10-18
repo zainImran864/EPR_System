@@ -16,17 +16,37 @@ const KIND_DOT: Record<string, string> = {
   urgent: "bg-rose-500",
 };
 
-function timeAgo(ts: any): string {
-  if (!ts) return "just now";
-  const time = typeof ts === "string" ? new Date(ts).getTime() : Number(ts);
-  if (isNaN(time)) return "recently";
-  const diff = Date.now() - time;
-  const m = Math.floor(diff / 60000);
-  if (m < 1) return "just now";
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
+function formatNotificationTime(ts: any): { relative: string; exact: string } {
+  if (!ts) return { relative: "just now", exact: new Date().toLocaleTimeString() };
+  let time = typeof ts === "string" ? new Date(ts).getTime() : Number(ts);
+  if (isNaN(time)) return { relative: "recently", exact: "" };
+  if (time < 10000000000) {
+    time *= 1000; // handle Unix seconds
+  }
+  const dateObj = new Date(time);
+  const exact = isNaN(dateObj.getTime())
+    ? ""
+    : dateObj.toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+
+  const diffMs = Date.now() - time;
+  if (diffMs < 45000) return { relative: "just now", exact };
+
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 60) return { relative: `${mins}m ago`, exact };
+
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return { relative: `${hours}h ago`, exact };
+
+  const days = Math.floor(hours / 24);
+  if (days < 7) return { relative: `${days}d ago`, exact };
+
+  return { relative: exact || `${days}d ago`, exact };
 }
 
 export const NotificationBell: React.FC = () => {
@@ -59,10 +79,15 @@ export const NotificationBell: React.FC = () => {
     }
   };
 
+  const role = String(user?.role || "").toUpperCase();
   const centerUrl =
-    user?.role === "ADMIN" || user?.role === "SUPERADMIN"
+    role === "ADMIN" || role === "SUPERADMIN"
       ? "/admin/notifications"
-      : "/teacher/notifications";
+      : role === "TEACHER"
+      ? "/teacher/notifications"
+      : role === "PARENT"
+      ? "/parent/notifications"
+      : "/student/notifications";
 
   return (
     <div className="relative" ref={ref}>
@@ -147,9 +172,17 @@ export const NotificationBell: React.FC = () => {
                         <span className="text-xs font-bold text-slate-900 truncate">
                           {n.title}
                         </span>
-                        <span className="text-[10px] text-slate-400 shrink-0 font-mono">
-                          {timeAgo(n.createdAt)}
-                        </span>
+                        {(() => {
+                          const timeInfo = formatNotificationTime(n.createdAt);
+                          return (
+                            <span
+                              className="text-[10px] text-slate-500 shrink-0 font-mono font-medium"
+                              title={timeInfo.exact}
+                            >
+                              {timeInfo.relative}
+                            </span>
+                          );
+                        })()}
                       </div>
                       <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed line-clamp-2">
                         {n.message || n.body}

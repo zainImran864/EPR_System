@@ -445,7 +445,46 @@ export const feesRestApi = {
 export const notificationsRestApi = {
   getAll: () => apiClient.get<any[]>('/notifications'),
   markAsRead: (id: string) => apiClient.patch<any>(`/notifications/${id}/read`),
+  markAllAsRead: () => apiClient.post<any>('/notifications/read-all'),
+  clearAll: () => apiClient.post<any>('/notifications/clear-all'),
   broadcast: (data: any) => apiClient.post<any>('/notifications/broadcast', data),
+};
+
+export const expensesRestApi = {
+  getAll: (query?: {
+    month?: string;
+    category?: string;
+    startDate?: string;
+    endDate?: string;
+    academicYear?: string;
+  }) =>
+    apiClient.get<{ expenses: any[]; totalAmount: number; count: number }>(
+      '/expenses',
+      query,
+    ),
+  getById: (id: string) => apiClient.get<any>(`/expenses/${id}`),
+  create: (data: {
+    title: string;
+    category: string;
+    amount: number;
+    expenseDate?: string;
+    month?: string;
+    academicYear?: string;
+    paymentMethod?: string;
+    recipientName?: string;
+    invoiceNumber?: string;
+    receiptUrl?: string;
+    remarks?: string;
+  }) => apiClient.post<any>('/expenses', data),
+  update: (id: string, data: any) => apiClient.patch<any>(`/expenses/${id}`, data),
+  delete: (id: string) => apiClient.delete<any>(`/expenses/${id}`),
+  getTracking: (query?: {
+    rangeType?: 'monthly' | 'yearly' | 'custom';
+    month?: string;
+    year?: string;
+    startDate?: string;
+    endDate?: string;
+  }) => apiClient.get<any>('/expenses/tracking', query),
 };
 
 export const whatsappRestApi = {

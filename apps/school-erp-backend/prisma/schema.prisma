@@ -95,6 +95,7 @@ model School {
   feeChallans        FeeChallan[]
   timetables         TimetableEntry[]
   questionPapers     ExamQuestionPaper[]
+  expenses           Expense[]
 
   @@map("schools")
 }
@@ -546,3 +547,46 @@ model TimetableEntry {
   @@index([teacherId, dayOfWeek, periodNumber])
   @@map("timetable_entries")
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 11. School Expenses & Financial Tracking (P&L)
+// ─────────────────────────────────────────────────────────────────────────────
+enum ExpenseCategory {
+  UTILITIES          // Electricity, Water, Gas, Internet, Telephone
+  SALARIES           // Teachers, Administration, Security, Janitorial Staff
+  STATIONERY_PAPER   // Paper bills, Printer Cartridges, Office Stationery, Books
+  MAINTENANCE        // Building, Cleaning, Repairs, Generator Fuel, HVAC
+  RENT               // Campus / Building Rent
+  EVENTS             // Sports Day, Annual Function, Science Fair, Exam Hall
+  LAB_LIBRARY        // Science lab equipment, chemicals, Library books
+  MISCELLANEOUS      // Transport, Refreshments, Legal, Other
+}
+
+model Expense {
+  id             String          @id @default(cuid())
+  schoolId       String
+  school         School          @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  voucherNumber  String          @unique // e.g. "EXP-2026-10-001"
+  title          String          // e.g. "October 2026 Electricity Bill"
+  category       ExpenseCategory @default(MISCELLANEOUS)
+  amount         Float
+  expenseDate    DateTime        @default(now())
+  month          String          // e.g. "October 2026" or "2026-10"
+  academicYear   String          @default("2026-2027")
+  paymentMethod  String          @default("Cash") // Cash, Bank Transfer, Cheque, Online
+  recipientName  String?         // Vendor, Utility Provider, or Staff Member Name
+  invoiceNumber  String?         // Vendor Invoice or Bill Reference #
+  receiptUrl     String?         // Photo / PDF voucher or receipt
+  remarks        String?
+  recordedBy     String?         // Admin user ID who created the entry
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([schoolId])
+  @@index([schoolId, expenseDate])
+  @@index([schoolId, category])
+  @@index([schoolId, month])
+  @@index([schoolId, academicYear])
+  @@map("expenses")
+}
+

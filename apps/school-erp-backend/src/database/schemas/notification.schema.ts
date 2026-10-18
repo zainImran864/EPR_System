@@ -28,6 +28,9 @@ export class Notification {
 
   @Prop({ type: [String], default: [] })
   readBy: string[]; // List of user IDs who have acknowledged/read the notification
+
+  @Prop({ type: [String], default: [] })
+  clearedBy: string[]; // List of user IDs who have cleared/dismissed the notification from their inbox
 }
 
 export const NotificationSchema = SchemaFactory.createForClass(Notification);

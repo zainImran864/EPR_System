@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { Role, UserStatus, DayOfWeek, AttendanceStatus, FeeStatus } from '@prisma/client';
+import { Role, UserStatus, DayOfWeek, AttendanceStatus, FeeStatus, ExpenseCategory } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
@@ -484,7 +484,96 @@ export class SeedService {
       });
     }
 
-    this.logger.log('Database seeded successfully with all sample roles, students, marks, fees & schedules!');
+    // 12. Seed School Expenses (Utility Bills, Salaries, Paper Bills, Maintenance)
+    const sampleExpenses = [
+      {
+        voucherNumber: 'EXP-202610-0001',
+        title: 'October 2026 Campus Electricity Bill (WAPDA / Power Grid)',
+        category: ExpenseCategory.UTILITIES,
+        amount: 850,
+        expenseDate: new Date('2026-10-05'),
+        month: 'October 2026',
+        paymentMethod: 'Bank Transfer',
+        recipientName: 'State Electric Power Company',
+        invoiceNumber: 'ELEC-992384-OCT',
+        remarks: 'Campus main distribution panel monthly tariff',
+      },
+      {
+        voucherNumber: 'EXP-202610-0002',
+        title: 'Faculty & Administrative Staff Monthly Salaries - October 2026',
+        category: ExpenseCategory.SALARIES,
+        amount: 14500,
+        expenseDate: new Date('2026-10-01'),
+        month: 'October 2026',
+        paymentMethod: 'Bank Transfer',
+        recipientName: 'Faculty & Staff Payroll Accounts',
+        invoiceNumber: 'PAYROLL-2026-10',
+        remarks: 'Disbursed directly to 12 teaching and 5 administrative staff accounts',
+      },
+      {
+        voucherNumber: 'EXP-202610-0003',
+        title: 'Exam Question Papers Printing & A4 Paper Bundles (50 Reams)',
+        category: ExpenseCategory.STATIONERY_PAPER,
+        amount: 420,
+        expenseDate: new Date('2026-10-10'),
+        month: 'October 2026',
+        paymentMethod: 'Cash',
+        recipientName: 'Al-Madina Printing & Stationery Mart',
+        invoiceNumber: 'INV-ST-4421',
+        remarks: 'High-speed copier paper and toner cartridges for Mid-Term Exams',
+      },
+      {
+        voucherNumber: 'EXP-202610-0004',
+        title: 'Campus High-Speed Dedicated Fiber Optic Internet & Landline',
+        category: ExpenseCategory.UTILITIES,
+        amount: 180,
+        expenseDate: new Date('2026-10-08'),
+        month: 'October 2026',
+        paymentMethod: 'Online',
+        recipientName: 'Telecom Broadband Services',
+        invoiceNumber: 'TEL-88231',
+        remarks: '100 Mbps fiber link for computer lab & administrative offices',
+      },
+      {
+        voucherNumber: 'EXP-202610-0005',
+        title: 'Generator Diesel Fuel & HVAC Air-Conditioning Servicing',
+        category: ExpenseCategory.MAINTENANCE,
+        amount: 650,
+        expenseDate: new Date('2026-10-12'),
+        month: 'October 2026',
+        paymentMethod: 'Cash',
+        recipientName: 'Metro Technical & Engineering Works',
+        invoiceNumber: 'MNT-2026-90',
+        remarks: 'Bi-annual HVAC filter cleaning and backup generator load test',
+      },
+      {
+        voucherNumber: 'EXP-202610-0006',
+        title: 'Science Lab Chemistry Reagents & Biology Microscopes Upgrades',
+        category: ExpenseCategory.LAB_LIBRARY,
+        amount: 580,
+        expenseDate: new Date('2026-10-14'),
+        month: 'October 2026',
+        paymentMethod: 'Cheque',
+        recipientName: 'Scientific Equipment Supply Corp',
+        invoiceNumber: 'LAB-1029',
+        remarks: 'New reagent kits for Grade 10 Science practical classes',
+      },
+    ];
+
+    for (const exp of sampleExpenses) {
+      await this.prisma.expense.upsert({
+        where: { voucherNumber: exp.voucherNumber },
+        update: {},
+        create: {
+          schoolId: school.id,
+          ...exp,
+          academicYear: '2026-2027',
+          recordedBy: schoolAdmin.id,
+        },
+      });
+    }
+
+    this.logger.log('Database seeded successfully with sample roles, students, marks, fees, expenses & schedules!');
     return {
       success: true,
       message: 'Demo school and accounts seeded successfully',
