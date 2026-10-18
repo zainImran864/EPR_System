@@ -2,7 +2,7 @@
 
 import React, { Suspense, useEffect, useState } from "react";
 import { Printer, ArrowLeft, TrendingUp, TrendingDown, Users, Zap, FileText, Wrench } from "lucide-react";
-import { expensesRestApi } from "@/app/api/client";
+import { expensesRestApi, apiClient } from "@/app/api/client";
 import { useActiveSchool } from "@/app/hooks/useActiveSchool";
 import { Spinner } from "@/components/ui/Spinner";
 
@@ -48,9 +48,13 @@ function ComparisonContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    expensesRestApi
-      .getTracking({ rangeType: "monthly", month: "October 2026" })
-      .then((res) => {
+    const fetchFn =
+      expensesRestApi && typeof expensesRestApi.getTracking === "function"
+        ? expensesRestApi.getTracking({ rangeType: "monthly", month: "October 2026" })
+        : apiClient.get<any>("/expenses/tracking", { rangeType: "monthly", month: "October 2026" });
+
+    fetchFn
+      .then((res: any) => {
         setData(res);
         setLoading(false);
       })
@@ -67,6 +71,7 @@ function ComparisonContent() {
   }
 
   const trend: any[] = data?.monthlyTrend || [];
+  const currency = school?.currencySymbol || (typeof window !== "undefined" ? localStorage.getItem("erp_school_currency_symbol") : null) || "$";
 
   return (
     <div className="max-w-[960px] mx-auto my-6 p-8 bg-white border border-slate-200 shadow-sm rounded-xl print:m-0 print:p-6 print:border-none print:shadow-none print:max-w-none">
@@ -134,28 +139,28 @@ function ComparisonContent() {
                       {t.month}
                     </td>
                     <td className="border border-slate-200 px-2 py-2 text-right font-mono text-slate-800">
-                      ${Number(t.salaries || 0).toLocaleString()}
+                      {currency} {Number(t.salaries || 0).toLocaleString()}
                     </td>
                     <td className="border border-slate-200 px-2 py-2 text-right font-mono text-slate-800">
-                      ${Number(t.utilities || 0).toLocaleString()}
+                      {currency} {Number(t.utilities || 0).toLocaleString()}
                     </td>
                     <td className="border border-slate-200 px-2 py-2 text-right font-mono text-slate-800">
-                      ${Number(t.stationery || 0).toLocaleString()}
+                      {currency} {Number(t.stationery || 0).toLocaleString()}
                     </td>
                     <td className="border border-slate-200 px-2 py-2 text-right font-mono text-slate-800">
-                      ${Number(t.maintenance || 0).toLocaleString()}
+                      {currency} {Number(t.maintenance || 0).toLocaleString()}
                     </td>
                     <td className="border border-slate-200 px-2 py-2 text-right font-mono text-slate-700">
-                      ${Number(t.other || 0).toLocaleString()}
+                      {currency} {Number(t.other || 0).toLocaleString()}
                     </td>
                     <td className="border border-slate-200 px-2 py-2 text-right font-mono font-black text-rose-700 bg-rose-50/30">
-                      -${Number(t.expenses).toLocaleString()}
+                      -{currency} {Number(t.expenses).toLocaleString()}
                     </td>
                     <td className="border border-slate-200 px-2 py-2 text-right font-mono font-bold text-emerald-700 bg-emerald-50/30">
-                      +${Number(t.feesCollected).toLocaleString()}
+                      +{currency} {Number(t.feesCollected).toLocaleString()}
                     </td>
                     <td className={`border border-slate-200 px-2 py-2 text-right font-mono font-bold ${isSurplus ? "text-emerald-700" : "text-rose-700"}`}>
-                      {isSurplus ? "+" : "-"}${Math.abs(t.netProfit).toLocaleString()}
+                      {isSurplus ? "+" : "-"}{currency} {Math.abs(t.netProfit).toLocaleString()}
                     </td>
                     <td className="border border-slate-200 px-2 py-2 text-center font-mono font-semibold text-[11px]">
                       {momDelta === null ? (

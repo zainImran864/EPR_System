@@ -16,6 +16,7 @@ import { ExpensesModule } from './modules/expenses/expenses.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { SeedModule } from './modules/seed/seed.module';
+import { BackupModule } from './modules/backup/backup.module';
 import { WhatsAppModule } from './modules/whatsapp/whatsapp.module';
 import { HttpLoggerMiddleware } from './common/middleware/http-logger.middleware';
 import { AppController } from './app.controller';
@@ -41,6 +42,7 @@ import { AppService } from './app.service';
     TimetableModule,
     NotificationsModule,
     WhatsAppModule,
+    BackupModule,
     AuditModule,
     DashboardModule,
     SeedModule,

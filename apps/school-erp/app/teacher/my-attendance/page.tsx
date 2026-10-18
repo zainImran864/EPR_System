@@ -71,6 +71,9 @@ export default function TeacherMyAttendancePage() {
   const [todayRecord, setTodayRecord] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [leaves, setLeaves] = useState<any[]>([]);
+  const [attendanceWindowOpen, setAttendanceWindowOpen] = useState<boolean>(true);
+  const [schoolStartTime, setSchoolStartTime] = useState<string>("07:30");
+  const [schoolEndTime, setSchoolEndTime] = useState<string>("14:00");
 
   // Check-in form state
   const [lat, setLat] = useState<number>(31.5205);
@@ -181,6 +184,9 @@ export default function TeacherMyAttendancePage() {
       setTodayRecord(data?.todayRecord || null);
       setHistory(Array.isArray(data?.history) ? data.history : []);
       setLeaves(Array.isArray(data?.leaves) ? data.leaves : []);
+      if (data?.attendanceWindowOpen !== undefined) setAttendanceWindowOpen(data.attendanceWindowOpen);
+      if (data?.schoolStartTime) setSchoolStartTime(data.schoolStartTime);
+      if (data?.schoolEndTime) setSchoolEndTime(data.schoolEndTime);
     } catch (err: any) {
       console.error("Failed to load teacher attendance context:", err);
     } finally {
@@ -615,14 +621,36 @@ export default function TeacherMyAttendancePage() {
                 {Number(school?.longitude ?? 74.3587).toFixed(4)}) • Allowed Radius: {allowedRadius}m
               </p>
             </div>
-            <Badge
-              variant={isInsideGeofence ? "success" : "danger"}
-              size="sm"
-              isMono
-            >
-              {distanceMeters}m from school
-            </Badge>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge
+                variant={attendanceWindowOpen ? "success" : "danger"}
+                size="sm"
+              >
+                {attendanceWindowOpen
+                  ? `Window Open (${schoolStartTime} - ${schoolEndTime})`
+                  : `Window Closed (${schoolStartTime} - ${schoolEndTime})`}
+              </Badge>
+              <Badge
+                variant={isInsideGeofence ? "success" : "danger"}
+                size="sm"
+                isMono
+              >
+                {distanceMeters}m from school
+              </Badge>
+            </div>
           </div>
+
+          {!attendanceWindowOpen && (
+            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-2.5 text-xs text-amber-900">
+              <Clock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold">Attendance Window Closed ({schoolStartTime} to {schoolEndTime})</p>
+                <p className="text-[11px] text-amber-700 mt-0.5">
+                  Teachers can only check in during official school hours set by admin. Outside these hours, attendance is locked and marked absent.
+                </p>
+              </div>
+            </div>
+          )}
 
           <form onSubmit={handleCheckIn} className="space-y-4">
             {/* Live Map & GPS Controls */}
@@ -776,9 +804,12 @@ export default function TeacherMyAttendancePage() {
               variant="primary"
               fullWidth
               isLoading={submittingCheckIn}
+              disabled={!attendanceWindowOpen}
               leftIcon={<CheckCircle2 className="w-4 h-4" />}
             >
-              {todayRecord
+              {!attendanceWindowOpen
+                ? `Attendance Window Closed (${schoolStartTime} - ${schoolEndTime})`
+                : todayRecord
                 ? "Update Today's Verified Attendance (PRESENT)"
                 : "Mark Today's Attendance (Auto-Mark PRESENT on GPS Match)"}
             </Button>

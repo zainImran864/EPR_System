@@ -223,6 +223,8 @@ export class AttendanceService implements OnModuleInit {
           latitude: true,
           longitude: true,
           geofenceRadiusMeters: true,
+          schoolStartTime: true,
+          schoolEndTime: true,
         },
       }),
       this.prisma.read.teacher.findFirst({
@@ -234,6 +236,16 @@ export class AttendanceService implements OnModuleInit {
       throw new NotFoundException('School not found');
     }
 
+    const startTimeStr = school.schoolStartTime || '07:30';
+    const endTimeStr = school.schoolEndTime || '14:00';
+    const now = new Date();
+    const [startH, startM] = startTimeStr.split(':').map((v) => parseInt(v, 10));
+    const [endH, endM] = endTimeStr.split(':').map((v) => parseInt(v, 10));
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const startMinutes = startH * 60 + startM;
+    const endMinutes = endH * 60 + endM;
+    const isWindowOpen = currentMinutes >= startMinutes && currentMinutes <= endMinutes;
+
     const today = new Date().toISOString().split('T')[0];
 
     if (!teacher) {
@@ -243,6 +255,9 @@ export class AttendanceService implements OnModuleInit {
           latitude: school.latitude ?? 31.5204,
           longitude: school.longitude ?? 74.3587,
           geofenceRadiusMeters: school.geofenceRadiusMeters ?? 250,
+          schoolStartTime: startTimeStr,
+          schoolEndTime: endTimeStr,
+          isWindowOpen,
         },
         teacher: null,
         todayRecord: null,
@@ -279,6 +294,9 @@ export class AttendanceService implements OnModuleInit {
         latitude: school.latitude ?? 31.5204,
         longitude: school.longitude ?? 74.3587,
         geofenceRadiusMeters: school.geofenceRadiusMeters ?? 250,
+        schoolStartTime: startTimeStr,
+        schoolEndTime: endTimeStr,
+        isWindowOpen,
       },
       teacher,
       todayRecord,
@@ -307,6 +325,23 @@ export class AttendanceService implements OnModuleInit {
     if (!teacher) {
       throw new NotFoundException('Teacher profile not found for this user account');
     }
+
+    // 1. Enforce School Official Working Hours Window
+    const startTimeStr = school.schoolStartTime || '07:30';
+    const endTimeStr = school.schoolEndTime || '14:00';
+    const now = new Date();
+    const [startH, startM] = startTimeStr.split(':').map((v) => parseInt(v, 10));
+    const [endH, endM] = endTimeStr.split(':').map((v) => parseInt(v, 10));
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const startMinutes = startH * 60 + startM;
+    const endMinutes = endH * 60 + endM;
+
+    if (currentMinutes < startMinutes || currentMinutes > endMinutes) {
+      throw new BadRequestException(
+        `Attendance window closed: School attendance hours are strictly set from ${startTimeStr} to ${endTimeStr}. Check-in cannot be marked outside official hours.`,
+      );
+    }
+
     if (!dto.photoUrl || dto.photoUrl.trim().length < 10) {
       throw new BadRequestException('A live attendance photo is required to mark daily attendance.');
     }

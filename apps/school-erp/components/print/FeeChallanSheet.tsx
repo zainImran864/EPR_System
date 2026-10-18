@@ -37,6 +37,7 @@ export const FeeChallanSheet: React.FC<{ data: ChallanData; lastPage?: boolean }
   lastPage,
 }) => {
   const { school, student, bill } = data;
+  const sym = (data as any)?.currencySymbol || (school as any)?.currencySymbol || (typeof window !== "undefined" ? localStorage.getItem("erp_school_currency_symbol") : null) || "$";
   const baseAmt = Number(bill.baseAmount ?? bill.totalAmount ?? 0);
   const lateFeeIncrement = Number(bill.lateFeeAmount ?? bill.fineAmount ?? 500);
   const isPastDue = Boolean(bill.isPastDue);
@@ -105,7 +106,7 @@ export const FeeChallanSheet: React.FC<{ data: ChallanData; lastPage?: boolean }
             <tr className="bg-slate-50 text-xs text-slate-700">
               <td className="p-2.5 border border-slate-200 font-semibold">Payable Within Due Date ({bill.dueDate})</td>
               <td className="p-2.5 border border-slate-200 text-right font-mono-data font-semibold">
-                {payableWithinDueDate}
+                {sym} {payableWithinDueDate.toLocaleString()}
               </td>
             </tr>
             <tr className="bg-amber-50/70 text-xs text-amber-900">
@@ -118,7 +119,7 @@ export const FeeChallanSheet: React.FC<{ data: ChallanData; lastPage?: boolean }
                 )}
               </td>
               <td className="p-2.5 border border-slate-200 text-right font-mono-data font-bold text-rose-600">
-                +{lateFeeIncrement}
+                +{sym} {lateFeeIncrement.toLocaleString()}
               </td>
             </tr>
             <tr className="bg-[#F0FDFA] font-bold">
@@ -126,7 +127,7 @@ export const FeeChallanSheet: React.FC<{ data: ChallanData; lastPage?: boolean }
                 {isPastDue ? "Total Payable (Including Late Fee Increment)" : "Payable After Due Date"}
               </td>
               <td className="p-2.5 border border-slate-200 text-right text-[#0D9488] font-mono-data">
-                {payableAfterDueDate}
+                {sym} {payableAfterDueDate.toLocaleString()}
               </td>
             </tr>
           </tfoot>
@@ -134,10 +135,10 @@ export const FeeChallanSheet: React.FC<{ data: ChallanData; lastPage?: boolean }
 
         {/* Payment summary */}
         <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 rounded-xl bg-slate-50 border border-slate-200 p-4">
-          <Summary label="Within Due Date" value={String(payableWithinDueDate)} />
-          <Summary label="Late Fee Increment" value={`+${lateFeeIncrement}`} highlight={isPastDue} />
-          <Summary label="Paid" value={String(bill.paidAmount)} />
-          <Summary label="Balance Due" value={String(balance)} highlight={balance > 0} />
+          <Summary label="Within Due Date" value={`${sym} ${payableWithinDueDate.toLocaleString()}`} />
+          <Summary label="Late Fee Increment" value={`+${sym} ${lateFeeIncrement.toLocaleString()}`} highlight={isPastDue} />
+          <Summary label="Paid" value={`${sym} ${(bill.paidAmount || 0).toLocaleString()}`} />
+          <Summary label="Balance Due" value={`${sym} ${balance.toLocaleString()}`} highlight={balance > 0} />
         </div>
 
         <div className="mt-12 flex items-end justify-between text-xs text-slate-500">
@@ -148,7 +149,7 @@ export const FeeChallanSheet: React.FC<{ data: ChallanData; lastPage?: boolean }
 
       <footer className="border-t border-slate-200 pt-3 flex items-center justify-between text-[10px] text-slate-400">
         <span>
-          Note: A late fee increment of +{lateFeeIncrement} is automatically added after the due date ({bill.dueDate}).
+          Note: A late fee increment of +{sym} {lateFeeIncrement.toLocaleString()} is automatically added after the due date ({bill.dueDate}).
         </span>
         <span className="font-semibold text-slate-500">{school?.name ?? "Official School Copy"}</span>
       </footer>

@@ -522,3 +522,14 @@ export const superAdminRestApi = {
 export const seedApi = {
   seedDemoData: () => apiClient.post<any>('/seed/demo'),
 };
+
+export const backupRestApi = {
+  getStatus: () => apiClient.get<any>('/backup/status'),
+  triggerNow: () => apiClient.post<any>('/backup/now'),
+  updateConfig: (data: {
+    autoBackupEnabled?: boolean;
+    backupScheduleTime?: string;
+    backupFrequency?: string;
+  }) => apiClient.patch<any>('/backup/config', data),
+  getDownloadUrl: (filename: string) => `${getApiBaseUrl()}/backup/download/${filename}`,
+};

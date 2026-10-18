@@ -27,6 +27,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { useExpenses } from "@/app/hooks/useExpenses";
+import { useCurrency } from "@/app/hooks/useCurrency";
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   UTILITIES: <Zap className="w-3.5 h-3.5 text-amber-500" />,
@@ -52,6 +53,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export const TrackingExpenses: React.FC = () => {
   const { tracking, trackingLoading, fetchTracking } = useExpenses();
+  const { currencySymbol } = useCurrency();
 
   const [rangeType, setRangeType] = useState<"monthly" | "yearly" | "custom">("monthly");
   const [selectedMonth, setSelectedMonth] = useState<string>("October 2026");
@@ -260,13 +262,13 @@ export const TrackingExpenses: React.FC = () => {
               </span>
             </div>
             <p className="text-2xl font-bold font-mono text-emerald-600 mt-2">
-              ${summary.totalFeesCollected.toLocaleString()}
+              {currencySymbol} {summary.totalFeesCollected.toLocaleString()}
             </p>
           </div>
           <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-            <span>Billed: ${summary.totalFeesBilled.toLocaleString()}</span>
+            <span>Billed: {currencySymbol} {summary.totalFeesBilled.toLocaleString()}</span>
             <span className="text-amber-600 font-semibold">
-              Pending: ${summary.totalFeesPending.toLocaleString()}
+              Pending: {currencySymbol} {summary.totalFeesPending.toLocaleString()}
             </span>
           </div>
         </Card>
@@ -283,7 +285,7 @@ export const TrackingExpenses: React.FC = () => {
               </span>
             </div>
             <p className="text-2xl font-bold font-mono text-rose-600 mt-2">
-              -${summary.totalExpenses.toLocaleString()}
+              -{currencySymbol} {summary.totalExpenses.toLocaleString()}
             </p>
           </div>
           <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
@@ -314,7 +316,7 @@ export const TrackingExpenses: React.FC = () => {
                 isProfit ? "text-emerald-700" : "text-rose-700"
               }`}
             >
-              {isProfit ? "+" : "-"}${Math.abs(summary.netProfitLoss).toLocaleString()}
+              {isProfit ? "+" : "-"}{currencySymbol} {Math.abs(summary.netProfitLoss).toLocaleString()}
             </p>
           </div>
           <div className="mt-3 pt-2.5 border-t border-slate-200/70 flex items-center justify-between text-[11px] font-semibold">
@@ -361,7 +363,7 @@ export const TrackingExpenses: React.FC = () => {
               </h3>
             </div>
             <span className="text-xs font-mono font-bold text-slate-500">
-              Total: ${summary.totalExpenses.toLocaleString()}
+              Total: {currencySymbol} {summary.totalExpenses.toLocaleString()}
             </span>
           </div>
 
@@ -382,7 +384,7 @@ export const TrackingExpenses: React.FC = () => {
                     </div>
                     <div className="font-mono text-right">
                       <span className="font-bold text-slate-900">
-                        ${cat.total.toLocaleString()}
+                        {currencySymbol} {cat.total.toLocaleString()}
                       </span>
                       <span className="text-slate-400 ml-1.5 text-[11px]">
                         ({cat.percentage}%)
@@ -438,17 +440,17 @@ export const TrackingExpenses: React.FC = () => {
                         {t.month}
                       </td>
                       <td className="py-3 px-3 text-right font-mono font-semibold text-emerald-600">
-                        +${t.feesCollected.toLocaleString()}
+                        +{currencySymbol} {t.feesCollected.toLocaleString()}
                       </td>
                       <td className="py-3 px-3 text-right font-mono font-semibold text-rose-600">
-                        -${t.expenses.toLocaleString()}
+                        -{currencySymbol} {t.expenses.toLocaleString()}
                       </td>
                       <td
                         className={`py-3 px-3 text-right font-mono font-bold ${
                           mProfit ? "text-emerald-700" : "text-rose-700"
                         }`}
                       >
-                        {mProfit ? "+" : "-"}${Math.abs(t.netProfit).toLocaleString()}
+                        {mProfit ? "+" : "-"}{currencySymbol} {Math.abs(t.netProfit).toLocaleString()}
                       </td>
                       <td className="py-3 px-3 text-center">
                         <Badge variant={mProfit ? "success" : "danger"} size="sm">
@@ -517,7 +519,7 @@ export const TrackingExpenses: React.FC = () => {
                       {new Date(e.expenseDate).toLocaleDateString()}
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono font-bold text-rose-600">
-                      -${Number(e.amount).toLocaleString()}
+                      -{currencySymbol} {Number(e.amount).toLocaleString()}
                     </td>
                   </tr>
                 ))}

@@ -31,6 +31,7 @@ enum AttendanceStatus {
   ABSENT
   LATE
   EXCUSED
+  LEAVE
 }
 
 enum FeeStatus {
@@ -64,6 +65,8 @@ model School {
   email        String?
   address      String?
   activeYear   String   @default("2026-2027")
+  currencySymbol String?  @default("$")
+  currencyCode   String?  @default("USD")
 
   // Campus Live Map & Geofence Settings (for Teacher Self-Attendance)
   latitude             Float?   @default(31.5204)
@@ -78,6 +81,16 @@ model School {
   smtpFrom     String?
   smtpSecure   Boolean? @default(false)
   smtpEnabled  Boolean? @default(false)
+
+  // School Working Hours (for Teacher Attendance Window)
+  schoolStartTime      String?  @default("07:30")
+  schoolEndTime        String?  @default("14:00")
+
+  // Automated Database Backup Settings
+  autoBackupEnabled    Boolean? @default(true)
+  backupScheduleTime   String?  @default("02:00")
+  backupFrequency      String?  @default("DAILY")
+  lastBackupAt         DateTime?
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -96,6 +109,11 @@ model School {
   timetables         TimetableEntry[]
   questionPapers     ExamQuestionPaper[]
   expenses           Expense[]
+  studentLeaves      StudentLeaveRequest[]
+  circulars          Circular[]
+  homeworks          Homework[]
+  parentMeetings     ParentMeeting[]
+  achievements       StudentAchievement[]
 
   @@map("schools")
 }
@@ -186,6 +204,8 @@ model Class {
   subjects  Subject[]
   paperSchedules ExamPaperSchedule[]
   questionPapers ExamQuestionPaper[]
+  circulars Circular[]
+  homeworks Homework[]
 
   @@unique([schoolId, grade])
   @@index([schoolId])
@@ -207,6 +227,8 @@ model Section {
   students       Student[]
   timetables     TimetableEntry[]
   attendances    Attendance[]
+  circulars      Circular[]
+  homeworks      Homework[]
 
   @@index([classId])
   @@index([schoolId])
@@ -227,6 +249,7 @@ model Subject {
   timetables     TimetableEntry[]
   paperSchedules ExamPaperSchedule[]
   questionPapers ExamQuestionPaper[]
+  homeworks      Homework[]
 
   @@unique([schoolId, name, classId])
   @@index([schoolId])
@@ -258,6 +281,8 @@ model Teacher {
   questionPapers       ExamQuestionPaper[]
   attendances          TeacherAttendance[]
   leaves               TeacherLeave[]
+  homeworks            Homework[]
+  parentMeetings       ParentMeeting[]
 
   @@unique([schoolId, employeeId])
   @@index([schoolId])
@@ -298,6 +323,10 @@ model Student {
   attendances        Attendance[]
   marks              Mark[]
   feeChallans        FeeChallan[]
+  leaveRequests      StudentLeaveRequest[]
+  homeworkSubmissions HomeworkSubmission[]
+  parentMeetings     ParentMeeting[]
+  achievements       StudentAchievement[]
 
   @@unique([schoolId, admissionNumber])
   @@index([schoolId])
@@ -319,7 +348,9 @@ model Parent {
   occupation   String?
   createdAt    DateTime  @default(now())
 
-  children     Student[]
+  children       Student[]
+  leaveRequests  StudentLeaveRequest[]
+  parentMeetings ParentMeeting[]
 
   @@map("parents")
 }
@@ -588,5 +619,166 @@ model Expense {
   @@index([schoolId, month])
   @@index([schoolId, academicYear])
   @@map("expenses")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 12. Student Leave Requests (Applied by Parent, Approved by Teacher / Admin)
+// ─────────────────────────────────────────────────────────────────────────────
+model StudentLeaveRequest {
+  id            String        @id @default(cuid())
+  schoolId      String
+  school        School        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  studentId     String
+  student       Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  parentId      String
+  parent        Parent        @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  startDate     DateTime
+  endDate       DateTime
+  reason        String
+  attachmentUrl String?
+  status        RequestStatus @default(PENDING)
+  reviewedBy    String?       // Teacher or Admin Name / ID
+  reviewRemarks String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([schoolId])
+  @@index([studentId])
+  @@index([parentId])
+  @@index([status])
+  @@map("student_leave_requests")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 13. Class & Section Targeted Circulars & Announcements
+// ─────────────────────────────────────────────────────────────────────────────
+model Circular {
+  id            String   @id @default(cuid())
+  schoolId      String
+  school        School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  title         String
+  content       String
+  targetType    String   @default("ALL") // ALL, CLASS, SECTION
+  classId       String?
+  class         Class?   @relation(fields: [classId], references: [id], onDelete: Cascade)
+  sectionId     String?
+  section       Section? @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  publishedBy   String   // Author Name / ID
+  authorRole    String?  @default("ADMIN") // ADMIN, TEACHER
+  attachmentUrl String?
+  isPinned      Boolean? @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([schoolId])
+  @@index([targetType])
+  @@index([classId])
+  @@index([sectionId])
+  @@map("circulars")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 14. Homework & Assignments System (With Strict Deadlines & Marks)
+// ─────────────────────────────────────────────────────────────────────────────
+model Homework {
+  id            String               @id @default(cuid())
+  schoolId      String
+  school        School               @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classId       String
+  class         Class                @relation(fields: [classId], references: [id], onDelete: Cascade)
+  sectionId     String
+  section       Section              @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  subjectId     String
+  subject       Subject              @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacherId     String
+  teacher       Teacher              @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  title         String
+  description   String
+  attachmentUrl String?
+  dueDate       DateTime
+  maxMarks      Float                @default(100)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  submissions   HomeworkSubmission[]
+
+  @@index([schoolId])
+  @@index([classId, sectionId])
+  @@index([teacherId])
+  @@index([dueDate])
+  @@map("homeworks")
+}
+
+model HomeworkSubmission {
+  id            String    @id @default(cuid())
+  homeworkId    String
+  homework      Homework  @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+  studentId     String
+  student       Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  submissionUrl String?   // Solution file or link
+  content       String?   // Written text answer
+  submittedAt   DateTime  @default(now())
+  isLate        Boolean   @default(false)
+  marksObtained Float?
+  feedback      String?
+  status        String    @default("SUBMITTED") // SUBMITTED, GRADED, LATE, MISSED
+  gradedAt      DateTime?
+  gradedBy      String?
+
+  @@unique([homeworkId, studentId])
+  @@index([homeworkId])
+  @@index([studentId])
+  @@map("homework_submissions")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 15. Parent-Teacher Meetings (PTM)
+// ─────────────────────────────────────────────────────────────────────────────
+model ParentMeeting {
+  id           String        @id @default(cuid())
+  schoolId     String
+  school       School        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  teacherId    String
+  teacher      Teacher       @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  parentId     String
+  parent       Parent        @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  meetingDate  String        // YYYY-MM-DD
+  timeSlot     String        // e.g. "10:00 AM - 10:15 AM"
+  agenda       String
+  mode         String        @default("IN_PERSON") // IN_PERSON, ONLINE
+  status       RequestStatus @default(PENDING) // PENDING, APPROVED, REJECTED
+  teacherNotes String?
+  parentNotes  String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([schoolId])
+  @@index([teacherId])
+  @@index([parentId])
+  @@index([studentId])
+  @@map("parent_meetings")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 16. Student Gamification: Stars & Achievement Badges
+// ─────────────────────────────────────────────────────────────────────────────
+model StudentAchievement {
+  id          String   @id @default(cuid())
+  schoolId    String
+  school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  badgeType   String   // PERFECT_ATTENDANCE, ACADEMIC_STAR, PUNCTUALITY, HOMEWORK_CHAMP
+  title       String
+  description String
+  icon        String?
+  awardedAt   DateTime @default(now())
+
+  @@index([schoolId])
+  @@index([studentId])
+  @@index([badgeType])
+  @@map("student_achievements")
 }
 

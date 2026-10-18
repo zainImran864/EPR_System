@@ -3,7 +3,7 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Printer, ArrowLeft, TrendingUp, TrendingDown, DollarSign, Receipt, Users, CheckCircle2 } from "lucide-react";
-import { expensesRestApi } from "@/app/api/client";
+import { expensesRestApi, apiClient } from "@/app/api/client";
 import { useActiveSchool } from "@/app/hooks/useActiveSchool";
 import { Spinner } from "@/components/ui/Spinner";
 
@@ -57,9 +57,13 @@ function FinancialReportContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    expensesRestApi
-      .getTracking({ rangeType, month, year, startDate, endDate })
-      .then((res) => {
+    const fetchFn =
+      expensesRestApi && typeof expensesRestApi.getTracking === "function"
+        ? expensesRestApi.getTracking({ rangeType, month, year, startDate, endDate })
+        : apiClient.get<any>("/expenses/tracking", { rangeType, month, year, startDate, endDate });
+
+    fetchFn
+      .then((res: any) => {
         setData(res);
         setLoading(false);
       })
@@ -88,6 +92,7 @@ function FinancialReportContent() {
   const isProfit = summary.netProfitLoss >= 0;
   const categories = data?.categoryBreakdown || [];
   const expenses = data?.recentExpenses || [];
+  const currency = school?.currencySymbol || (typeof window !== "undefined" ? localStorage.getItem("erp_school_currency_symbol") : null) || "$";
 
   return (
     <div className="max-w-[900px] mx-auto my-6 p-8 bg-white border border-slate-200 shadow-sm rounded-xl print:m-0 print:p-6 print:border-none print:shadow-none print:max-w-none">
@@ -124,17 +129,17 @@ function FinancialReportContent() {
         <div className="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50">
           <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Fee Collections (Earned)</div>
           <div className="text-lg font-black text-emerald-700 font-mono mt-1">
-            +${Number(summary.totalFeesCollected).toLocaleString()}
+            +{currency} {Number(summary.totalFeesCollected).toLocaleString()}
           </div>
           <div className="text-[10px] text-slate-500 mt-0.5">
-            Billed: ${Number(summary.totalFeesBilled).toLocaleString()}
+            Billed: {currency} {Number(summary.totalFeesBilled).toLocaleString()}
           </div>
         </div>
 
         <div className="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50">
           <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Expenses (Spent)</div>
           <div className="text-lg font-black text-rose-700 font-mono mt-1">
-            -${Number(summary.totalExpenses).toLocaleString()}
+            -{currency} {Number(summary.totalExpenses).toLocaleString()}
           </div>
           <div className="text-[10px] text-slate-500 mt-0.5">
             {expenses.length} Vouchers Cleared
@@ -144,7 +149,7 @@ function FinancialReportContent() {
         <div className="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50">
           <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Net Operating Balance</div>
           <div className={`text-lg font-black font-mono mt-1 ${isProfit ? "text-emerald-700" : "text-rose-700"}`}>
-            {isProfit ? "+" : "-"}${Math.abs(summary.netProfitLoss).toLocaleString()}
+            {isProfit ? "+" : "-"}{currency} {Math.abs(summary.netProfitLoss).toLocaleString()}
           </div>
           <div className="text-[10px] font-bold mt-0.5 text-slate-600">
             {isProfit ? "Operational Surplus" : "Operational Deficit"}
@@ -157,7 +162,7 @@ function FinancialReportContent() {
             {summary.profitMarginPercent}%
           </div>
           <div className="text-[10px] text-slate-500 mt-0.5">
-            Pending: ${Number(summary.totalFeesPending).toLocaleString()}
+            Pending: {currency} {Number(summary.totalFeesPending).toLocaleString()}
           </div>
         </div>
       </div>
@@ -189,7 +194,7 @@ function FinancialReportContent() {
                   {cat.percentage}%
                 </td>
                 <td className="border border-slate-200 px-3 py-1.5 text-right font-mono font-bold text-slate-900">
-                  ${Number(cat.total).toLocaleString()}
+                  {currency} {Number(cat.total).toLocaleString()}
                 </td>
               </tr>
             ))}
@@ -198,7 +203,7 @@ function FinancialReportContent() {
                 Total Operational Disbursements
               </td>
               <td className="border border-slate-200 px-3 py-2 text-right font-mono text-rose-700 text-sm">
-                -${Number(summary.totalExpenses).toLocaleString()}
+                -{currency} {Number(summary.totalExpenses).toLocaleString()}
               </td>
             </tr>
           </tbody>
@@ -251,7 +256,7 @@ function FinancialReportContent() {
                     {e.paymentMethod}
                   </td>
                   <td className="border border-slate-200 px-2 py-1.5 text-right font-mono font-bold text-slate-900">
-                    ${Number(e.amount).toLocaleString()}
+                    {currency} {Number(e.amount).toLocaleString()}
                   </td>
                 </tr>
               ))
