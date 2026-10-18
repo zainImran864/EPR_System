@@ -32,7 +32,7 @@ export class DashboardController {
   }
 
   @UseGuards(RolesGuard)
-  @Roles(Role.STUDENT)
+  @Roles(Role.STUDENT, Role.PARENT)
   @Get('student')
   async getStudentDashboard(@CurrentUser() user: CurrentUserPayload) {
     return this.dashboardService.getStudentDashboard(user.schoolId!, user.userId);

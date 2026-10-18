@@ -65,6 +65,11 @@ model School {
   address      String?
   activeYear   String   @default("2026-2027")
 
+  // Campus Live Map & Geofence Settings (for Teacher Self-Attendance)
+  latitude             Float?   @default(31.5204)
+  longitude            Float?   @default(74.3587)
+  geofenceRadiusMeters Int?     @default(250)
+
   // SMTP Settings
   smtpHost     String?
   smtpPort     Int?
@@ -83,6 +88,8 @@ model School {
   students           Student[]
   subjects           Subject[]
   attendanceRecords  Attendance[]
+  teacherAttendances TeacherAttendance[]
+  teacherLeaves      TeacherLeave[]
   examTerms          ExamTerm[]
   marks              Mark[]
   feeChallans        FeeChallan[]
@@ -248,6 +255,8 @@ model Teacher {
   timetables           TimetableEntry[]
   classTeacherSections Section[]           @relation("ClassTeacherSections")
   questionPapers       ExamQuestionPaper[]
+  attendances          TeacherAttendance[]
+  leaves               TeacherLeave[]
 
   @@unique([schoolId, employeeId])
   @@index([schoolId])
@@ -291,6 +300,9 @@ model Student {
 
   @@unique([schoolId, admissionNumber])
   @@index([schoolId])
+  @@index([schoolId, status])
+  @@index([schoolId, classId, sectionId])
+  @@index([schoolId, createdAt])
   @@index([classId, sectionId])
   @@map("students")
 }
@@ -330,8 +342,56 @@ model Attendance {
 
   @@unique([studentId, date])
   @@index([schoolId, date])
+  @@index([schoolId, date, status])
   @@index([sectionId, date])
   @@map("attendance")
+}
+
+model TeacherAttendance {
+  id               String           @id @default(cuid())
+  schoolId         String
+  school           School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  teacherId        String
+  teacher          Teacher          @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  date             String           // Format: YYYY-MM-DD
+  status           AttendanceStatus @default(PRESENT)
+  photoUrl         String?          // Base64 or uploaded photo URL taken at school
+  latitude         Float?           // Teacher live GPS latitude at check-in
+  longitude        Float?           // Teacher live GPS longitude at check-in
+  distanceMeters   Float?           // Calculated Haversine distance from school campus in meters
+  locationVerified Boolean          @default(false)
+  addressLabel     String?          // e.g. "Oakridge Campus Main Gate"
+  checkInTime      DateTime         @default(now())
+  remarks          String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@unique([teacherId, date])
+  @@index([schoolId, date])
+  @@index([teacherId, date])
+  @@map("teacher_attendances")
+}
+
+model TeacherLeave {
+  id           String        @id @default(cuid())
+  schoolId     String
+  school       School        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  teacherId    String
+  teacher      Teacher       @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  leaveType    String        @default("CASUAL") // SICK, CASUAL, EMERGENCY, OFFICIAL, OTHER
+  startDate    String        // YYYY-MM-DD
+  endDate      String        // YYYY-MM-DD
+  reason       String
+  status       RequestStatus @default(PENDING)  // PENDING, APPROVED, REJECTED
+  adminRemarks String?
+  reviewedBy   String?
+  reviewedAt   DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([schoolId, status])
+  @@index([teacherId])
+  @@map("teacher_leaves")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -424,6 +484,8 @@ model Mark {
 
   @@unique([examTermId, studentId, subjectId])
   @@index([schoolId])
+  @@index([schoolId, examTermId, subjectId])
+  @@index([schoolId, grade])
   @@index([studentId])
   @@map("marks")
 }
@@ -454,6 +516,7 @@ model FeeChallan {
   updatedAt      DateTime  @updatedAt
 
   @@index([schoolId, status])
+  @@index([schoolId, status, month])
   @@index([studentId])
   @@map("fee_challans")
 }

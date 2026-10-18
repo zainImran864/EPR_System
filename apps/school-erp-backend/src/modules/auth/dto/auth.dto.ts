@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength, IsArray, IsNumber } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength, IsArray, IsNumber, IsBoolean } from 'class-validator';
 
 export class LoginDto {
   @IsEmail()
@@ -12,7 +12,15 @@ export class LoginDto {
 
   @IsOptional()
   @IsString()
+  schoolCode?: string;
+
+  @IsOptional()
+  @IsString()
   twoFactorCode?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  rememberDevice?: boolean;
 }
 
 export class RegisterSchoolDto {
@@ -39,20 +47,37 @@ export class RegisterSchoolDto {
   @IsArray()
   classesOffered: number[];
 
+  @IsOptional()
+  @IsNumber()
+  totalTeachers?: number;
+
+  @IsOptional()
+  @IsNumber()
+  totalStudents?: number;
+
   @IsString()
   @IsNotEmpty()
   adminName: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   @MinLength(6)
-  adminPassword: string;
+  adminPassword?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(6)
+  password?: string;
 }
 
 export class ChangePasswordDto {
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  currentPassword: string;
+  currentPassword?: string;
+
+  @IsOptional()
+  @IsString()
+  oldPassword?: string;
 
   @IsString()
   @IsNotEmpty()

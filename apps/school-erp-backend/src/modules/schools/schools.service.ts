@@ -17,7 +17,8 @@ export class SchoolsService {
     const cached = await this.redisService.get(cacheKey);
     if (cached) return cached;
 
-    const school = await this.prisma.school.findUnique({
+    const readDb = this.prisma.read || this.prisma;
+    const school = await readDb.school.findUnique({
       where: { code: code.toUpperCase() },
       include: {
         classes: {
@@ -31,12 +32,14 @@ export class SchoolsService {
       throw new NotFoundException(`School with code ${code} not found`);
     }
 
-    await this.redisService.set(cacheKey, school, 3600);
+    // Low cache TTL (10 seconds) so class/section updates reflect rapidly
+    await this.redisService.set(cacheKey, school, 10);
     return school;
   }
 
   async getSchoolById(schoolId: string) {
-    const school = await this.prisma.school.findUnique({
+    const readDb = this.prisma.read || this.prisma;
+    const school = await readDb.school.findUnique({
       where: { id: schoolId },
       include: {
         classes: {

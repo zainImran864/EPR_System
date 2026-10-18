@@ -19,11 +19,6 @@ export class UsersController {
     return this.usersService.listUsersBySchool(user.schoolId!);
   }
 
-  @Get(':id')
-  async getUser(@Param('id') id: string) {
-    return this.usersService.getUserById(id);
-  }
-
   @Patch('profile')
   async updateProfile(
     @CurrentUser() user: CurrentUserPayload,
@@ -32,13 +27,22 @@ export class UsersController {
     return this.usersService.updateUserProfile(user.userId, dto);
   }
 
+  @Get(':id')
+  async getUser(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    return this.usersService.getUserById(id, user);
+  }
+
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   @Patch(':id/status')
   async updateUserStatus(
+    @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
     @Body() dto: UpdateUserStatusDto,
   ) {
-    return this.usersService.updateUserStatus(id, dto);
+    return this.usersService.updateUserStatus(id, dto, user);
   }
 }

@@ -88,6 +88,16 @@ export class StudentsController {
 
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
+  @Delete(':id')
+  async deleteStudent(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    return this.studentsService.deleteStudent(user.schoolId!, id);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @Post(':id/promote')
   async promoteStudent(
     @CurrentUser() user: CurrentUserPayload,

@@ -283,6 +283,11 @@ export class AuthService {
   }
 
   async registerSchool(dto: RegisterSchoolDto) {
+    const rawPassword = dto.adminPassword || dto.password;
+    if (!rawPassword || rawPassword.length < 6) {
+      throw new BadRequestException('Admin password must be at least 6 characters.');
+    }
+
     const rawSlug = dto.schoolSlug || dto.schoolName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     const slug = (rawSlug || 'school').toLowerCase().trim();
 
@@ -302,7 +307,7 @@ export class AuthService {
       throw new ConflictException('A school with this code already exists.');
     }
 
-    const adminPasswordHash = await bcrypt.hash(dto.adminPassword, 10);
+    const adminPasswordHash = await bcrypt.hash(rawPassword, 10);
     const adminEmail = `admin@${slug}.com`;
 
     const request = await this.prisma.registrationRequest.create({
@@ -313,6 +318,8 @@ export class AuthService {
         phone: dto.phone,
         address: dto.address,
         classesOffered: JSON.stringify(dto.classesOffered),
+        totalTeachers: dto.totalTeachers,
+        totalStudents: dto.totalStudents,
         adminName: dto.adminName,
         adminEmail,
         adminPasswordHash,
@@ -329,12 +336,17 @@ export class AuthService {
   }
 
   async changePassword(userId: string, dto: ChangePasswordDto) {
+    const currentPassword = dto.currentPassword || dto.oldPassword;
+    if (!currentPassword) {
+      throw new BadRequestException('Current password is required');
+    }
+
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    const isMatch = await bcrypt.compare(dto.currentPassword, user.passwordHash);
+    const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
     if (!isMatch) {
       throw new BadRequestException('Current password is incorrect');
     }
@@ -378,6 +390,7 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    return user;
+    const { passwordHash, twoFactorSecret, ...safeUser } = user;
+    return safeUser;
   }
 }

@@ -28,6 +28,18 @@ export class UpdateSchoolDto {
   @IsOptional()
   @IsString()
   activeYear?: string;
+
+  @IsOptional()
+  @IsNumber()
+  latitude?: number;
+
+  @IsOptional()
+  @IsNumber()
+  longitude?: number;
+
+  @IsOptional()
+  @IsNumber()
+  geofenceRadiusMeters?: number;
 }
 
 export class UpdateSmtpDto {

@@ -5,12 +5,18 @@ import { WhatsAppService } from './whatsapp.service';
 import { AuditLog, AuditLogSchema } from '../../database/schemas/audit-log.schema';
 import { Notification, NotificationSchema } from '../../database/schemas/notification.schema';
 
+const isJestVm = Boolean(process.env.JEST_WORKER_ID);
+
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: AuditLog.name, schema: AuditLogSchema },
-      { name: Notification.name, schema: NotificationSchema },
-    ]),
+    ...(isJestVm
+      ? []
+      : [
+          MongooseModule.forFeature([
+            { name: AuditLog.name, schema: AuditLogSchema },
+            { name: Notification.name, schema: NotificationSchema },
+          ]),
+        ]),
   ],
   controllers: [WhatsAppController],
   providers: [WhatsAppService],

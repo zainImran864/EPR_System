@@ -41,7 +41,19 @@ export class TeachersService {
     const teacher = await this.prisma.teacher.findFirst({
       where: { id, schoolId },
       include: {
-        user: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            status: true,
+            phone: true,
+            avatarUrl: true,
+            themeColor: true,
+            createdAt: true,
+          },
+        },
         timetables: {
           include: { section: { include: { class: true } }, subject: true },
         },
@@ -58,6 +70,11 @@ export class TeachersService {
   async createTeacher(schoolId: string, dto: CreateTeacherDto) {
     const school = await this.prisma.school.findUnique({ where: { id: schoolId } });
     if (!school) throw new NotFoundException('School not found');
+
+    const resolvedFullName = (
+      dto.fullName ||
+      [dto.firstName, dto.lastName].filter(Boolean).join(' ')
+    ).trim();
 
     const normalizedEmail = dto.email.toLowerCase().trim();
     const existingUser = await this.prisma.user.findUnique({ where: { email: normalizedEmail } });
@@ -77,7 +94,7 @@ export class TeachersService {
       const user = await tx.user.create({
         data: {
           schoolId,
-          name: dto.fullName,
+          name: resolvedFullName,
           email: normalizedEmail,
           passwordHash,
           role: Role.TEACHER,
@@ -92,14 +109,16 @@ export class TeachersService {
           schoolId,
           userId: user.id,
           employeeId,
-          fullName: dto.fullName,
+          fullName: resolvedFullName,
           email: normalizedEmail,
           phone: dto.phone,
           qualification: dto.qualification,
           designation: dto.designation || 'Teacher',
-          specialization: dto.specialization,
+          specialization: dto.specialization || dto.department,
         },
-        include: { user: true },
+        include: {
+          user: { select: { id: true, status: true, avatarUrl: true, phone: true } },
+        },
       });
 
       await this.redisService.del(`dashboard:stats:${schoolId}`);
@@ -113,17 +132,41 @@ export class TeachersService {
     const teacher = await this.prisma.teacher.findFirst({ where: { id, schoolId } });
     if (!teacher) throw new NotFoundException('Teacher not found');
 
-    return this.prisma.teacher.update({
+    const resolvedFullName =
+      dto.fullName ||
+      (dto.firstName || dto.lastName
+        ? [dto.firstName, dto.lastName].filter(Boolean).join(' ').trim()
+        : undefined);
+
+    if (dto.status || resolvedFullName || dto.phone !== undefined) {
+      const userUpdate: any = {};
+      if (resolvedFullName) userUpdate.name = resolvedFullName;
+      if (dto.phone !== undefined) userUpdate.phone = dto.phone;
+      if (dto.status) {
+        userUpdate.status = dto.status.toUpperCase() === 'INACTIVE' ? UserStatus.INACTIVE : UserStatus.ACTIVE;
+      }
+      await this.prisma.user.update({
+        where: { id: teacher.userId },
+        data: userUpdate,
+      });
+    }
+
+    const updated = await this.prisma.teacher.update({
       where: { id },
       data: {
-        fullName: dto.fullName,
-        phone: dto.phone,
-        qualification: dto.qualification,
-        designation: dto.designation,
-        specialization: dto.specialization,
+        fullName: resolvedFullName ?? teacher.fullName,
+        phone: dto.phone !== undefined ? dto.phone : teacher.phone,
+        qualification: dto.qualification !== undefined ? dto.qualification : teacher.qualification,
+        designation: dto.designation !== undefined ? dto.designation : teacher.designation,
+        specialization: (dto.specialization ?? dto.department) !== undefined ? (dto.specialization ?? dto.department) : teacher.specialization,
       },
-      include: { user: true },
+      include: {
+        user: { select: { id: true, status: true, avatarUrl: true, phone: true } },
+      },
     });
+
+    await this.redisService.del(`dashboard:stats:${schoolId}`);
+    return updated;
   }
 
   async deleteTeacher(schoolId: string, id: string) {

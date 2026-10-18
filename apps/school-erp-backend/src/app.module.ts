@@ -17,6 +17,8 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { SeedModule } from './modules/seed/seed.module';
 import { WhatsAppModule } from './modules/whatsapp/whatsapp.module';
 import { HttpLoggerMiddleware } from './common/middleware/http-logger.middleware';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -41,6 +43,8 @@ import { HttpLoggerMiddleware } from './common/middleware/http-logger.middleware
     DashboardModule,
     SeedModule,
   ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
