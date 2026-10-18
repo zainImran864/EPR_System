@@ -32,6 +32,10 @@ export class CreateChallanDto {
   fineAmount?: number;
 
   @IsOptional()
+  @IsNumber()
+  lateFeeAmount?: number;
+
+  @IsOptional()
   @IsString()
   customNotes?: string;
 }
@@ -85,6 +89,14 @@ export class GenerateBulkChallansDto {
   amount: number;
 
   @IsOptional()
+  @IsNumber()
+  fineAmount?: number;
+
+  @IsOptional()
+  @IsNumber()
+  lateFeeAmount?: number;
+
+  @IsOptional()
   @IsBoolean()
   applyStudentDiscounts?: boolean;
 }
@@ -101,4 +113,9 @@ export class SetStudentDiscountDto {
   @IsOptional()
   @IsString()
   discountReason?: string;
+}
+
+export class SetLateFeePolicyDto {
+  @IsNumber()
+  lateFeeAmount: number;
 }

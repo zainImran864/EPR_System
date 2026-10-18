@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Wallet, FileText } from "lucide-react";
+import { Wallet, FileText, AlertTriangle, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -20,6 +20,8 @@ export const MyFeesView: React.FC<MyFeesViewProps> = ({ title, subtitle }) => {
   const ctx = user?.studentContext;
   const { bills, isLoading } = useStudentBills(ctx?.studentId);
 
+  const overdueBills = bills.filter((b) => b.isPastDue && b.status !== "paid");
+
   return (
     <div className="space-y-5">
       <div>
@@ -29,6 +31,32 @@ export const MyFeesView: React.FC<MyFeesViewProps> = ({ title, subtitle }) => {
         </h2>
         <p className="text-xs sm:text-sm text-slate-500 mt-0.5">{subtitle}</p>
       </div>
+
+      {/* Parent / Student Overdue Due-Date Notification Banner */}
+      {overdueBills.length > 0 && (
+        <div className="rounded-xl border border-rose-300 bg-rose-50/90 p-4 shadow-xs">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-xs sm:text-sm font-bold text-rose-900">
+                Fee Due Date Passed — Late Fee Increment Added ({overdueBills.length}{" "}
+                {overdueBills.length === 1 ? "Bill" : "Bills"})
+              </h3>
+              <p className="text-xs text-rose-800">
+                The due date for{" "}
+                <b>
+                  {overdueBills.map((b) => `${b.title} (Due: ${b.dueDate})`).join(", ")}
+                </b>{" "}
+                has passed. A late fee increment of{" "}
+                <b>+{overdueBills[0]?.lateFeeAmount ?? 500}</b> has been added to your fee card.
+                Please clear the updated balance at the earliest.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {!ctx ? (
         <EmptyState
@@ -47,13 +75,21 @@ export const MyFeesView: React.FC<MyFeesViewProps> = ({ title, subtitle }) => {
       ) : (
         <div className="space-y-3">
           {bills.map((b) => {
-            const balance = b.totalAmount - b.paidAmount;
+            const baseAmt = Number(b.baseAmount ?? b.amount ?? b.totalAmount ?? 0);
+            const lateFeeAmt = Number(b.lateFeeAmount ?? b.fineAmount ?? 500);
+            const isPastDue = Boolean(b.isPastDue) && b.status !== "paid";
+            const payableTotal = isPastDue ? baseAmt + lateFeeAmt : Number(b.totalAmount ?? baseAmt);
+            const balance = Math.max(0, payableTotal - (b.paidAmount || 0));
+
             return (
-              <Card key={b._id}>
+              <Card
+                key={b._id}
+                className={isPastDue ? "border-rose-300 ring-1 ring-rose-200/60" : ""}
+              >
                 <CardContent className="p-5">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <h3 className="font-bold text-slate-900">{b.title}</h3>
                         <Badge
                           variant={
@@ -68,25 +104,48 @@ export const MyFeesView: React.FC<MyFeesViewProps> = ({ title, subtitle }) => {
                         >
                           {b.status}
                         </Badge>
+                        {isPastDue && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[11px] font-bold">
+                            <Clock className="w-3 h-3" />
+                            Due Date Passed · Late Fee +{lateFeeAmt} Applied
+                          </span>
+                        )}
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        Issued {b.issueDate} · Due {b.dueDate}
+                      <p className="text-xs text-slate-500 mt-1">
+                        Issued {b.issueDate} · Due Date: <b className={isPastDue ? "text-rose-600" : "text-slate-700"}>{b.dueDate}</b>
                       </p>
                     </div>
                     <Link
                       href={`/print/fee-challan?bill=${b._id}`}
                       target="_blank"
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                      className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors shrink-0"
                     >
                       <FileText className="w-4 h-4 text-[#0D9488]" />
                       Challan
                     </Link>
                   </div>
 
-                  <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-                    <Stat label="Total" value={b.totalAmount} />
-                    <Stat label="Paid" value={b.paidAmount} />
-                    <Stat label="Balance" value={balance} highlight={balance > 0} />
+                  {/* Fee Card Stats including Late Fee Increment */}
+                  <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                    <Stat label="Base Fee" value={baseAmt} />
+                    <Stat
+                      label={isPastDue ? "Late Fee Increment (Applied)" : "Increment After Due Date"}
+                      value={lateFeeAmt}
+                      prefix="+"
+                      highlight={isPastDue}
+                    />
+                    <Stat label="Paid" value={b.paidAmount || 0} />
+                    <Stat label="Total Balance Due" value={balance} highlight={balance > 0} />
+                  </div>
+
+                  <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500">
+                    <span>
+                      Within Due Date ({b.dueDate}): <b className="text-slate-800 font-mono-data">{baseAmt}</b>
+                    </span>
+                    <span className={isPastDue ? "text-rose-600 font-bold" : "text-amber-700 font-semibold"}>
+                      Payable After Due Date (+{lateFeeAmt} Increment):{" "}
+                      <b className="font-mono-data">{baseAmt + lateFeeAmt}</b>
+                    </span>
                   </div>
                 </CardContent>
               </Card>
@@ -98,14 +157,16 @@ export const MyFeesView: React.FC<MyFeesViewProps> = ({ title, subtitle }) => {
   );
 };
 
-const Stat: React.FC<{ label: string; value: number; highlight?: boolean }> = ({
+const Stat: React.FC<{ label: string; value: number; prefix?: string; highlight?: boolean }> = ({
   label,
   value,
+  prefix = "",
   highlight,
 }) => (
-  <div className="rounded-xl bg-slate-50 border border-slate-100 py-3">
+  <div className="rounded-xl bg-slate-50 border border-slate-100 py-3 px-2">
     <div className="text-[10px] uppercase tracking-wide text-slate-400">{label}</div>
-    <div className={`text-lg font-bold ${highlight ? "text-rose-600" : "text-slate-900"}`}>
+    <div className={`text-lg font-bold font-mono-data ${highlight ? "text-rose-600" : "text-slate-900"}`}>
+      {prefix}
       {value}
     </div>
   </div>

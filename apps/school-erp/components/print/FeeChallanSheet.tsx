@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import { AcademiXMark } from "@/components/brand/AcademiXLogo";
+import React, { useEffect } from "react";
 
 export interface ChallanData {
   school: { name: string; logoUrl?: string | null; address?: string; phone?: string; email?: string } | null;
@@ -16,6 +15,11 @@ export interface ChallanData {
   bill: {
     title: string;
     heads: { name: string; amount: number }[];
+    baseAmount?: number;
+    lateFeeAmount?: number;
+    lateFeeApplied?: number;
+    isPastDue?: boolean;
+    payableAfterDueDate?: number;
     totalAmount: number;
     paidAmount: number;
     issueDate: string;
@@ -27,17 +31,27 @@ export interface ChallanData {
   };
 }
 
-/** One A4 fee challan (school logo top, AcademiX text bottom). Page-breaks after. */
+/** One A4 fee challan with school branding and late-fee due date breakdown. Page-breaks after. */
 export const FeeChallanSheet: React.FC<{ data: ChallanData; lastPage?: boolean }> = ({
   data,
   lastPage,
 }) => {
   const { school, student, bill } = data;
-  const balance = bill.totalAmount - bill.paidAmount;
+  const baseAmt = Number(bill.baseAmount ?? bill.totalAmount ?? 0);
+  const lateFeeIncrement = Number(bill.lateFeeAmount ?? bill.fineAmount ?? 500);
+  const isPastDue = Boolean(bill.isPastDue);
+  const payableWithinDueDate = baseAmt;
+  const payableAfterDueDate = Number(bill.payableAfterDueDate ?? baseAmt + lateFeeIncrement);
+  const effectiveTotal = isPastDue ? payableAfterDueDate : Number(bill.totalAmount ?? baseAmt);
+  const balance = Math.max(0, effectiveTotal - (bill.paidAmount || 0));
+
+  useEffect(() => {
+    document.title = `${school?.name ?? "School"} — Fee Challan`;
+  }, [school?.name]);
 
   return (
     <div
-      className="print-sheet mx-auto my-6 print:my-0 bg-white shadow-lg print:shadow-none max-w-3xl w-full min-h-[280mm] p-6 sm:p-10 print:p-0 flex flex-col border border-slate-200 print:border-0"
+      className="print-sheet mx-auto my-6 print:my-0 bg-white shadow-lg print:shadow-none max-w-3xl w-full min-h-[260mm] print:min-h-0 p-6 sm:p-10 flex flex-col border border-slate-200 print:border-0 avoid-break"
       style={{ pageBreakAfter: lastPage ? "auto" : "always" }}
     >
       {/* Header */}
@@ -83,40 +97,60 @@ export const FeeChallanSheet: React.FC<{ data: ChallanData; lastPage?: boolean }
             {bill.heads.map((h, i) => (
               <tr key={i}>
                 <td className="p-2.5 border border-slate-200">{h.name}</td>
-                <td className="p-2.5 border border-slate-200 text-right">{h.amount}</td>
+                <td className="p-2.5 border border-slate-200 text-right font-mono-data">{h.amount}</td>
               </tr>
             ))}
           </tbody>
           <tfoot>
+            <tr className="bg-slate-50 text-xs text-slate-700">
+              <td className="p-2.5 border border-slate-200 font-semibold">Payable Within Due Date ({bill.dueDate})</td>
+              <td className="p-2.5 border border-slate-200 text-right font-mono-data font-semibold">
+                {payableWithinDueDate}
+              </td>
+            </tr>
+            <tr className="bg-amber-50/70 text-xs text-amber-900">
+              <td className="p-2.5 border border-slate-200 font-semibold">
+                Late Fee Increment (Added After Due Date)
+                {isPastDue && (
+                  <span className="ml-2 px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 text-[10px] font-bold uppercase">
+                    Due Date Passed — Applied
+                  </span>
+                )}
+              </td>
+              <td className="p-2.5 border border-slate-200 text-right font-mono-data font-bold text-rose-600">
+                +{lateFeeIncrement}
+              </td>
+            </tr>
             <tr className="bg-[#F0FDFA] font-bold">
-              <td className="p-2.5 border border-slate-200">Total Payable</td>
-              <td className="p-2.5 border border-slate-200 text-right text-[#0D9488]">
-                {bill.totalAmount}
+              <td className="p-2.5 border border-slate-200">
+                {isPastDue ? "Total Payable (Including Late Fee Increment)" : "Payable After Due Date"}
+              </td>
+              <td className="p-2.5 border border-slate-200 text-right text-[#0D9488] font-mono-data">
+                {payableAfterDueDate}
               </td>
             </tr>
           </tfoot>
         </table>
 
         {/* Payment summary */}
-        <div className="mt-6 flex items-center justify-between rounded-xl bg-slate-50 border border-slate-200 p-4">
+        <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 rounded-xl bg-slate-50 border border-slate-200 p-4">
+          <Summary label="Within Due Date" value={String(payableWithinDueDate)} />
+          <Summary label="Late Fee Increment" value={`+${lateFeeIncrement}`} highlight={isPastDue} />
           <Summary label="Paid" value={String(bill.paidAmount)} />
-          <Summary label="Balance" value={String(balance)} highlight={balance > 0} />
-          <Summary label="Status" value={bill.status.toUpperCase()} />
+          <Summary label="Balance Due" value={String(balance)} highlight={balance > 0} />
         </div>
 
-        <div className="mt-16 flex items-end justify-between text-xs text-slate-500">
+        <div className="mt-12 flex items-end justify-between text-xs text-slate-500">
           <SignLine label="Accountant" />
           <SignLine label="Received By" />
         </div>
       </main>
 
       <footer className="border-t border-slate-200 pt-3 flex items-center justify-between text-[10px] text-slate-400">
-        <span>Please pay before the due date to avoid late charges.</span>
-        <span className="flex items-center gap-1.5">
-          Powered by
-          <AcademiXMark className="w-4 h-4" />
-          <span className="font-semibold text-slate-500">AcademiX</span>
+        <span>
+          Note: A late fee increment of +{lateFeeIncrement} is automatically added after the due date ({bill.dueDate}).
         </span>
+        <span className="font-semibold text-slate-500">{school?.name ?? "Official School Copy"}</span>
       </footer>
     </div>
   );

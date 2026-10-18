@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { FeesService } from './fees.service';
-import { CreateChallanDto, PayChallanDto, GenerateBulkChallansDto, SetStudentDiscountDto } from './dto/fees.dto';
+import { CreateChallanDto, PayChallanDto, GenerateBulkChallansDto, SetStudentDiscountDto, SetLateFeePolicyDto } from './dto/fees.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -12,15 +12,53 @@ import { Role, FeeStatus } from '@prisma/client';
 export class FeesController {
   constructor(private readonly feesService: FeesService) {}
 
+  @Get('late-fee-policy')
+  async getLateFeePolicy(@CurrentUser() user: CurrentUserPayload) {
+    return this.feesService.getLateFeePolicy(user.schoolId!);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
+  @Patch('late-fee-policy')
+  async setLateFeePolicy(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: SetLateFeePolicyDto,
+  ) {
+    return this.feesService.setLateFeePolicy(user.schoolId!, dto);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
+  @Post('check-overdue')
+  async checkOverdue(@CurrentUser() user: CurrentUserPayload) {
+    return this.feesService.evaluateOverdueChallans(user.schoolId!);
+  }
+
   @Get('challans')
   async listChallans(
     @CurrentUser() user: CurrentUserPayload,
     @Query('status') status?: FeeStatus,
     @Query('studentId') studentId?: string,
     @Query('classId') classId?: string,
+    @Query('sectionId') sectionId?: string,
     @Query('month') month?: string,
   ) {
-    return this.feesService.listChallans(user.schoolId!, { status, studentId, classId, month });
+    return this.feesService.listChallans(user.schoolId!, { status, studentId, classId, sectionId, month });
+  }
+
+  @Get('structures')
+  async listStructures(@CurrentUser() user: CurrentUserPayload) {
+    return this.feesService.listStructures(user.schoolId!);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @Post('structures')
+  async saveStructure(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: any,
+  ) {
+    return this.feesService.saveStructure(user.schoolId!, body);
   }
 
   @Get('challans/:id')

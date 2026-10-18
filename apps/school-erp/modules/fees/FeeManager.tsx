@@ -12,6 +12,9 @@ import {
   MessageCircle,
   User,
   Percent,
+  AlertTriangle,
+  Clock,
+  CheckCircle2,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -32,22 +35,30 @@ type BillRow = {
   className: string;
   sectionName: string;
   title: string;
+  baseAmount?: number;
+  lateFeeAmount?: number;
+  lateFeeApplied?: number;
+  isPastDue?: boolean;
+  payableAfterDueDate?: number;
   amount?: number;
   totalAmount: number;
   paidAmount: number;
   dueDate: string;
-  status: "unpaid" | "partial" | "paid";
+  status: "unpaid" | "partial" | "paid" | "overdue";
 };
 
 export const FeeManager: React.FC = () => {
   const { classOptions, sectionOptions } = useClasses();
   const {
     bills,
+    lateFeeAmount,
+    overdueStudents,
     isLoading,
     classId,
     setClassId,
     sectionId,
     setSectionId,
+    updateLateFeePolicy,
     generateBills,
     recordPayment,
   } = useFees();
@@ -55,6 +66,26 @@ export const FeeManager: React.FC = () => {
   const { prompt, ConfirmDialog } = useConfirmDialog();
 
   const sections = classId ? sectionOptions(classId) : [];
+
+  // Late Fee Policy State
+  const [policyLateFeeInput, setPolicyLateFeeInput] = useState<number>(500);
+  const [savingPolicy, setSavingPolicy] = useState(false);
+
+  useEffect(() => {
+    setPolicyLateFeeInput(lateFeeAmount);
+  }, [lateFeeAmount]);
+
+  const handleSaveLateFeePolicy = async () => {
+    setSavingPolicy(true);
+    try {
+      await updateLateFeePolicy(Math.max(0, Number(policyLateFeeInput) || 0));
+      success(`Late fee increment after due date updated to +${policyLateFeeInput}.`);
+    } catch {
+      error("Could not update late fee policy.");
+    } finally {
+      setSavingPolicy(false);
+    }
+  };
 
   // Single student vs Whole class/section toggle
   const [isSpecificStudent, setIsSpecificStudent] = useState(false);
@@ -68,10 +99,15 @@ export const FeeManager: React.FC = () => {
   const [title, setTitle] = useState("");
   const [issueDate, setIssueDate] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [customLateFee, setCustomLateFee] = useState<number>(500);
   const [heads, setHeads] = useState<{ name: string; amount: number }[]>([
     { name: "Tuition Fee", amount: 0 },
   ]);
   const [generating, setGenerating] = useState(false);
+
+  useEffect(() => {
+    setCustomLateFee(lateFeeAmount);
+  }, [lateFeeAmount]);
 
   // Fetch students when class/section changes
   useEffect(() => {
@@ -139,11 +175,12 @@ export const FeeManager: React.FC = () => {
         title: title.trim(),
         heads: heads.filter((h) => h.name && h.amount > 0),
         amount: isSpecificStudent && hasDiscount ? netPayable : undefined,
+        lateFeeAmount: Math.max(0, Number(customLateFee) || 0),
         issueDate,
         dueDate,
       });
       const n = (res as { created?: number; count?: number } | undefined)?.count ?? (res as { created?: number } | undefined)?.created ?? 1;
-      success(`Generated ${n} fee ${n === 1 ? "bill" : "bills"} successfully.`);
+      success(`Generated ${n} fee ${n === 1 ? "bill" : "bills"} with +${customLateFee} late fee policy.`);
       setTitle("");
       if (isSpecificStudent) {
         setSelectedStudentId("");
@@ -197,19 +234,45 @@ export const FeeManager: React.FC = () => {
     { key: "title", header: "Bill", render: (b) => <span className="text-xs">{b.title}</span> },
     {
       key: "amount",
-      header: "Amount",
+      header: "Fee & After-Due Increment",
       render: (b) => {
+        const baseAmt = Number(b.baseAmount ?? b.amount ?? 0);
+        const lateFee = Number(b.lateFeeAmount ?? lateFeeAmount ?? 500);
         const totalAmt = Number(b.totalAmount ?? b.amount ?? 0);
         const paidAmt = Number(b.paidAmount ?? 0);
+        const isPastDue = Boolean(b.isPastDue) && b.status !== "paid";
         return (
-          <div className="text-xs font-mono-data">
-            <span className="font-semibold text-slate-800">{paidAmt.toLocaleString()}</span>
-            <span className="text-slate-400"> / {totalAmt.toLocaleString()}</span>
+          <div className="text-xs font-mono-data space-y-0.5">
+            <div>
+              <span className="font-semibold text-slate-800">{paidAmt.toLocaleString()}</span>
+              <span className="text-slate-400"> / {totalAmt.toLocaleString()}</span>
+            </div>
+            <div className={isPastDue ? "text-[10px] font-bold text-rose-600" : "text-[10px] text-amber-700"}>
+              {isPastDue
+                ? `Base ${baseAmt.toLocaleString()} + Late Fee +${lateFee.toLocaleString()} Applied`
+                : `After Due Date: +${lateFee.toLocaleString()} (${(baseAmt + lateFee).toLocaleString()})`}
+            </div>
           </div>
         );
       },
     },
-    { key: "due", header: "Due", render: (b) => <span className="text-xs text-slate-500">{b.dueDate}</span> },
+    {
+      key: "due",
+      header: "Due Date",
+      render: (b) => {
+        const isPastDue = Boolean(b.isPastDue) && b.status !== "paid";
+        return (
+          <div className="flex flex-col">
+            <span className={`text-xs font-medium ${isPastDue ? "text-rose-600 font-bold" : "text-slate-600"}`}>
+              {b.dueDate}
+            </span>
+            {isPastDue && (
+              <span className="text-[10px] text-rose-600 font-semibold">Due Date Passed</span>
+            )}
+          </div>
+        );
+      },
+    },
     {
       key: "status",
       header: "Status",
@@ -230,6 +293,7 @@ export const FeeManager: React.FC = () => {
       render: (b) => {
         const totalAmt = Number(b.totalAmount ?? b.amount ?? 0);
         const paidAmt = Number(b.paidAmount ?? 0);
+        const lateFee = Number(b.lateFeeAmount ?? lateFeeAmount ?? 500);
         const remaining = Math.max(0, totalAmt - paidAmt);
         const dueDateFormatted = b.dueDate
           ? new Date(b.dueDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
@@ -237,7 +301,7 @@ export const FeeManager: React.FC = () => {
 
         const handleWhatsApp = () => {
           const msg = encodeURIComponent(
-            `*Fee Reminder Notification*\nDear Parent, this is a reminder regarding the fee challan for *${b.studentName}* (${b.className} - ${b.sectionName}).\n\nTitle: ${b.title}\nOutstanding Balance: *Rs. ${remaining.toLocaleString()}*\nDue Date: *${dueDateFormatted}*\n\nPlease clear the dues at your earliest convenience to avoid late surcharges. Thank you!`
+            `*Fee Reminder Notification*\nDear Parent, this is a reminder regarding the fee challan for *${b.studentName}* (${b.className} - ${b.sectionName}).\n\nTitle: ${b.title}\nDue Date: *${dueDateFormatted}*\nLate Fee Increment After Due Date: *+${lateFee.toLocaleString()}*\nOutstanding Balance: *Rs. ${remaining.toLocaleString()}*\n\nPlease clear the dues at your earliest convenience. Thank you!`
           );
           window.open(`https://wa.me/?text=${msg}`, "_blank");
         };
@@ -280,6 +344,11 @@ export const FeeManager: React.FC = () => {
     },
   ];
 
+  const activeOverdueList =
+    overdueStudents.length > 0
+      ? overdueStudents
+      : bills.filter((b) => b.isPastDue && b.status !== "paid");
+
   return (
     <div className="space-y-6">
       <div>
@@ -288,9 +357,88 @@ export const FeeManager: React.FC = () => {
           Fees & Challans
         </h2>
         <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-          Generate fee bills for a whole class/section and print challans in bulk.
+          Generate fee bills, configure automatic late-fee increment after due date, and track overdue student alerts.
         </p>
       </div>
+
+      {/* Admin Overdue Due-Date Alert Message */}
+      {activeOverdueList.length > 0 && (
+        <div className="rounded-xl border border-rose-300 bg-rose-50/90 p-4 shadow-xs space-y-2.5">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xs sm:text-sm font-bold text-rose-900">
+                Overdue Fee Due-Date Alert: {activeOverdueList.length} Student
+                {activeOverdueList.length === 1 ? " Has" : "s Have"} Passed the Fee Due Date
+              </h3>
+              <p className="text-xs text-rose-800 mt-0.5">
+                The late fee increment of <b>+{lateFeeAmount}</b> has been automatically applied to their fee cards and notifications have been sent to their Parents.
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 pt-1">
+            {activeOverdueList.slice(0, 6).map((st: any, idx: number) => (
+              <div
+                key={st.challanId || st._id || idx}
+                className="bg-white/90 rounded-lg border border-rose-200 px-3 py-2 text-xs flex items-center justify-between gap-2"
+              >
+                <div className="min-w-0">
+                  <p className="font-bold text-slate-900 truncate">{st.studentName}</p>
+                  <p className="text-[11px] text-slate-500 truncate">
+                    {st.title} · Due {st.dueDate ? new Date(st.dueDate).toISOString().split("T")[0] : ""}
+                  </p>
+                </div>
+                <span className="text-[11px] font-mono-data font-bold text-rose-600 shrink-0">
+                  +{st.lateFeeIncrement ?? st.lateFeeAmount ?? lateFeeAmount} Fine
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Late Fee / After Due-Date Increment Configuration Card */}
+      <Card>
+        <CardContent className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-teal-50/60 via-white to-amber-50/40">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-[#0D9488]" />
+              <h3 className="text-sm font-bold text-slate-900">
+                Late Fee Increment Policy (After Due Date)
+              </h3>
+              <Badge variant="warning" size="sm">
+                +{lateFeeAmount} After Due Date
+              </Badge>
+            </div>
+            <p className="text-xs text-slate-600 max-w-2xl">
+              Set the amount automatically added to unpaid fee challans once the due date passes. Both the School Admin and Parent receive automatic overdue notifications, and this increment is printed on every Fee Card and Challan.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="w-36">
+              <Input
+                type="number"
+                min={0}
+                value={policyLateFeeInput}
+                onChange={(e) => setPolicyLateFeeInput(Math.max(0, Number(e.target.value) || 0))}
+                placeholder="e.g. 500"
+                aria-label="Late Fee Increment Amount"
+              />
+            </div>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleSaveLateFeePolicy}
+              isLoading={savingPolicy}
+              leftIcon={<CheckCircle2 className="w-4 h-4" />}
+            >
+              Save Increment
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Generate */}
       <Card>
@@ -427,7 +575,7 @@ export const FeeManager: React.FC = () => {
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Input
               label="Bill Title *"
               placeholder="e.g. Term 1 Fees 2026"
@@ -445,6 +593,14 @@ export const FeeManager: React.FC = () => {
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
+            />
+            <Input
+              label="Increment After Due Date"
+              type="number"
+              min={0}
+              placeholder="e.g. 500"
+              value={customLateFee}
+              onChange={(e) => setCustomLateFee(Math.max(0, Number(e.target.value) || 0))}
             />
           </div>
 
@@ -486,9 +642,17 @@ export const FeeManager: React.FC = () => {
                 </div>
               ))}
             </div>
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
-              <span className="text-sm font-semibold text-slate-700">Total per student</span>
-              <span className="text-lg font-bold text-[#0D9488]">{total}</span>
+            <div className="flex flex-wrap items-center justify-between gap-2 mt-3 pt-3 border-t border-slate-100">
+              <div>
+                <span className="text-sm font-semibold text-slate-700 block">
+                  Total per student (Within Due Date)
+                </span>
+                <span className="text-xs text-amber-700 font-medium">
+                  After Due Date (+{customLateFee} Increment):{" "}
+                  <b className="font-mono-data">{(isSpecificStudent && hasDiscount ? netPayable : total) + (customLateFee || 0)}</b>
+                </span>
+              </div>
+              <span className="text-lg font-bold font-mono-data text-[#0D9488]">{total}</span>
             </div>
           </div>
 

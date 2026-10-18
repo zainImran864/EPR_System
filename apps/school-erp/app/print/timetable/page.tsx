@@ -276,17 +276,25 @@ function TimetablePrintContent() {
   const getCellSlots = (day: number, period: number) =>
     slots.filter((s) => s.dayOfWeek === day && s.period === period);
 
+  useEffect(() => {
+    if (school?.name) {
+      document.title = `${school.name} — ${metaInfo.title}`;
+    } else {
+      document.title = metaInfo.title || "Official Academic Timetable";
+    }
+  }, [school, metaInfo.title]);
+
   return (
-    <div className="min-h-screen bg-slate-100 print:bg-white text-slate-900">
+    <div className="min-h-screen print:min-h-0 bg-slate-100 print:bg-white text-slate-900">
       <Toolbar title={metaInfo.title} />
 
-      <div className="max-w-6xl mx-auto p-4 sm:p-8 print:p-0 my-6 print:my-0">
-        <div className="bg-white border-2 border-slate-800 rounded-2xl print:rounded-none p-6 sm:p-8 print:p-4 shadow-sm print:shadow-none">
+      <div className="max-w-6xl mx-auto p-4 sm:p-8 print:p-[6mm] my-6 print:my-0">
+        <div className="timetable-print-card bg-white border-2 border-slate-800 rounded-2xl print:rounded-lg p-6 sm:p-8 print:p-3 shadow-sm print:shadow-none">
           {/* Header & School Branding */}
-          <div className="flex items-center justify-between pb-4 border-b-2 border-slate-800 gap-4">
-            <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between pb-4 print:pb-2 border-b-2 border-slate-800 gap-4">
+            <div className="flex items-center gap-4 print:gap-2.5">
               {school?.logoUrl ? (
-                <div className="relative w-16 h-16 rounded-xl border border-slate-200 overflow-hidden shrink-0">
+                <div className="relative w-16 h-16 print:w-11 print:h-11 rounded-xl border border-slate-200 overflow-hidden shrink-0">
                   <Image
                     src={school.logoUrl}
                     alt={school.name || "School"}
@@ -295,18 +303,18 @@ function TimetablePrintContent() {
                   />
                 </div>
               ) : (
-                <div className="w-16 h-16 rounded-xl bg-teal-800 text-white flex items-center justify-center font-black text-2xl shrink-0">
+                <div className="w-16 h-16 print:w-11 print:h-11 rounded-xl bg-teal-800 text-white flex items-center justify-center font-black text-2xl print:text-lg shrink-0">
                   {(school?.name || "ERP").substring(0, 2).toUpperCase()}
                 </div>
               )}
               <div>
-                <h1 className="text-xl sm:text-2xl font-black text-slate-950 uppercase tracking-tight">
+                <h1 className="text-xl sm:text-2xl print:text-lg font-black text-slate-950 uppercase tracking-tight leading-tight">
                   {school?.name || "Official School System"}
                 </h1>
-                <p className="text-xs font-medium text-slate-600">
+                <p className="text-xs print:text-[10px] font-medium text-slate-600">
                   {school?.address || "Main Academic Campus"} · Phone: {school?.phone || "Office"}
                 </p>
-                <div className="inline-block mt-1 px-2.5 py-0.5 rounded bg-teal-50 border border-teal-200 text-teal-800 text-[11px] font-bold uppercase tracking-wider">
+                <div className="inline-block mt-1 print:mt-0.5 px-2.5 py-0.5 rounded bg-teal-50 border border-teal-200 text-teal-800 text-[11px] print:text-[10px] font-bold uppercase tracking-wider">
                   {metaInfo.title}
                 </div>
               </div>
@@ -316,20 +324,20 @@ function TimetablePrintContent() {
               <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
                 Academic Year
               </span>
-              <span className="text-sm font-black text-slate-900">
+              <span className="text-sm print:text-xs font-black text-slate-900">
                 {school?.activeYear || "2026-2027"}
               </span>
-              <span className="text-[11px] text-slate-500 block mt-0.5">
+              <span className="text-[11px] print:text-[10px] text-slate-500 block mt-0.5">
                 Printed: {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
               </span>
             </div>
           </div>
 
           {/* Metadata Card */}
-          <div className="my-4 p-3 bg-slate-50 border border-slate-200 rounded-xl grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+          <div className="my-4 print:my-1.5 p-3 print:p-1.5 bg-slate-50 border border-slate-200 rounded-xl print:rounded-md grid grid-cols-2 sm:grid-cols-5 gap-3 print:gap-2 text-xs print:text-[10px]">
             {metaInfo.details.map((d, i) => (
-              <div key={i} className="space-y-0.5">
-                <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">
+              <div key={i} className="space-y-0.5 print:space-y-0">
+                <span className="text-[10px] print:text-[9px] font-bold uppercase text-slate-500 tracking-wider">
                   {d.label}
                 </span>
                 <p className="font-semibold text-slate-900 truncate">{d.value}</p>
@@ -338,11 +346,11 @@ function TimetablePrintContent() {
           </div>
 
           {/* Timetable Table */}
-          <div className="overflow-x-auto border border-slate-800 rounded-lg">
-            <table className="w-full border-collapse text-xs">
+          <div className="overflow-x-auto border border-slate-800 rounded-lg print:rounded-md">
+            <table className="w-full border-collapse text-xs print:text-[10px]">
               <thead>
                 <tr className="bg-slate-100 text-slate-900 border-b border-slate-800">
-                  <th className="p-2.5 text-left font-black border-r border-slate-800 w-24">
+                  <th className="p-2.5 print:py-1 print:px-1.5 text-left font-black border-r border-slate-800 w-24 print:w-20">
                     Day / Time
                   </th>
                   {displayPeriods.map((p) => {
@@ -350,15 +358,15 @@ function TimetablePrintContent() {
                     return (
                       <th
                         key={p}
-                        className="p-2 text-center font-bold border-r last:border-r-0 border-slate-800 min-w-[110px]"
+                        className="p-2 print:py-1 print:px-1 text-center font-bold border-r last:border-r-0 border-slate-800 min-w-[110px] print:min-w-0"
                       >
                         <div className="font-black text-slate-950">Period {p}</div>
                         {anchor ? (
-                          <div className="text-[10px] font-normal text-slate-600 font-mono mt-0.5">
+                          <div className="text-[10px] print:text-[9px] font-normal text-slate-600 font-mono mt-0.5 print:mt-0">
                             {anchor.startTime}–{anchor.endTime}
                           </div>
                         ) : (
-                          <div className="text-[10px] font-normal text-slate-400 font-mono mt-0.5">
+                          <div className="text-[10px] print:text-[9px] font-normal text-slate-400 font-mono mt-0.5 print:mt-0">
                             P{p}
                           </div>
                         )}
@@ -370,31 +378,31 @@ function TimetablePrintContent() {
               <tbody>
                 {DAYS.map((day) => (
                   <tr key={day.value} className="border-b last:border-b-0 border-slate-300">
-                    <td className="p-2.5 font-black text-slate-900 bg-slate-50 border-r border-slate-800">
+                    <td className="p-2.5 print:py-1 print:px-1.5 font-black text-slate-900 bg-slate-50 border-r border-slate-800">
                       <div>{day.label}</div>
-                      <div className="text-[10px] text-slate-500 font-medium">{day.short}</div>
+                      <div className="text-[10px] print:text-[9px] text-slate-500 font-medium">{day.short}</div>
                     </td>
                     {displayPeriods.map((p) => {
                       const cellSlots = getCellSlots(day.value, p);
                       return (
                         <td
                           key={p}
-                          className="p-1.5 border-r last:border-r-0 border-slate-300 align-top text-center"
+                          className="p-1.5 print:p-1 border-r last:border-r-0 border-slate-300 align-top text-center"
                         >
                           {cellSlots.length > 0 ? (
-                            <div className="space-y-1">
+                            <div className="space-y-1 print:space-y-0.5">
                               {cellSlots.map((c, idx) => (
                                 <div
                                   key={c._id || idx}
-                                  className="p-1.5 rounded bg-teal-50/70 border border-teal-300/80 text-left"
+                                  className="p-1.5 print:p-1 rounded bg-teal-50/70 border border-teal-300/80 text-left"
                                 >
-                                  <div className="font-bold text-teal-950 text-xs truncate">
+                                  <div className="font-bold text-teal-950 text-xs print:text-[10px] truncate leading-tight">
                                     {c.subjectName}
                                   </div>
 
                                   {/* For teacher view: SHOW THE CLASS & SECTION! */}
                                   {isTeacherView && (c.className || c.sectionName) && (
-                                    <div className="text-[10px] font-semibold text-teal-800 mt-0.5 flex items-center gap-1">
+                                    <div className="text-[10px] print:text-[9px] font-semibold text-teal-800 mt-0.5 print:mt-0 flex items-center gap-1 leading-tight">
                                       <Users className="w-2.5 h-2.5 text-teal-600 shrink-0" />
                                       <span>
                                         {c.className} {c.sectionName ? `(${c.sectionName})` : ""}
@@ -404,14 +412,14 @@ function TimetablePrintContent() {
 
                                   {/* For class view: SHOW TEACHER NAME */}
                                   {!isTeacherView && c.teacherName && (
-                                    <div className="text-[10px] font-medium text-slate-700 mt-0.5 flex items-center gap-1">
+                                    <div className="text-[10px] print:text-[9px] font-medium text-slate-700 mt-0.5 print:mt-0 flex items-center gap-1 leading-tight">
                                       <Users className="w-2.5 h-2.5 text-slate-500 shrink-0" />
                                       <span className="truncate">{c.teacherName}</span>
                                     </div>
                                   )}
 
                                   {c.room && (
-                                    <div className="text-[9px] font-semibold text-slate-500 mt-0.5 flex items-center gap-1">
+                                    <div className="text-[9px] print:text-[8px] font-semibold text-slate-500 mt-0.5 print:mt-0 flex items-center gap-1 leading-tight">
                                       <MapPin className="w-2.5 h-2.5 text-teal-600 shrink-0" />
                                       <span>{c.room}</span>
                                     </div>
@@ -420,7 +428,7 @@ function TimetablePrintContent() {
                               ))}
                             </div>
                           ) : (
-                            <div className="h-10 flex items-center justify-center text-slate-300 text-xs">
+                            <div className="h-10 print:h-5 flex items-center justify-center text-slate-300 text-xs print:text-[10px]">
                               —
                             </div>
                           )}
@@ -434,7 +442,7 @@ function TimetablePrintContent() {
           </div>
 
           {/* Notes & Instructions */}
-          <div className="mt-4 p-3 bg-slate-50 rounded-lg border border-slate-200 text-[11px] text-slate-600">
+          <div className="mt-4 print:mt-1.5 p-3 print:p-1.5 bg-slate-50 rounded-lg border border-slate-200 text-[11px] print:text-[9px] text-slate-600">
             <span className="font-bold text-slate-800">Note: </span>
             <span>
               All students and faculty members are required to adhere to scheduled timings strictly.
@@ -442,22 +450,22 @@ function TimetablePrintContent() {
             </span>
           </div>
 
-          {/* Signatures & Verification Block */}
-          <div className="mt-10 pt-6 border-t border-slate-300 grid grid-cols-3 gap-6 text-center text-xs">
+          {/* Signatures & Verification Block — kept strictly on the same page */}
+          <div className="mt-8 print:mt-2.5 pt-5 print:pt-2 border-t border-slate-300 grid grid-cols-3 gap-6 print:gap-4 text-center text-xs print:text-[10px] avoid-break">
             <div>
-              <div className="h-10 border-b border-dashed border-slate-400 mx-auto w-3/4"></div>
-              <p className="mt-2 font-bold text-slate-800">Timetable Coordinator</p>
-              <p className="text-[10px] text-slate-500">Prepared &amp; Verified</p>
+              <div className="h-9 print:h-5 border-b border-dashed border-slate-400 mx-auto w-3/4"></div>
+              <p className="mt-1.5 print:mt-1 font-bold text-slate-800">Timetable Coordinator</p>
+              <p className="text-[10px] print:text-[9px] text-slate-500">Prepared &amp; Verified</p>
             </div>
             <div>
-              <div className="h-10 border-b border-dashed border-slate-400 mx-auto w-3/4"></div>
-              <p className="mt-2 font-bold text-slate-800">Head of Department</p>
-              <p className="text-[10px] text-slate-500">Academic Review</p>
+              <div className="h-9 print:h-5 border-b border-dashed border-slate-400 mx-auto w-3/4"></div>
+              <p className="mt-1.5 print:mt-1 font-bold text-slate-800">Head of Department</p>
+              <p className="text-[10px] print:text-[9px] text-slate-500">Academic Review</p>
             </div>
             <div>
-              <div className="h-10 border-b border-dashed border-slate-400 mx-auto w-3/4"></div>
-              <p className="mt-2 font-bold text-slate-800">Principal / Director</p>
-              <p className="text-[10px] text-slate-500">Official Seal &amp; Approval</p>
+              <div className="h-9 print:h-5 border-b border-dashed border-slate-400 mx-auto w-3/4"></div>
+              <p className="mt-1.5 print:mt-1 font-bold text-slate-800">Principal / Director</p>
+              <p className="text-[10px] print:text-[9px] text-slate-500">Official Seal &amp; Approval</p>
             </div>
           </div>
         </div>
@@ -467,13 +475,22 @@ function TimetablePrintContent() {
         @media print {
           @page {
             size: A4 landscape;
-            margin: 10mm;
+            margin: 0mm !important;
           }
+          html,
           body {
             background-color: white !important;
             color: black !important;
+            margin: 0 !important;
+            padding: 0 !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
+          }
+          .timetable-print-card {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            max-height: 198mm !important;
+            overflow: hidden !important;
           }
           .no-print {
             display: none !important;

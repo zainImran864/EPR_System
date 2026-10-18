@@ -76,9 +76,13 @@ function Toolbar({ mode, setMode }: { mode: "term" | "full"; setMode: (m: "term"
 function SingleReportCardView({ data, isLast }: { data: any; isLast?: boolean }) {
   const isFullYear = data.reportType === "FULL_YEAR_CUMULATIVE";
 
+  useEffect(() => {
+    document.title = `${data.school?.name || "School"} — Official Report Card`;
+  }, [data.school?.name]);
+
   return (
     <div
-      className={`print-sheet max-w-3xl w-full mx-auto my-6 print:my-0 bg-white border-2 border-slate-800 rounded-2xl print:rounded-none p-6 sm:p-8 print:p-0 shadow-sm print:shadow-none print:max-w-none ${
+      className={`print-sheet max-w-3xl w-full mx-auto my-6 print:my-0 bg-white border-2 border-slate-800 rounded-2xl print:rounded-none p-6 sm:p-8 shadow-sm print:shadow-none print:max-w-none avoid-break ${
         !isLast ? "page-break" : ""
       }`}
     >
@@ -91,7 +95,7 @@ function SingleReportCardView({ data, isLast }: { data: any; isLast?: boolean })
             </div>
           ) : (
             <div className="w-16 h-16 rounded-xl bg-teal-800 text-white flex items-center justify-center font-black text-2xl shrink-0">
-              {data.school?.name ? data.school.name.substring(0, 2).toUpperCase() : "AC"}
+              {data.school?.name ? data.school.name.substring(0, 2).toUpperCase() : "SC"}
             </div>
           )}
           <div>

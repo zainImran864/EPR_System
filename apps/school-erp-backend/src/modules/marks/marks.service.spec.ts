@@ -59,6 +59,9 @@ describe('MarksService', () => {
       expect(result).toEqual(mockTerms);
       expect(mockPrisma.examTerm.findMany).toHaveBeenCalledWith({
         where: { schoolId: 'sch_1' },
+        include: {
+          _count: { select: { marks: true, paperSchedules: true } },
+        },
         orderBy: { createdAt: 'desc' },
       });
     });
