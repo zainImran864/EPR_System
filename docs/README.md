@@ -21,6 +21,9 @@ Welcome to the comprehensive technical documentation for **AcademiX (School ERP 
 | [**09. Timetable & Scheduling Module**](./modules/09_TIMETABLE_AND_SCHEDULING.md) | 8-period weekly schedule builder, teacher conflict detection, and room collision prevention. |
 | [**10. Notifications & Audit Logs Module**](./modules/10_NOTIFICATIONS_AND_AUDIT.md) | MongoDB-backed notification engine, targeted/broadcast messaging, and security audit log trail. |
 | [**11. Dashboards & Analytics Module**](./modules/11_DASHBOARDS_AND_ANALYTICS.md) | Role-tailored dashboards (SuperAdmin, Admin, Teacher, Student, Parent) with Redis sub-millisecond cache. |
+| [**12. Finance, Expenses & Multi-Currency**](./modules/12_FINANCE_EXPENSES_AND_TRACKING.md) | Operating expense entries, MoM comparison analytics, multi-currency ($/Rs/€), overdue fee policies, and printable statements. |
+| [**13. Communication, Homework & Engagement**](./modules/13_COMMUNICATION_HOMEWORK_AND_ENGAGEMENT.md) | Targeted class/section circulars, homework with strict deadline locks, PTM meetings, gamification stars, and multi-child switching. |
+| [**14. Offline Attendance, PWA & Backups**](./modules/14_OFFLINE_ATTENDANCE_PWA_AND_BACKUPS.md) | PWA offline student attendance queue with auto-sync, school hours geofence, scheduled/manual database backups, and English/Urdu RTL. |
 
 ---
 

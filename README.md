@@ -48,7 +48,38 @@ Designed for private schools and academic institutions with dynamic per-school b
 - **Written on Fee Cards & Printable Challans**: Every Fee Card (`/parent/fees`, `/student/fees`, `/admin/fees`) and printable Fee Challan (`/print/fee-challan`) explicitly displays `Within Due Date`, `Late Fee Increment (After Due Date): +X`, and `Payable After Due Date`.
 - **Single-Page White-Label Print Reports (`/print/*`)**:
   - **Timetable Print (`/print/timetable`)**: Compacted A4 landscape layout (`max-height: 198mm`, `break-inside: avoid`) so both Teacher and Class timetables — including the 3 verification signature blocks — fit cleanly on **1 single page** without spilling signatures onto a second page.
-  - **Zero URL Clutter & White-Label School Branding**: Uses `@page { margin: 0mm !important; }` and dynamic `document.title` set to the school's own name so browser print headers/footers never print `localhost:3000/print/...` URLs, and all print reports (`timetable`, `fee-challan`, `report-card`, `roll-no-slip`, `question-paper`) display **only the school's own branding** (no third-party `AcademiX` watermarks).
+  - **Zero URL Clutter & White-Label School Branding**: Uses `@page { margin: 0mm !important; }` and dynamic `document.title` set to the school's own name so browser print headers/footers never print `localhost:3000/print/...` URLs, and all print reports (`timetable`, `fee-challan`, `report-card`, `roll-no-slip`, `question-paper`, `financial-report`, `expense-comparison`) display **only the school's own branding** (zero third-party watermarks).
+
+### 6. Finance & Accounts (Operating Expenses, MoM Comparison, Positive Inputs & Global Multi-Currency)
+- **Manage & Track Expenses (`/admin/expenses`, `/admin/expenses/track`)**: School Admins record monthly school operating expenditures (utilities, teacher/staff payroll, stationary, maintenance) and visualize net profit/loss alongside collected tuition fees across monthly, yearly, or custom date ranges.
+- **Month-over-Month (MoM) Comparison**: Interactive percentage variance indicators comparing current expenditures directly against preceding months, with single-page printable comparison reports (`/print/expense-comparison`).
+- **Strictly Positive Values**: All financial inputs for expenses, fee structures, and challans validate strictly positive numbers (`@Min(0.01)`).
+- **Global Currency Configuration**: Admin selects school currency symbol (`$`, `Rs / PKR`, `€`, `£`, `₹`, etc.) from Settings, automatically reflected across ledgers, cards, and printouts.
+
+### 7. Homework & Assignments Module (Hard Deadline Locking & Grading)
+- **Teacher Assignment Creation (`/teacher/homework`)**: Teachers post homework with rich instructions, file attachments, points, and strict submission deadlines.
+- **Student Submission & Hard Deadline Lock (`/student/homework`, `/parent/homework`)**: Students view details, download materials, and submit solutions. Submissions after deadline are automatically locked with `status: MISSED` and `0 marks`.
+- **Teacher Review & Feedback**: Teachers evaluate submissions, enter marks obtained, and provide constructive guidance notes.
+
+### 8. Parent-Teacher Collaboration, Student Leave & Multi-Child Switcher
+- **Multi-Child Parent Switcher**: Parents with multiple enrolled children seamlessly switch active student context directly in the Topbar, dynamically filtering attendance, homework, report cards, fees, and honors.
+- **Student Leave Requests**: Parents apply for student leave; teachers and admins approve/reject with instant attendance status synchronization to `LEAVE`.
+- **Student Absence Alerts**: Immediate high-priority notifications dispatched to parents whenever their child is marked `ABSENT`.
+- **Parent-Teacher Meetings (PTM) (`/teacher/ptm`, `/parent/ptm`, `/admin/ptm`)**: Schedule in-person or online video conferences with custom time slots and confirmation workflows.
+
+### 9. Student Engagement & Gamified Achievement Stars
+- **Automated Performance Badges**:
+  - ⭐ **Weekly Attendance Star**: Awarded for 100% full-week attendance without absence.
+  - 🏆 **Academic Excellence Star**: Awarded for maintaining an 80%+ cumulative exam average.
+  - 🌟 **Homework Champion**: Awarded for timely submission of all coursework.
+  - ⏱️ **Punctuality Master**: Awarded for 0 late arrivals.
+- **Showcase View (`/student/achievements`, `/parent/achievements`)**: Visual trophy counter and progress trackers.
+
+### 10. PWA Offline Student Attendance, School Hours Gate & Backups
+- **Offline Attendance Queue**: Teachers can mark student roll call without internet connectivity; records queue locally and auto-sync when online.
+- **Official School Hours Gate**: Teacher daily self-attendance is strictly restricted to admin-configured operating hours (e.g., `07:30` - `14:00`).
+- **Database Backup Engine**: Automated nightly backups plus 1-click on-demand snapshots in `/admin/settings` written safely to `/backups`.
+- **English & Urdu (اردو) Multi-Language Support**: Topbar language toggle switching between English (`ltr`) and Urdu (`rtl`) with per-user persistence.
 
 ---
 
