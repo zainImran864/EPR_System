@@ -49,7 +49,13 @@ export class NotificationsService {
         const docs = await this.notificationModel.find(query).sort({ createdAt: -1 }).limit(100).exec();
         return docs.map((d) => {
           const rawCreated = (d as any).createdAt || (d as any).get?.('createdAt');
-          const isoCreated = rawCreated ? new Date(rawCreated).toISOString() : new Date().toISOString();
+          let isoCreated: string;
+          try {
+            const parsedTime = rawCreated ? new Date(rawCreated).getTime() : NaN;
+            isoCreated = !isNaN(parsedTime) ? new Date(parsedTime).toISOString() : new Date().toISOString();
+          } catch {
+            isoCreated = new Date().toISOString();
+          }
           return {
             _id: d._id.toString(),
             id: d._id.toString(),

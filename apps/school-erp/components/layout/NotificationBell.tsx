@@ -17,15 +17,40 @@ const KIND_DOT: Record<string, string> = {
 };
 
 function formatNotificationTime(ts: any): { relative: string; exact: string } {
-  if (!ts) return { relative: "just now", exact: new Date().toLocaleTimeString() };
-  let time = typeof ts === "string" ? new Date(ts).getTime() : Number(ts);
-  if (isNaN(time)) return { relative: "recently", exact: "" };
-  if (time < 10000000000) {
-    time *= 1000; // handle Unix seconds
+  const fallbackExact = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true });
+  if (!ts) return { relative: "Just now", exact: fallbackExact };
+
+  let time: number;
+  if (ts instanceof Date) {
+    time = ts.getTime();
+  } else if (typeof ts === "number") {
+    time = ts < 10000000000 ? ts * 1000 : ts;
+  } else if (typeof ts === "string") {
+    if (/^\d+$/.test(ts.trim())) {
+      const num = parseInt(ts.trim(), 10);
+      time = num < 10000000000 ? num * 1000 : num;
+    } else {
+      time = new Date(ts).getTime();
+    }
+  } else if (typeof ts === "object" && ts !== null) {
+    if (ts.$date) {
+      time = new Date(ts.$date).getTime();
+    } else if (typeof ts.toString === "function") {
+      time = new Date(ts.toString()).getTime();
+    } else {
+      time = NaN;
+    }
+  } else {
+    time = NaN;
   }
+
+  if (isNaN(time) || !isFinite(time)) {
+    return { relative: "Just now", exact: fallbackExact };
+  }
+
   const dateObj = new Date(time);
   const exact = isNaN(dateObj.getTime())
-    ? ""
+    ? fallbackExact
     : dateObj.toLocaleDateString(undefined, {
         month: "short",
         day: "numeric",
@@ -35,18 +60,19 @@ function formatNotificationTime(ts: any): { relative: string; exact: string } {
       });
 
   const diffMs = Date.now() - time;
-  if (diffMs < 45000) return { relative: "just now", exact };
+  // Clock skew or within 60 seconds
+  if (isNaN(diffMs) || diffMs < 60000) return { relative: "Just now", exact };
 
   const mins = Math.floor(diffMs / 60000);
-  if (mins < 60) return { relative: `${mins}m ago`, exact };
+  if (!isNaN(mins) && mins < 60) return { relative: `${mins}m ago`, exact };
 
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return { relative: `${hours}h ago`, exact };
+  if (!isNaN(hours) && hours < 24) return { relative: `${hours}h ago`, exact };
 
   const days = Math.floor(hours / 24);
-  if (days < 7) return { relative: `${days}d ago`, exact };
+  if (!isNaN(days) && days < 7) return { relative: `${days}d ago`, exact };
 
-  return { relative: exact || `${days}d ago`, exact };
+  return { relative: exact, exact };
 }
 
 export const NotificationBell: React.FC = () => {

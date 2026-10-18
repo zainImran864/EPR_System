@@ -265,7 +265,7 @@ export class ExpensesService {
       const mEnd = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
       const monthName = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 
-      const [feeAgg, expAgg] = await Promise.all([
+      const [feeAgg, expAgg, salaryAgg, utilAgg, statAgg, maintAgg] = await Promise.all([
         this.prisma.read.feeChallan.aggregate({
           where: {
             schoolId,
@@ -280,16 +280,58 @@ export class ExpensesService {
           },
           _sum: { amount: true },
         }),
+        this.prisma.read.expense.aggregate({
+          where: {
+            schoolId,
+            category: ExpenseCategory.SALARIES,
+            expenseDate: { gte: mStart, lte: mEnd },
+          },
+          _sum: { amount: true },
+        }),
+        this.prisma.read.expense.aggregate({
+          where: {
+            schoolId,
+            category: ExpenseCategory.UTILITIES,
+            expenseDate: { gte: mStart, lte: mEnd },
+          },
+          _sum: { amount: true },
+        }),
+        this.prisma.read.expense.aggregate({
+          where: {
+            schoolId,
+            category: ExpenseCategory.STATIONERY_PAPER,
+            expenseDate: { gte: mStart, lte: mEnd },
+          },
+          _sum: { amount: true },
+        }),
+        this.prisma.read.expense.aggregate({
+          where: {
+            schoolId,
+            category: ExpenseCategory.MAINTENANCE,
+            expenseDate: { gte: mStart, lte: mEnd },
+          },
+          _sum: { amount: true },
+        }),
       ]);
 
       const feesCollected = Math.round((feeAgg._sum.paidAmount || 0) * 100) / 100;
       const expenses = Math.round((expAgg._sum.amount || 0) * 100) / 100;
+      const salaries = Math.round((salaryAgg._sum.amount || 0) * 100) / 100;
+      const utilities = Math.round((utilAgg._sum.amount || 0) * 100) / 100;
+      const stationery = Math.round((statAgg._sum.amount || 0) * 100) / 100;
+      const maintenance = Math.round((maintAgg._sum.amount || 0) * 100) / 100;
+      const other = Math.max(0, Math.round((expenses - salaries - utilities - stationery - maintenance) * 100) / 100);
       const netProfit = Math.round((feesCollected - expenses) * 100) / 100;
 
       trend.push({
         month: monthName,
         feesCollected,
         expenses,
+        salaries,
+        utilities,
+        stationery,
+        maintenance,
+        other,
         netProfit,
       });
     }

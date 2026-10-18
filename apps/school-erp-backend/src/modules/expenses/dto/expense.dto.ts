@@ -10,7 +10,7 @@ export class CreateExpenseDto {
   category: ExpenseCategory;
 
   @IsNumber()
-  @Min(0)
+  @Min(0.01, { message: 'Expense amount must be a positive number greater than 0' })
   amount: number;
 
   @IsOptional()
@@ -57,7 +57,7 @@ export class UpdateExpenseDto {
 
   @IsOptional()
   @IsNumber()
-  @Min(0)
+  @Min(0.01, { message: 'Expense amount must be a positive number greater than 0' })
   amount?: number;
 
   @IsOptional()

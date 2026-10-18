@@ -1,4 +1,4 @@
-import { IsBoolean, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateChallanDto {
   @IsString()
@@ -21,18 +21,22 @@ export class CreateChallanDto {
   dueDate: string;
 
   @IsNumber()
+  @Min(0.01, { message: 'Fee amount must be greater than zero' })
   amount: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   discountAmount?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   fineAmount?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   lateFeeAmount?: number;
 
   @IsOptional()
@@ -42,6 +46,7 @@ export class CreateChallanDto {
 
 export class PayChallanDto {
   @IsNumber()
+  @Min(0.01, { message: 'Paid amount must be greater than zero' })
   paidAmount: number;
 
   @IsOptional()
@@ -86,6 +91,7 @@ export class GenerateBulkChallansDto {
   dueDate: string;
 
   @IsNumber()
+  @Min(0.01, { message: 'Fee amount must be greater than zero' })
   amount: number;
 
   @IsOptional()

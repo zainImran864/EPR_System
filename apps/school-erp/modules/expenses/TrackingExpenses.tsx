@@ -216,6 +216,33 @@ export const TrackingExpenses: React.FC = () => {
           >
             Refresh
           </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const url = `/print/financial-report?rangeType=${rangeType}&month=${encodeURIComponent(selectedMonth)}&year=${encodeURIComponent(selectedYear)}&startDate=${startDate}&endDate=${endDate}`;
+              window.open(url, "_blank");
+            }}
+            leftIcon={<Printer className="w-3.5 h-3.5 text-teal-600" />}
+            className="text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 shadow-2xs"
+            title="Generate and print detailed financial performance & P&L statement"
+          >
+            Print Financial Report
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              window.open("/print/expense-comparison", "_blank");
+            }}
+            leftIcon={<BarChart3 className="w-3.5 h-3.5 text-indigo-600" />}
+            className="text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 shadow-2xs"
+            title="Generate historical Month-over-Month expense comparison report"
+          >
+            MoM Comparison Report
+          </Button>
         </div>
       </div>
 

@@ -12,6 +12,7 @@ import {
   Bell,
   MessageCircle,
   MapPin,
+  Receipt,
 } from "lucide-react";
 
 export interface NavLink {
@@ -33,8 +34,8 @@ export const ADMIN_NAV: NavLink[] = [
   { href: "/admin/attendance", label: "Student Attendance", icon: ico(CalendarCheck), group: "Operations", description: "Daily student attendance roster & analytics" },
   { href: "/admin/teacher-attendance", label: "Teacher Attendance", icon: ico(MapPin), group: "Operations", description: "Live GPS & photo teacher attendance + leave approvals" },
   { href: "/admin/marks", label: "Marks & Exams", icon: ico(Award), group: "Operations", description: "Exam schedules, question papers & mark entry" },
-  { href: "/admin/fees", label: "Fees & Challans", icon: ico(Wallet), group: "Operations", description: "Fee billing, discounts, payments & printable challans" },
-  { href: "/admin/expenses", label: "Expenses & P&L", icon: ico(Receipt), group: "Operations", description: "Manage monthly expenses, utility bills, salaries & track profit/loss" },
+  { href: "/admin/fees", label: "Fees & Challans", icon: ico(Wallet), group: "Finance & Accounts", description: "Fee billing, discounts, payments & printable challans" },
+  { href: "/admin/expenses", label: "Expenses & P&L", icon: ico(Receipt), group: "Finance & Accounts", description: "Manage monthly expenses, utility bills, salaries & track profit/loss" },
   { href: "/admin/whatsapp", label: "WhatsApp Center", icon: ico(MessageCircle), group: "Communication", description: "Automated & manual parent WhatsApp broadcasts" },
   { href: "/admin/notifications", label: "In-App Alerts", icon: ico(Bell), group: "Communication", description: "Institution announcements & portal notifications" },
   { href: "/admin/settings", label: "School Settings", icon: ico(Settings), group: "System", description: "School branding, SMTP, KYC & security preferences" },

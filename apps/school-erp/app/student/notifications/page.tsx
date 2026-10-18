@@ -21,16 +21,21 @@ import { useNotifications } from "@/app/hooks/useNotifications";
 
 function formatTime(val: any): string {
   if (!val) return "Just now";
-  let time = typeof val === "string" ? new Date(val).getTime() : Number(val);
-  if (isNaN(time)) return "Just now";
-  if (time < 10000000000) {
-    time *= 1000;
-  }
+  let time: number;
+  if (val instanceof Date) time = val.getTime();
+  else if (typeof val === "number") time = val < 10000000000 ? val * 1000 : val;
+  else if (typeof val === "string") {
+    time = /^\d+$/.test(val.trim()) ? Number(val.trim()) * (Number(val.trim()) < 10000000000 ? 1000 : 1) : new Date(val).getTime();
+  } else if (typeof val === "object" && val !== null) {
+    time = val.$date ? new Date(val.$date).getTime() : NaN;
+  } else time = NaN;
+
+  if (isNaN(time) || !isFinite(time)) return "Just now";
   const d = new Date(time);
   if (isNaN(d.getTime())) return "Just now";
 
   const diffMs = Date.now() - time;
-  if (diffMs < 45000) return "Just now";
+  if (isNaN(diffMs) || diffMs < 60000) return "Just now";
 
   return d.toLocaleDateString(undefined, {
     month: "short",
