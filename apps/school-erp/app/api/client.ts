@@ -603,5 +603,16 @@ export const ptmRestApi = {
     apiClient.patch<any>(`/parent-meetings/${id}/status`, data),
 };
 
+export const achievementsRestApi = {
+  getMyAchievements: () => apiClient.get<any[]>('/students/me/achievements'),
+  getStudentAchievements: (studentId: string) =>
+    apiClient.get<any[]>(`/students/${studentId}/achievements`),
+  award: (
+    studentId: string,
+    data: { badgeType: string; title: string; description: string; icon?: string },
+  ) => apiClient.post<any>(`/students/${studentId}/achievements`, data),
+};
+
+
 
 

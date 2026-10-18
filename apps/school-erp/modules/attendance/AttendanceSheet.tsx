@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { CalendarCheck, Save } from "lucide-react";
+import { CalendarCheck, Save, WifiOff, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Select } from "@/components/ui/Select";
@@ -18,6 +18,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import { useAttendance } from "@/app/hooks/useAttendance";
 import { useClasses } from "@/app/hooks/useClasses";
+import { cn } from "@/app/lib/utils";
 
 export type AttendanceStatus = "present" | "absent" | "late" | "excused";
 
@@ -30,6 +31,10 @@ export const AttendanceSheet: React.FC = () => {
     summary,
     isLoading,
     isSaving,
+    isOnline,
+    offlineQueueCount,
+    isSyncingOffline,
+    syncOfflineQueue,
     hasUnsavedChanges,
     setSelectedDate,
     setSelectedClass,
@@ -42,13 +47,16 @@ export const AttendanceSheet: React.FC = () => {
 
   const { classOptions, sectionOptions } = useClasses();
 
-  // Brief "saved" flash — cleared when the user makes a new edit (hasUnsavedChanges will flip true)
-  const [savedFlash, setSavedFlash] = useState(false);
+  // Brief "saved" flash — cleared when the user makes a new edit
+  const [savedFlash, setSavedFlash] = useState<string | false>(false);
 
   const handleSave = async () => {
-    const ok = await saveRoster();
-    if (ok) {
-      setSavedFlash(true);
+    const res = await saveRoster();
+    if (res === "offline") {
+      setSavedFlash("offline");
+      setTimeout(() => setSavedFlash(false), 4000);
+    } else if (res) {
+      setSavedFlash("online");
       setTimeout(() => setSavedFlash(false), 3000);
     }
   };
@@ -73,7 +81,25 @@ export const AttendanceSheet: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
+          {!isOnline && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+              <WifiOff className="w-3.5 h-3.5 text-amber-600" />
+              Offline Mode
+            </span>
+          )}
+
+          {offlineQueueCount > 0 && (
+            <button
+              onClick={syncOfflineQueue}
+              disabled={isSyncingOffline || !isOnline}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all cursor-pointer"
+            >
+              <RotateCw className={cn("w-3.5 h-3.5", isSyncingOffline && "animate-spin")} />
+              Sync {offlineQueueCount} Offline Sheet{offlineQueueCount > 1 ? "s" : ""}
+            </button>
+          )}
+
           {hasUnsavedChanges && (
             <Badge variant="warning" size="sm" dot>
               Unsaved changes
@@ -97,7 +123,13 @@ export const AttendanceSheet: React.FC = () => {
             disabled={noSelection || isLoading || isSaving}
             className="text-xs"
           >
-            {savedFlash && !hasUnsavedChanges ? "Saved & Synced!" : "Save Attendance"}
+            {savedFlash === "offline"
+              ? "Saved Offline! (Auto-syncs)"
+              : savedFlash === "online" && !hasUnsavedChanges
+              ? "Saved & Synced!"
+              : !isOnline
+              ? "Save Offline"
+              : "Save Attendance"}
           </Button>
         </div>
       </div>

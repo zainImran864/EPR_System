@@ -15,6 +15,7 @@ import {
   Receipt,
   CalendarPlus,
   Megaphone,
+  Star,
 } from "lucide-react";
 
 export interface NavLink {
@@ -63,6 +64,7 @@ export const TEACHER_NAV: NavLink[] = [
 
 export const STUDENT_NAV: NavLink[] = [
   { href: "/student/dashboard", label: "Dashboard", icon: ico(LayoutDashboard), group: "Overview", description: "Student portal overview & shortcuts" },
+  { href: "/student/achievements", label: "Achievements & Stars", icon: ico(Star), group: "Academics", description: "Earned stars, attendance honors & academic badges" },
   { href: "/student/homework", label: "My Homework", icon: ico(BookOpen), group: "Academics", description: "Assignments, question worksheets & solution upload" },
   { href: "/student/results", label: "My Results", icon: ico(Award), group: "Academics", description: "Exam scores, grades & printable report card" },
   { href: "/student/attendance", label: "My Attendance", icon: ico(CalendarCheck), group: "Academics", description: "Daily attendance log & rate" },
@@ -76,6 +78,7 @@ export const STUDENT_NAV: NavLink[] = [
 export const PARENT_NAV: NavLink[] = [
   { href: "/parent/dashboard", label: "Dashboard", icon: ico(LayoutDashboard), group: "Overview", description: "Parent portal overview & child progress" },
   { href: "/parent/leaves", label: "Apply Leave", icon: ico(CalendarPlus), group: "Academics", description: "Apply for child leave and track approval" },
+  { href: "/parent/achievements", label: "Achievements & Stars", icon: ico(Star), group: "Academics", description: "Child's earned stars, attendance honors & badges" },
   { href: "/parent/homework", label: "Homework", icon: ico(BookOpen), group: "Academics", description: "Child homework assignments, deadlines & grades" },
   { href: "/parent/results", label: "Results", icon: ico(Award), group: "Academics", description: "Child exam marks & report cards" },
   { href: "/parent/attendance", label: "Attendance", icon: ico(CalendarCheck), group: "Academics", description: "Child attendance history & alerts" },

@@ -77,6 +77,12 @@ export class StudentsService {
     });
   }
 
+  async getStudentByUserId(schoolId: string, userId: string) {
+    return this.prisma.student.findFirst({
+      where: { userId, schoolId },
+    });
+  }
+
   async getStudentById(schoolId: string, id: string) {
     const student = await this.prisma.student.findFirst({
       where: { id, schoolId },
