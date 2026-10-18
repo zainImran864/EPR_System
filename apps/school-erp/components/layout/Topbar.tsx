@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { NotificationBell } from "./NotificationBell";
 import { ParentChildSwitcher } from "./ParentChildSwitcher";
+import { LanguageToggle } from "./LanguageToggle";
 import { useAuth } from "@/app/hooks/useAuth";
 import { THEME_OPTIONS, DEFAULT_THEME, applyThemeColor } from "@/app/lib/theme";
 import type { NavLink } from "./navConfig";
@@ -240,6 +241,9 @@ export const Topbar: React.FC<TopbarProps> = ({
 
           {/* Multi-Child Switcher for Parent Portal */}
           {rolePrefix === "parent" && <ParentChildSwitcher />}
+
+          {/* Multi-Language Toggle (English / اردو) */}
+          <LanguageToggle />
 
           {/* Notification Bell */}
           <NotificationBell />

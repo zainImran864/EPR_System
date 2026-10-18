@@ -40,6 +40,7 @@ export const ADMIN_NAV: NavLink[] = [
   { href: "/admin/fees", label: "Fees & Challans", icon: ico(Wallet), group: "Finance & Accounts", description: "Fee billing, discounts, payments & printable challans" },
   { href: "/admin/expenses", label: "Expenses & P&L", icon: ico(Receipt), group: "Finance & Accounts", description: "Manage monthly expenses, utility bills, salaries & track profit/loss" },
   { href: "/admin/circulars", label: "Circulars", icon: ico(Megaphone), group: "Communication", description: "Publish class and school-wide announcements" },
+  { href: "/admin/ptm", label: "Parent Meetings (PTM)", icon: ico(Users), group: "Communication", description: "Schedule and manage parent-teacher conferences" },
   { href: "/admin/whatsapp", label: "WhatsApp Center", icon: ico(MessageCircle), group: "Communication", description: "Automated & manual parent WhatsApp broadcasts" },
   { href: "/admin/notifications", label: "In-App Alerts", icon: ico(Bell), group: "Communication", description: "Institution announcements & portal notifications" },
   { href: "/admin/settings", label: "School Settings", icon: ico(Settings), group: "System", description: "School branding, SMTP, KYC & security preferences" },
@@ -54,6 +55,7 @@ export const TEACHER_NAV: NavLink[] = [
   { href: "/teacher/attendance", label: "Class Attendance", icon: ico(CalendarCheck), group: "Academics", description: "Record daily class & section attendance" },
   { href: "/teacher/timetable", label: "Timetable", icon: ico(CalendarDays), group: "Academics", description: "View assigned teaching schedule" },
   { href: "/teacher/circulars", label: "Circulars & Notices", icon: ico(Megaphone), group: "Communication", description: "Publish and view class/section circulars" },
+  { href: "/teacher/ptm", label: "Parent Meetings (PTM)", icon: ico(Users), group: "Communication", description: "Schedule and manage parent-teacher meetings" },
   { href: "/teacher/whatsapp", label: "WhatsApp Center", icon: ico(MessageCircle), group: "Communication", description: "Message parents & guardians" },
   { href: "/teacher/notifications", label: "Notifications", icon: ico(Bell), group: "Communication", description: "Leave updates and school notices" },
   { href: "/teacher/settings", label: "Settings", icon: ico(Settings), group: "System", description: "Account, theme & security settings" },
@@ -80,6 +82,7 @@ export const PARENT_NAV: NavLink[] = [
   { href: "/parent/timetable", label: "Timetable", icon: ico(CalendarDays), group: "Academics", description: "Weekly class schedule" },
   { href: "/parent/fees", label: "Fees", icon: ico(Wallet), group: "Finance", description: "Fee bills, payment status & challans" },
   { href: "/parent/circulars", label: "Circulars", icon: ico(Megaphone), group: "Communication", description: "School & class circulars and announcements" },
+  { href: "/parent/ptm", label: "Parent Meetings (PTM)", icon: ico(Users), group: "Communication", description: "Request & attend meetings with child's teachers" },
   { href: "/parent/notifications", label: "Notifications", icon: ico(Bell), group: "Communication", description: "Fee alerts & school circulars" },
   { href: "/parent/settings", label: "Settings", icon: ico(Settings), group: "System", description: "Account, theme & notification preferences" },
 ];

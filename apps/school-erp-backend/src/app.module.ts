@@ -19,6 +19,7 @@ import { SeedModule } from './modules/seed/seed.module';
 import { BackupModule } from './modules/backup/backup.module';
 import { CircularsModule } from './modules/circulars/circulars.module';
 import { HomeworkModule } from './modules/homework/homework.module';
+import { MeetingsModule } from './modules/meetings/meetings.module';
 import { WhatsAppModule } from './modules/whatsapp/whatsapp.module';
 import { HttpLoggerMiddleware } from './common/middleware/http-logger.middleware';
 import { AppController } from './app.controller';
@@ -47,6 +48,7 @@ import { AppService } from './app.service';
     BackupModule,
     CircularsModule,
     HomeworkModule,
+    MeetingsModule,
     AuditModule,
     DashboardModule,
     SeedModule,

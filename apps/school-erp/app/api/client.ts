@@ -587,4 +587,21 @@ export const homeworkRestApi = {
   delete: (id: string) => apiClient.delete<any>(`/homework/${id}`),
 };
 
+export const ptmRestApi = {
+  list: (params?: { status?: string; studentId?: string }) =>
+    apiClient.get<any[]>('/parent-meetings', params),
+  create: (data: {
+    studentId: string;
+    teacherId?: string;
+    meetingDate: string;
+    timeSlot: string;
+    mode?: string;
+    agenda: string;
+    notes?: string;
+  }) => apiClient.post<any>('/parent-meetings', data),
+  updateStatus: (id: string, data: { status: string; notes?: string }) =>
+    apiClient.patch<any>(`/parent-meetings/${id}/status`, data),
+};
+
+
 
