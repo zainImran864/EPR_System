@@ -549,3 +549,20 @@ export const backupRestApi = {
   }) => apiClient.patch<any>('/backup/config', data),
   getDownloadUrl: (filename: string) => `${getApiBaseUrl()}/backup/download/${filename}`,
 };
+
+export const circularsRestApi = {
+  list: (params?: { targetType?: string; classId?: string; sectionId?: string }) =>
+    apiClient.get<any[]>('/circulars', params),
+  getById: (id: string) => apiClient.get<any>(`/circulars/${id}`),
+  create: (data: {
+    title: string;
+    content: string;
+    targetType: string;
+    classId?: string;
+    sectionId?: string;
+    attachmentUrl?: string;
+    isPinned?: boolean;
+  }) => apiClient.post<any>('/circulars', data),
+  delete: (id: string) => apiClient.delete<any>(`/circulars/${id}`),
+};
+

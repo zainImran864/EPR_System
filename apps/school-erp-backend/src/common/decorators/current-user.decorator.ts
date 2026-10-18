@@ -6,6 +6,13 @@ export interface CurrentUserPayload {
   role: string;
   schoolId?: string;
   name?: string;
+  studentContext?: {
+    studentId?: string;
+    classId?: string;
+    sectionId?: string;
+    firstName?: string;
+    lastName?: string;
+  };
 }
 
 export const CurrentUser = createParamDecorator(
