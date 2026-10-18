@@ -57,12 +57,8 @@ function FinancialReportContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchFn =
-      expensesRestApi && typeof expensesRestApi.getTracking === "function"
-        ? expensesRestApi.getTracking({ rangeType, month, year, startDate, endDate })
-        : apiClient.get<any>("/expenses/tracking", { rangeType, month, year, startDate, endDate });
-
-    fetchFn
+    apiClient
+      .get<any>("/expenses/tracking", { rangeType, month, year, startDate, endDate })
       .then((res: any) => {
         setData(res);
         setLoading(false);

@@ -48,12 +48,8 @@ function ComparisonContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchFn =
-      expensesRestApi && typeof expensesRestApi.getTracking === "function"
-        ? expensesRestApi.getTracking({ rangeType: "monthly", month: "October 2026" })
-        : apiClient.get<any>("/expenses/tracking", { rangeType: "monthly", month: "October 2026" });
-
-    fetchFn
+    apiClient
+      .get<any>("/expenses/tracking", { rangeType: "monthly", month: "October 2026" })
       .then((res: any) => {
         setData(res);
         setLoading(false);

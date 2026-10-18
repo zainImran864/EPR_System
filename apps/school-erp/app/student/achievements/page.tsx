@@ -1,10 +1,7 @@
-import { DashboardShell } from '@/components/layout/DashboardShell';
-import { StudentAchievementsView } from '@/modules/students/StudentAchievementsView';
+"use client";
+
+import { StudentAchievementsView } from "@/modules/students/StudentAchievementsView";
 
 export default function StudentAchievementsPage() {
-  return (
-    <DashboardShell requiredRole={['STUDENT']}>
-      <StudentAchievementsView />
-    </DashboardShell>
-  );
+  return <StudentAchievementsView />;
 }

@@ -1,10 +1,7 @@
-import { DashboardShell } from '@/components/layout/DashboardShell';
-import { StudentHomeworkView } from '@/modules/homework/StudentHomeworkView';
+"use client";
+
+import { StudentHomeworkView } from "@/modules/homework/StudentHomeworkView";
 
 export default function StudentHomeworkPage() {
-  return (
-    <DashboardShell requiredRole={['STUDENT']}>
-      <StudentHomeworkView />
-    </DashboardShell>
-  );
+  return <StudentHomeworkView />;
 }
