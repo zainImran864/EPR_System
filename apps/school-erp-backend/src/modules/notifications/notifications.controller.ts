@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, UseGuards } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { CreateNotificationDto } from './dto/notification.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -18,7 +18,7 @@ export class NotificationsController {
   }
 
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.SUPERADMIN)
+  @Roles(Role.ADMIN, Role.SUPERADMIN, Role.TEACHER)
   @Post()
   async createNotification(
     @CurrentUser() user: CurrentUserPayload,
@@ -27,8 +27,26 @@ export class NotificationsController {
     return this.notificationsService.createNotification(user.schoolId!, dto);
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.SUPERADMIN, Role.TEACHER)
+  @Post('broadcast')
+  async broadcastNotification(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: CreateNotificationDto,
+  ) {
+    return this.notificationsService.createNotification(user.schoolId!, dto);
+  }
+
   @Post(':id/read')
-  async markAsRead(
+  async markAsReadPost(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    return this.notificationsService.markAsRead(id, user.userId);
+  }
+
+  @Patch(':id/read')
+  async markAsReadPatch(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
   ) {

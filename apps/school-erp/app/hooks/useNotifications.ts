@@ -17,13 +17,16 @@ export interface BroadcastArgs {
  */
 export function useNotifications() {
   const { user } = useAuth();
-  const { info } = useToast();
+  const { info, success, warning } = useToast();
 
   const [feed, setFeed] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
+  const isInitialLoadRef = useRef(true);
+  const seenIdsRef = useRef<Set<string>>(new Set());
 
   const fetchNotifications = useCallback(async () => {
+    if (!user) return;
     try {
       const data = await notificationsRestApi.getAll();
       if (Array.isArray(data)) {
@@ -31,19 +34,41 @@ export function useNotifications() {
           ...n,
           _id: n.id || n._id,
         }));
+
+        // Fire real-time toast alert when new unread notification arrives
+        if (!isInitialLoadRef.current) {
+          for (const item of normalized) {
+            if (!item.isRead && !seenIdsRef.current.has(item._id)) {
+              const notifType = (item.type || item.kind || "info").toLowerCase();
+              const toastFn =
+                notifType === "success"
+                  ? success
+                  : notifType === "warning" || notifType === "urgent"
+                  ? warning
+                  : info;
+              toastFn(item.message || item.body || item.title, {
+                title: item.title || "New Notification",
+              });
+            }
+          }
+        }
+
+        isInitialLoadRef.current = false;
+        seenIdsRef.current = new Set(normalized.map((n) => n._id));
         setFeed(normalized);
         setUnreadCount(normalized.filter((n) => !n.isRead).length);
       }
-    } catch (e) {
-      console.warn("Notifications fetch notice:", e);
+    } catch {
+      // Silently ignore when offline or before backend session is established
     }
-  }, []);
+  }, [user, info, success, warning]);
 
   useEffect(() => {
+    if (!user) return;
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 15000); // 15s poll
+    const interval = setInterval(fetchNotifications, 5000); // 5s live poll for real-time alerts
     return () => clearInterval(interval);
-  }, [fetchNotifications]);
+  }, [user, fetchNotifications]);
 
   const markRead = async (id: string) => {
     try {

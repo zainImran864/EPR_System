@@ -1,13 +1,17 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateNotificationDto {
   @IsString()
   @IsNotEmpty()
   title: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  message: string;
+  message?: string;
+
+  @IsOptional()
+  @IsString()
+  body?: string;
 
   @IsOptional()
   @IsString()
@@ -15,7 +19,15 @@ export class CreateNotificationDto {
 
   @IsOptional()
   @IsString()
+  kind?: string;
+
+  @IsOptional()
+  @IsString()
   targetRole?: string; // 'ALL', 'ADMIN', 'TEACHER', 'STUDENT', 'PARENT'
+
+  @IsOptional()
+  @IsString()
+  audienceRole?: string;
 
   @IsOptional()
   @IsString()
