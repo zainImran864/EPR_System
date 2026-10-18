@@ -13,15 +13,15 @@ export const Card: React.FC<CardProps> = ({
   ...props
 }) => {
   const variantStyles = {
-    default: "bg-white border-slate-200/80 shadow-sm",
-    subtle: "bg-slate-50 border-slate-200 shadow-none",
-    highlighted: "bg-white border-[#0D9488]/30 shadow-md ring-1 ring-[#0D9488]/10",
+    default: "bg-white border-slate-200/80 shadow-xs",
+    subtle: "bg-slate-50/80 border-slate-200/80 shadow-none",
+    highlighted: "bg-white border-primary/30 shadow-md ring-1 ring-primary/10",
   };
 
   return (
     <div
       className={cn(
-        "rounded-xl border transition-all duration-150 overflow-hidden",
+        "rounded-2xl border transition-all duration-150 overflow-hidden",
         variantStyles[variant],
         className
       )}
@@ -101,6 +101,7 @@ export interface StatCardProps {
     isPositive: boolean;
   };
   icon?: React.ReactNode;
+  onClick?: () => void;
   className?: string;
 }
 
@@ -110,21 +111,27 @@ export const StatCard: React.FC<StatCardProps> = ({
   subtitle,
   trend,
   icon,
+  onClick,
   className,
 }) => {
   return (
     <div
+      onClick={onClick}
       className={cn(
-        "p-5 bg-white rounded-xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:shadow-md hover:border-slate-300 transition-all duration-200 group",
+        "relative p-5 bg-white rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between hover:shadow-md hover:border-slate-300/90 hover:-translate-y-0.5 transition-all duration-200 group overflow-hidden",
+        onClick && "cursor-pointer",
         className
       )}
     >
-      <div className="flex items-start justify-between">
+      {/* Subtle top brand accent bar on hover */}
+      <div className="absolute inset-x-0 top-0 h-0.5 bg-primary opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+
+      <div className="flex items-start justify-between gap-3">
         <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
           {title}
         </span>
         {icon && (
-          <div className="w-10 h-10 rounded-lg bg-[#F0FDFA] text-[#0D9488] flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+          <div className="w-10 h-10 rounded-xl bg-primary-50 text-primary border border-primary-100/80 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-primary group-hover:text-white transition-all duration-200">
             {icon}
           </div>
         )}
