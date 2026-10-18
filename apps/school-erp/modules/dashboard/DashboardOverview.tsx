@@ -10,6 +10,8 @@ import {
   Plus,
   Clock,
   BookOpen,
+  DollarSign,
+  Megaphone,
 } from "lucide-react";
 import { StatCard, Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -63,19 +65,16 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0D9488] to-[#115E59] p-6 sm:p-8 text-white shadow-lg shadow-teal-900/10">
+      <div className="relative overflow-hidden rounded-2xl bg-brand-hero p-6 sm:p-8 text-white shadow-lg shadow-slate-900/10">
         <div className="relative z-10 max-w-2xl">
-          <Badge
-            variant="primary"
-            size="sm"
-            className="bg-teal-800/80 text-teal-100 border-teal-600/50 mb-3"
-          >
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 border border-white/20 text-[11px] font-semibold tracking-wide text-white/95 mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
             Academic Session {school?.activeYear ?? "2026-2027"}
-          </Badge>
+          </div>
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
             {school?.name ?? "Your Institution"}
           </h2>
-          <p className="mt-1.5 text-xs sm:text-sm text-teal-100 max-w-lg leading-relaxed">
+          <p className="mt-1.5 text-xs sm:text-sm text-white/85 max-w-lg leading-relaxed">
             Manage student enrollments, track daily attendance, record examination
             scores, and manage class assignments across your institution.
           </p>
@@ -85,8 +84,8 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               variant="secondary"
               size="sm"
               onClick={onOpenAddStudent}
-              leftIcon={<Plus className="w-4 h-4 text-[#0D9488]" />}
-              className="bg-white text-[#0F766E] hover:bg-slate-50 border-none font-semibold shadow-xs"
+              leftIcon={<Plus className="w-4 h-4 text-primary" />}
+              className="bg-white text-primary-700 hover:bg-slate-50 border-none font-semibold shadow-xs"
             >
               Enroll New Student
             </Button>
@@ -95,7 +94,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               size="sm"
               onClick={() => onNavigate("attendance")}
               leftIcon={<CalendarCheck className="w-4 h-4" />}
-              className="border-teal-400/40 text-white hover:bg-teal-700/50 bg-transparent font-medium"
+              className="border-white/30 text-white hover:bg-white/15 bg-white/5 font-medium"
             >
               Record Attendance
             </Button>
@@ -104,15 +103,15 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               size="sm"
               onClick={() => onNavigate("marks")}
               leftIcon={<Award className="w-4 h-4" />}
-              className="text-teal-100 hover:bg-teal-700/50 hover:text-white"
+              className="text-white/90 hover:bg-white/15 hover:text-white"
             >
               Enter Marks
             </Button>
           </div>
         </div>
 
-        <div className="absolute -top-12 -right-12 w-64 h-64 rounded-full bg-white/5 pointer-events-none" />
-        <div className="absolute -bottom-16 right-24 w-48 h-48 rounded-full bg-teal-400/10 pointer-events-none" />
+        <div className="absolute -top-12 -right-12 w-64 h-64 rounded-full bg-white/10 pointer-events-none" />
+        <div className="absolute -bottom-16 right-24 w-48 h-48 rounded-full bg-white/5 pointer-events-none" />
       </div>
 
       {/* KPI Stat Cards */}
@@ -120,14 +119,16 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         <StatCard
           title="Total Students"
           value={stats.studentCount}
-          subtitle="Active enrollments"
+          subtitle="Active enrollments · View directory"
           icon={<GraduationCap className="w-5 h-5" />}
+          onClick={() => onNavigate("students")}
         />
         <StatCard
           title="Teaching Staff"
           value={stats.teacherCount}
-          subtitle="Active faculty"
+          subtitle="Active faculty · Manage staff"
           icon={<Users className="w-5 h-5" />}
+          onClick={() => onNavigate("teachers")}
         />
         <StatCard
           title="Today's Attendance"
@@ -139,16 +140,51 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           subtitle={
             stats.todayAttendanceRate !== null
               ? `${attTotal} students recorded`
-              : "Not recorded yet"
+              : "Click to mark attendance"
           }
           icon={<CalendarCheck className="w-5 h-5" />}
+          onClick={() => onNavigate("attendance")}
         />
         <StatCard
           title="Average Exam Score"
           value={stats.avgExamScore !== null ? `${stats.avgExamScore}%` : "—"}
-          subtitle={stats.avgExamScore !== null ? "Across published marks" : "No marks yet"}
+          subtitle={stats.avgExamScore !== null ? "Across published marks" : "Click to enter marks"}
           icon={<Award className="w-5 h-5" />}
+          onClick={() => onNavigate("marks")}
         />
+      </div>
+
+      {/* Quick Module Shortcuts */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { key: "classes", label: "Classes & Sections", meta: `${stats.classCount} grades · ${stats.sectionCount} sections`, icon: BookOpen },
+          { key: "timetable", label: "Class Timetable", meta: "Schedule & periods", icon: Clock },
+          { key: "fees", label: "Fee & Challans", meta: "Invoices & vouchers", icon: DollarSign },
+          { key: "announcements", label: "Announcements", meta: "Broadcast notices", icon: Megaphone },
+        ].map((item) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.key}
+              type="button"
+              onClick={() => onNavigate(item.key)}
+              className="group flex items-center gap-3 p-3.5 rounded-xl bg-white border border-slate-200/80 hover:border-primary/40 hover:shadow-xs transition-all text-left cursor-pointer"
+            >
+              <div className="w-9 h-9 rounded-lg bg-primary-50 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
+                <Icon className="w-4 h-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-semibold text-slate-800 group-hover:text-primary truncate transition-colors">
+                  {item.label}
+                </div>
+                <div className="text-[11px] text-slate-400 truncate">
+                  {item.meta}
+                </div>
+              </div>
+              <ArrowUpRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-primary shrink-0 transition-colors" />
+            </button>
+          );
+        })}
       </div>
 
       {/* Charts Row */}
@@ -218,7 +254,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                 size="sm"
                 onClick={() => onNavigate("students")}
                 rightIcon={<ArrowUpRight className="w-3.5 h-3.5" />}
-                className="text-xs text-[#0D9488] hover:bg-teal-50"
+                className="text-xs text-primary hover:bg-primary-50"
               >
                 View All
               </Button>
@@ -330,7 +366,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
 
           <Card variant="subtle">
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[#CCFBF1] text-[#0D9488] flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-primary-100 text-primary flex items-center justify-center shrink-0">
                 <BookOpen className="w-4 h-4" />
               </div>
               <div className="text-xs">

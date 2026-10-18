@@ -230,7 +230,8 @@ export const StudentDirectory: React.FC = () => {
             size="xs"
             onClick={() => handlePromoteSingle(s)}
             title="Promote to Next Grade"
-            className="p-1 text-slate-400 hover:text-teal-600"
+            aria-label={`Promote ${s.firstName} ${s.lastName}`}
+            className="p-1 text-slate-400 hover:text-primary"
           >
             <ArrowUpRight className="w-4 h-4" />
           </Button>
@@ -239,6 +240,7 @@ export const StudentDirectory: React.FC = () => {
             size="xs"
             onClick={() => handleDemoteSingle(s)}
             title="Demote to Previous Grade"
+            aria-label={`Demote ${s.firstName} ${s.lastName}`}
             className="p-1 text-slate-400 hover:text-rose-600"
           >
             <ArrowDownRight className="w-4 h-4" />
@@ -248,7 +250,8 @@ export const StudentDirectory: React.FC = () => {
             size="xs"
             onClick={() => setEditing(s as unknown as EditStudentRow)}
             title="Edit"
-            className="p-1 text-slate-400 hover:text-[#0D9488]"
+            aria-label={`Edit ${s.firstName} ${s.lastName}`}
+            className="p-1 text-slate-400 hover:text-primary"
           >
             <Pencil className="w-4 h-4" />
           </Button>
@@ -259,6 +262,7 @@ export const StudentDirectory: React.FC = () => {
               setStudentStatus(s._id, s.status === "active" ? "inactive" : "active")
             }
             title={s.status === "active" ? "Deactivate" : "Activate"}
+            aria-label={`${s.status === "active" ? "Deactivate" : "Activate"} ${s.firstName} ${s.lastName}`}
             className="p-1 text-slate-400 hover:text-slate-700"
           >
             <Power className="w-4 h-4" />
@@ -268,6 +272,7 @@ export const StudentDirectory: React.FC = () => {
             size="xs"
             onClick={() => handleDelete(s)}
             title="Delete student"
+            aria-label={`Delete ${s.firstName} ${s.lastName}`}
             className="p-1 text-slate-400 hover:text-rose-600"
           >
             <Trash2 className="w-4 h-4" />
@@ -304,13 +309,15 @@ export const StudentDirectory: React.FC = () => {
     }
   };
 
+  const hasActiveFilters = Boolean(filters.search || filters.classId || filters.status);
+
   return (
     <div className="space-y-5">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <GraduationCap className="w-5 h-5 text-[#0D9488]" />
+            <GraduationCap className="w-5 h-5 text-primary" />
             Student Directory
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
@@ -318,7 +325,7 @@ export const StudentDirectory: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
           <Button
             variant="outline"
             size="sm"
@@ -351,46 +358,78 @@ export const StudentDirectory: React.FC = () => {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="p-4 bg-white rounded-xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="w-full sm:w-80">
-          <Input
-            placeholder="Search by name, roll no, admission, guardian..."
-            value={filters.search ?? ""}
-            onChange={(e) => setFilters({ search: e.target.value })}
-            leftIcon={<Search className="w-4 h-4" />}
-            className="bg-slate-50 text-xs"
-          />
+      <div className="p-4 bg-white rounded-xl border border-slate-200/80 shadow-xs space-y-3">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="w-full sm:w-80">
+            <Input
+              placeholder="Search by name, roll no, admission, guardian..."
+              value={filters.search ?? ""}
+              onChange={(e) => setFilters({ search: e.target.value })}
+              leftIcon={<Search className="w-4 h-4" />}
+              className="bg-slate-50 text-xs"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+            <div className="w-44">
+              <Select
+                value={filters.classId ?? ""}
+                onChange={(e) => setFilters({ classId: e.target.value || undefined })}
+                options={[{ value: "", label: "All Grades" }, ...classOptions]}
+                className="text-xs py-1.5"
+              />
+            </div>
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="xs"
+                onClick={() =>
+                  setFilters({ search: "", classId: undefined, status: undefined })
+                }
+                className="text-xs text-primary hover:bg-primary-50"
+              >
+                Reset Filters
+              </Button>
+            )}
+            <Badge variant="neutral" size="md" isMono>
+              {totalItems} Students
+            </Badge>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2.5 w-full sm:w-auto">
-          <div className="w-44">
-            <Select
-              value={filters.classId ?? ""}
-              onChange={(e) => setFilters({ classId: e.target.value || undefined })}
-              options={[{ value: "", label: "All Grades" }, ...classOptions]}
-              className="text-xs py-1.5"
-            />
-          </div>
-          <div className="w-40">
-            <Select
-              value={filters.status ?? ""}
-              onChange={(e) =>
-                setFilters({
-                  status: (e.target.value || undefined) as StudentRow["status"] | undefined,
-                })
-              }
-              options={[
-                { value: "", label: "All Status" },
-                { value: "active", label: "Active" },
-                { value: "inactive", label: "Inactive" },
-                { value: "transferred", label: "Transferred" },
-              ]}
-              className="text-xs py-1.5"
-            />
-          </div>
-          <Badge variant="neutral" size="md">
-            {totalItems} Students
-          </Badge>
+        {/* Quick Status Filter Pills */}
+        <div className="flex items-center gap-1.5 pt-2 border-t border-slate-100 overflow-x-auto">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mr-1">
+            Status:
+          </span>
+          {(
+            [
+              { value: "", label: "All Students" },
+              { value: "active", label: "Active" },
+              { value: "inactive", label: "Inactive" },
+              { value: "transferred", label: "Transferred" },
+            ] as const
+          ).map((pill) => {
+            const active = (filters.status ?? "") === pill.value;
+            return (
+              <button
+                key={pill.value || "all"}
+                type="button"
+                onClick={() =>
+                  setFilters({
+                    status: (pill.value || undefined) as StudentRow["status"] | undefined,
+                  })
+                }
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                  active
+                    ? "bg-primary text-white shadow-2xs"
+                    : "text-slate-600 hover:bg-slate-100"
+                }`}
+              >
+                {pill.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -404,9 +443,21 @@ export const StudentDirectory: React.FC = () => {
         emptyTitle="No students found"
         emptyDescription="Try adjusting filters, seed demo data, or enroll a new student."
         emptyAction={
-          <Button variant="primary" size="sm" onClick={() => setIsAddModalOpen(true)}>
-            Add Student
-          </Button>
+          hasActiveFilters ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setFilters({ search: "", classId: undefined, status: undefined })
+              }
+            >
+              Reset Filters
+            </Button>
+          ) : (
+            <Button variant="primary" size="sm" onClick={() => setIsAddModalOpen(true)}>
+              Add Student
+            </Button>
+          )
         }
       />
 

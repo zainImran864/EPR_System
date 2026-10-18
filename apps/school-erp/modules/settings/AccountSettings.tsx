@@ -124,7 +124,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({
   const chooseTheme = async (hex: string) => {
     try {
       await setThemeColor(hex); // applies instantly, then persists
-      success("Sidebar theme updated.");
+      success("Portal accent theme updated.");
     } catch {
       error("Could not update theme.");
     }
@@ -152,7 +152,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({
     <div className="space-y-6 max-w-4xl mx-auto">
       <div>
         <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-          <User className="w-5 h-5 text-[#0D9488]" />
+          <User className="w-5 h-5 text-primary" />
           My Account
         </h2>
         <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
@@ -173,7 +173,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}
-                  className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#0D9488] text-white flex items-center justify-center shadow-md hover:bg-[#0B7A70] transition-colors"
+                  className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center shadow-md hover:bg-primary-hover transition-colors"
                   title="Change picture"
                   disabled={uploading}
                 >
@@ -190,7 +190,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({
               <div>
                 <p className="text-sm font-semibold text-slate-900">{user?.email}</p>
                 <p className="text-xs text-slate-500 capitalize">{user?.role}</p>
-                {uploading && <p className="text-[11px] text-teal-600 mt-0.5">Uploading…</p>}
+                {uploading && <p className="text-[11px] text-primary mt-0.5">Uploading…</p>}
               </div>
             </div>
 
@@ -225,7 +225,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Lock className="w-4 h-4 text-[#0D9488]" />
+            <Lock className="w-4 h-4 text-primary" />
             Change Password
           </CardTitle>
         </CardHeader>
@@ -268,7 +268,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-[#0D9488]" />
+            <ShieldCheck className="w-4 h-4 text-primary" />
             Security & Notifications
           </CardTitle>
         </CardHeader>
@@ -302,18 +302,17 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({
         </CardContent>
       </Card>
 
-      {/* Sidebar theme (per-user — only you see your colour) */}
+      {/* Portal & Sidebar theme (per-user — only you see your colour) */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Palette className="w-4 h-4" style={{ color: currentTheme }} />
-            Sidebar Theme
+            Portal &amp; Sidebar Accent Theme
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-xs text-slate-500 mb-3">
-            Pick your sidebar accent colour. This is personal to your account — other
-            users keep their own.
+            Pick your personal brand accent colour (default: Institutional Teal). Updates your sidebar, buttons, badges, and interactive highlights across the portal.
           </p>
           <div className="flex flex-wrap gap-3">
             {THEME_OPTIONS.map((c) => {
@@ -324,7 +323,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({
                   key={c.hex}
                   type="button"
                   onClick={() => chooseTheme(c.hex)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-all ${
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
                     selected
                       ? "border-slate-800 bg-slate-50 ring-2 ring-slate-800/10"
                       : "border-slate-200 hover:bg-slate-50"
@@ -352,7 +351,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Monitor className="w-4 h-4 text-[#0D9488]" />
+              <Monitor className="w-4 h-4 text-primary" />
               Remembered Devices
             </CardTitle>
           </CardHeader>

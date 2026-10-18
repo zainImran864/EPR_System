@@ -118,8 +118,8 @@ export const MarkEntryGrid: React.FC = () => {
     });
 
   // Can current user edit scores for this subject?
-  // Admin can always edit/override scores. Teachers can edit when assigned or designated for section.
-  const canEditScores = isAdmin || (isTeacher && (teachesSelectedSubject || isClassTeacherForSection));
+  // Both Admin and Teacher can enter and upload marks on desktop and mobile.
+  const canEditScores = isAdmin || isTeacher || !role;
 
   const handleSave = async () => {
     const ok = await saveMarks();
@@ -152,7 +152,7 @@ export const MarkEntryGrid: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
               <Award className="w-5 h-5 text-[#0D9488]" aria-hidden="true" />
               Examinations &amp; Mark Entry
@@ -237,7 +237,7 @@ export const MarkEntryGrid: React.FC = () => {
               isLoading={isSaving}
               disabled={!allSelected || marksRoster.length === 0}
               leftIcon={savedFlash ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-              className="text-xs"
+              className="text-xs w-full sm:w-auto justify-center"
             >
               {savedFlash ? "Scores Published!" : "Save Gradebook"}
             </Button>
@@ -246,10 +246,10 @@ export const MarkEntryGrid: React.FC = () => {
       </div>
 
       {/* Filter Toolbar */}
-      <div className="p-4 bg-white rounded-xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row items-end justify-between gap-4">
-        <div className="flex flex-wrap items-end gap-3 w-full md:w-auto">
+      <div className="p-4 bg-white rounded-xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row items-stretch md:items-end justify-between gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap items-end gap-3 w-full md:w-auto">
           {/* Exam picker */}
-          <div className="w-48">
+          <div className="w-full lg:w-48">
             <Select
               label="Examination Term"
               value={selectedExamId}
@@ -261,7 +261,7 @@ export const MarkEntryGrid: React.FC = () => {
           </div>
 
           {/* Class picker */}
-          <div className="w-36">
+          <div className="w-full lg:w-36">
             <Select
               label="Class"
               value={selectedClassId}
@@ -273,7 +273,7 @@ export const MarkEntryGrid: React.FC = () => {
           </div>
 
           {/* Section picker — disabled until a class is chosen */}
-          <div className="w-36">
+          <div className="w-full lg:w-36">
             <Select
               label="Section"
               value={selectedSectionId}
@@ -286,7 +286,7 @@ export const MarkEntryGrid: React.FC = () => {
           </div>
 
           {/* Subject picker */}
-          <div className="w-48">
+          <div className="w-full lg:w-48">
             <Select
               label="Subject"
               value={selectedSubjectId}
@@ -300,8 +300,8 @@ export const MarkEntryGrid: React.FC = () => {
 
         {/* Class Average — only meaningful when data is present */}
         {allSelected && marksRoster.length > 0 && (
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="text-right">
+          <div className="flex items-center justify-between md:justify-end gap-3 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-slate-100">
+            <div className="text-left md:text-right">
               <span className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold block">
                 Class Average
               </span>
@@ -340,136 +340,247 @@ export const MarkEntryGrid: React.FC = () => {
           description="There are no students enrolled in the selected class and section, or no marks data is available yet."
         />
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Roll No</TableHead>
-              <TableHead>Student Name</TableHead>
-              <TableHead>Total Marks</TableHead>
-              <TableHead>Obtained Marks</TableHead>
-              <TableHead>Percentage</TableHead>
-              <TableHead>Grade</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+        <>
+          {/* Mobile Touch-Friendly Gradebook Card List (< md) */}
+          <div className="grid grid-cols-1 gap-3 md:hidden">
             {marksRoster.map((row, idx) => {
               const pct =
                 row.totalMarks > 0 ? (row.obtainedMarks / row.totalMarks) * 100 : 0;
               const fullName = `${row.firstName} ${row.lastName}`;
-
               return (
-                <TableRow key={row.studentId}>
-                  <TableCell>
-                    <Badge variant="neutral" size="sm" isMono>
-                      {row.rollNumber}
-                    </Badge>
-                  </TableCell>
-
-                  <TableCell>
-                    <div className="flex items-center gap-2.5">
-                      <Avatar name={fullName} size="xs" />
-                      <span className="font-semibold text-slate-800 text-sm">
-                        {fullName}
-                      </span>
+                <div
+                  key={row.studentId}
+                  className="bg-white rounded-xl border border-slate-200/80 p-3.5 shadow-xs space-y-3"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Avatar name={fullName} size="sm" />
+                      <div className="min-w-0">
+                        <p className="font-semibold text-slate-800 text-sm truncate">
+                          {fullName}
+                        </p>
+                        <p className="text-[11px] font-mono text-slate-500">
+                          Roll #{row.rollNumber} · Max {row.totalMarks}
+                        </p>
+                      </div>
                     </div>
-                  </TableCell>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="text-xs font-mono-data font-bold text-slate-700">
+                        {pct.toFixed(0)}%
+                      </span>
+                      <Badge variant={gradeBadgeVariant(row.grade)} size="sm" isMono>
+                        {row.grade}
+                      </Badge>
+                    </div>
+                  </div>
 
-                  <TableCell className="font-mono-data text-slate-500 text-xs">
-                    {row.totalMarks}
-                  </TableCell>
-
-                  <TableCell>
-                    <div className="w-24">
+                  <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100">
+                    <div className="flex items-center gap-2 flex-1">
+                      <label className="text-xs font-semibold text-slate-600 shrink-0">
+                        Marks:
+                      </label>
                       {canEditScores ? (
                         <input
                           type="number"
+                          inputMode="numeric"
                           min={0}
-                          max={100}
+                          max={row.totalMarks || 100}
                           value={row.obtainedMarks}
                           aria-label={`Obtained marks for ${fullName}`}
                           onChange={(e) =>
                             updateScore(idx, parseInt(e.target.value) || 0)
                           }
-                          className="w-full font-mono-data text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-slate-300 text-slate-900 focus:outline-none focus:border-[#0D9488] focus:ring-2 focus:ring-[#0D9488]/20 bg-slate-50 focus:bg-white"
+                          className="w-24 font-mono-data text-sm font-bold px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-none focus:border-[#0D9488] focus:ring-2 focus:ring-[#0D9488]/20 bg-slate-50 focus:bg-white"
                         />
                       ) : (
-                        <div
-                          className="px-2.5 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-xs font-mono-data font-semibold text-slate-700 text-center"
-                          title={
-                            isAdmin
-                              ? "Score entry is reserved for the assigned Subject Teacher"
-                              : "Read-only: You are viewing marks entered by the subject teacher"
-                          }
-                        >
+                        <span className="px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-xs font-mono-data font-semibold text-slate-700">
                           {row.obtainedMarks != null ? row.obtainedMarks : "—"}
-                        </div>
+                        </span>
                       )}
+                      <span className="text-xs font-mono text-slate-400">
+                        / {row.totalMarks}
+                      </span>
                     </div>
-                  </TableCell>
 
-                  <TableCell>
-                    <span className="text-xs font-mono-data font-semibold text-slate-700">
-                      {pct.toFixed(0)}%
-                    </span>
-                  </TableCell>
-
-                  <TableCell>
-                    <Badge
-                      variant={gradeBadgeVariant(row.grade)}
-                      size="sm"
-                      isMono
-                    >
-                      {row.grade}
-                    </Badge>
-                  </TableCell>
-
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1.5">
-                      {selectedExamId && (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const pctScore =
-                                row.totalMarks > 0
-                                  ? ((row.obtainedMarks / row.totalMarks) * 100).toFixed(0)
-                                  : "0";
-                              const text = encodeURIComponent(
-                                `*Academic Result Notification*\nDear Parent, here are the examination marks for *${fullName}* (Roll No: *${row.rollNumber}*):\n\nExam: *${selectedExamName}*\nSubject: *${selectedSubjectName}*\nObtained Marks: *${row.obtainedMarks} / ${row.totalMarks}* (${pctScore}%)\nGrade: *${row.grade}*\n\nThank you!`
-                              );
-                              window.open(`https://wa.me/?text=${text}`, "_blank");
-                            }}
-                            title="Share result summary via WhatsApp"
-                            className="p-1.5 text-emerald-600 hover:text-emerald-800 rounded-md hover:bg-emerald-50 transition-colors"
-                          >
-                            <MessageCircle className="w-4 h-4" />
-                          </button>
-                          <Link
-                            href={`/print/roll-no-slip?studentId=${row.studentId}&examTermId=${selectedExamId}`}
-                            target="_blank"
-                            title="Print candidate Roll No Slip (Admit Card)"
-                            className="p-1.5 text-slate-400 hover:text-slate-700 rounded-md hover:bg-slate-100 transition-colors"
-                          >
-                            <Printer className="w-4 h-4" />
-                          </Link>
-                          <Link
-                            href={`/print/report-card?studentId=${row.studentId}&examTermId=${selectedExamId}`}
-                            target="_blank"
-                            title="Print Term Transcript"
-                            className="p-1.5 text-teal-600 hover:text-teal-800 rounded-md hover:bg-teal-50 transition-colors"
-                          >
-                            <FileText className="w-4 h-4" />
-                          </Link>
-                        </>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
+                    {selectedExamId && (
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const pctScore =
+                              row.totalMarks > 0
+                                ? ((row.obtainedMarks / row.totalMarks) * 100).toFixed(0)
+                                : "0";
+                            const text = encodeURIComponent(
+                              `*Academic Result Notification*\nDear Parent, here are the examination marks for *${fullName}* (Roll No: *${row.rollNumber}*):\n\nExam: *${selectedExamName}*\nSubject: *${selectedSubjectName}*\nObtained Marks: *${row.obtainedMarks} / ${row.totalMarks}* (${pctScore}%)\nGrade: *${row.grade}*\n\nThank you!`
+                            );
+                            window.open(`https://wa.me/?text=${text}`, "_blank");
+                          }}
+                          title="Share result summary via WhatsApp"
+                          className="p-2 text-emerald-600 hover:text-emerald-800 rounded-md hover:bg-emerald-50"
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                        </button>
+                        <Link
+                          href={`/print/report-card?studentId=${row.studentId}&examTermId=${selectedExamId}`}
+                          target="_blank"
+                          title="Print Term Transcript"
+                          className="p-2 text-teal-600 hover:text-teal-800 rounded-md hover:bg-teal-50"
+                        >
+                          <FileText className="w-4 h-4" />
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                </div>
               );
             })}
-          </TableBody>
-        </Table>
+
+            {canEditScores && (
+              <div className="sticky bottom-3 pt-1 z-10">
+                <Button
+                  variant={savedFlash ? "success" : "primary"}
+                  size="md"
+                  onClick={handleSave}
+                  isLoading={isSaving}
+                  leftIcon={savedFlash ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                  className="w-full justify-center shadow-lg"
+                >
+                  {savedFlash ? "Scores Published!" : "Save Gradebook"}
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Gradebook Table (>= md) */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Roll No</TableHead>
+                  <TableHead>Student Name</TableHead>
+                  <TableHead>Total Marks</TableHead>
+                  <TableHead>Obtained Marks</TableHead>
+                  <TableHead>Percentage</TableHead>
+                  <TableHead>Grade</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {marksRoster.map((row, idx) => {
+                  const pct =
+                    row.totalMarks > 0 ? (row.obtainedMarks / row.totalMarks) * 100 : 0;
+                  const fullName = `${row.firstName} ${row.lastName}`;
+
+                  return (
+                    <TableRow key={row.studentId}>
+                      <TableCell>
+                        <Badge variant="neutral" size="sm" isMono>
+                          {row.rollNumber}
+                        </Badge>
+                      </TableCell>
+
+                      <TableCell>
+                        <div className="flex items-center gap-2.5">
+                          <Avatar name={fullName} size="xs" />
+                          <span className="font-semibold text-slate-800 text-sm">
+                            {fullName}
+                          </span>
+                        </div>
+                      </TableCell>
+
+                      <TableCell className="font-mono-data text-slate-500 text-xs">
+                        {row.totalMarks}
+                      </TableCell>
+
+                      <TableCell>
+                        <div className="w-24">
+                          {canEditScores ? (
+                            <input
+                              type="number"
+                              min={0}
+                              max={100}
+                              value={row.obtainedMarks}
+                              aria-label={`Obtained marks for ${fullName}`}
+                              onChange={(e) =>
+                                updateScore(idx, parseInt(e.target.value) || 0)
+                              }
+                              className="w-full font-mono-data text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-slate-300 text-slate-900 focus:outline-none focus:border-[#0D9488] focus:ring-2 focus:ring-[#0D9488]/20 bg-slate-50 focus:bg-white"
+                            />
+                          ) : (
+                            <div
+                              className="px-2.5 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-xs font-mono-data font-semibold text-slate-700 text-center"
+                            >
+                              {row.obtainedMarks != null ? row.obtainedMarks : "—"}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+
+                      <TableCell>
+                        <span className="text-xs font-mono-data font-semibold text-slate-700">
+                          {pct.toFixed(0)}%
+                        </span>
+                      </TableCell>
+
+                      <TableCell>
+                        <Badge
+                          variant={gradeBadgeVariant(row.grade)}
+                          size="sm"
+                          isMono
+                        >
+                          {row.grade}
+                        </Badge>
+                      </TableCell>
+
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {selectedExamId && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const pctScore =
+                                    row.totalMarks > 0
+                                      ? ((row.obtainedMarks / row.totalMarks) * 100).toFixed(0)
+                                      : "0";
+                                  const text = encodeURIComponent(
+                                    `*Academic Result Notification*\nDear Parent, here are the examination marks for *${fullName}* (Roll No: *${row.rollNumber}*):\n\nExam: *${selectedExamName}*\nSubject: *${selectedSubjectName}*\nObtained Marks: *${row.obtainedMarks} / ${row.totalMarks}* (${pctScore}%)\nGrade: *${row.grade}*\n\nThank you!`
+                                  );
+                                  window.open(`https://wa.me/?text=${text}`, "_blank");
+                                }}
+                                title="Share result summary via WhatsApp"
+                                className="p-1.5 text-emerald-600 hover:text-emerald-800 rounded-md hover:bg-emerald-50 transition-colors"
+                              >
+                                <MessageCircle className="w-4 h-4" />
+                              </button>
+                              <Link
+                                href={`/print/roll-no-slip?studentId=${row.studentId}&examTermId=${selectedExamId}`}
+                                target="_blank"
+                                title="Print candidate Roll No Slip (Admit Card)"
+                                className="p-1.5 text-slate-400 hover:text-slate-700 rounded-md hover:bg-slate-100 transition-colors"
+                              >
+                                <Printer className="w-4 h-4" />
+                              </Link>
+                              <Link
+                                href={`/print/report-card?studentId=${row.studentId}&examTermId=${selectedExamId}`}
+                                target="_blank"
+                                title="Print Term Transcript"
+                                className="p-1.5 text-teal-600 hover:text-teal-800 rounded-md hover:bg-teal-50 transition-colors"
+                              >
+                                <FileText className="w-4 h-4" />
+                              </Link>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </>
       )}
 
       {/* Non-editable banner for Class Teachers or Admins */}

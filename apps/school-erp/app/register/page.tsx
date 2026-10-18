@@ -324,25 +324,58 @@ export default function RegisterPage() {
             leftIcon={<User className="w-4 h-4 text-slate-400" />}
             required
           />
-          <Input
-            label="Account Password *"
-            type="password"
-            placeholder="min. 6 characters"
-            value={form.password}
-            onChange={(e) => set("password", e.target.value)}
-            leftIcon={<Lock className="w-4 h-4 text-slate-400" />}
-            error={
-              form.password && form.password.length < 6
-                ? "At least 6 characters required"
-                : undefined
-            }
-            required
-          />
+          <div>
+            <Input
+              label="Account Password *"
+              type="password"
+              placeholder="min. 6 characters"
+              value={form.password}
+              onChange={(e) => set("password", e.target.value)}
+              leftIcon={<Lock className="w-4 h-4 text-slate-400" />}
+              error={
+                form.password && form.password.length < 6
+                  ? "At least 6 characters required"
+                  : undefined
+              }
+              required
+            />
+            {form.password.length > 0 && (
+              <div className="mt-2 space-y-1">
+                <div className="grid grid-cols-4 gap-1">
+                  {[1, 2, 3, 4].map((seg) => {
+                    const score =
+                      (form.password.length >= 6 ? 1 : 0) +
+                      (form.password.length >= 10 ? 1 : 0) +
+                      (/[A-Z]/.test(form.password) && /[0-9]/.test(form.password) ? 1 : 0) +
+                      (/[^A-Za-z0-9]/.test(form.password) ? 1 : 0);
+                    const active = seg <= Math.max(1, score);
+                    const barColor =
+                      score <= 1
+                        ? "bg-rose-500"
+                        : score === 2
+                          ? "bg-amber-500"
+                          : score === 3
+                            ? "bg-teal-500"
+                            : "bg-emerald-500";
+                    return (
+                      <div
+                        key={seg}
+                        className={`h-1 rounded-full transition-colors ${active ? barColor : "bg-slate-200"}`}
+                      />
+                    );
+                  })}
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  Use 8+ chars with uppercase, numbers &amp; symbols for maximum security.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         {emailPreview && (
-          <div className="rounded-xl bg-teal-50/80 border border-teal-200 p-3.5 flex items-center justify-between">
-            <div>
+          <div className="rounded-xl bg-teal-50/80 border border-teal-200 p-3.5 flex items-center justify-between gap-3">
+            <div className="min-w-0">
               <span className="text-[10px] uppercase tracking-wider text-teal-800 font-bold block">
                 Auto-Generated Admin Login Email
               </span>
@@ -350,9 +383,16 @@ export default function RegisterPage() {
                 {emailPreview}
               </div>
             </div>
-            <span className="text-[10px] text-teal-700 bg-white/80 px-2 py-1 rounded-md border border-teal-200/60 font-medium">
-              Ready
-            </span>
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard?.writeText(emailPreview);
+                success("Admin login email copied to clipboard!");
+              }}
+              className="text-[10px] text-teal-700 bg-white hover:bg-teal-100/60 px-2.5 py-1 rounded-md border border-teal-200/80 font-semibold transition-colors shrink-0"
+            >
+              Copy Email
+            </button>
           </div>
         )}
 
