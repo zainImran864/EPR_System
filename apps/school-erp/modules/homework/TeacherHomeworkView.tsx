@@ -75,7 +75,6 @@ export function TeacherHomeworkView() {
   const [activeHomework, setActiveHomework] = useState<HomeworkItem | null>(null);
   const [submissions, setSubmissions] = useState<SubmissionDetail[]>([]);
   const [loadingSubmissions, setLoadingSubmissions] = useState(false);
-  const [gradingId, setGradingId] = useState<string | null>(null);
   const [marksInput, setMarksInput] = useState<{ [id: string]: number }>({});
   const [feedbackInput, setFeedbackInput] = useState<{ [id: string]: string }>({});
   const [savingGrade, setSavingGrade] = useState(false);
@@ -138,14 +137,14 @@ export function TeacherHomeworkView() {
   };
 
   const openSubmissions = async (hw: HomeworkItem) => {
-    setActiveHomework(hw);
     try {
+      setActiveHomework(hw);
       setLoadingSubmissions(true);
-      const details = await homeworkRestApi.getById(hw.id);
-      setSubmissions(details.submissions || []);
+      const data = await homeworkRestApi.getSubmissions(hw.id);
+      setSubmissions(data || []);
       const initialMarks: { [id: string]: number } = {};
       const initialFeedback: { [id: string]: string } = {};
-      (details.submissions || []).forEach((s: SubmissionDetail) => {
+      (data || []).forEach((s: SubmissionDetail) => {
         if (s.marksObtained !== null && s.marksObtained !== undefined) {
           initialMarks[s.id] = s.marksObtained;
         }
@@ -174,7 +173,6 @@ export function TeacherHomeworkView() {
         marksObtained: Number(marks),
         feedback: feedbackInput[submissionId] || undefined,
       });
-      // update local submission
       setSubmissions((prev) =>
         prev.map((s) =>
           s.id === submissionId
@@ -187,7 +185,6 @@ export function TeacherHomeworkView() {
             : s,
         ),
       );
-      setGradingId(null);
       await loadData();
     } catch (err: any) {
       alert(err.message || 'Failed to save grade');
@@ -200,34 +197,33 @@ export function TeacherHomeworkView() {
     if (!confirm('Are you sure you want to delete this homework assignment?')) return;
     try {
       await homeworkRestApi.delete(id);
-      setHomeworkList((prev) => prev.filter((h) => h.id !== id));
-      if (activeHomework?.id === id) setActiveHomework(null);
+      setHomeworkList((prev) => prev.filter((hw) => hw.id !== id));
     } catch (err: any) {
-      alert(err.message || 'Failed to delete homework');
+      alert(err.message || 'Failed to delete assignment');
     }
   };
 
-  const activeClass = classes.find((c) => c.id === selectedClassId);
-  const availableSections = activeClass?.sections || [];
-  const availableSubjects = activeClass?.subjects || [];
+  const selectedClass = classes.find((c) => c.id === selectedClassId);
+  const availableSections = selectedClass?.sections || [];
+  const availableSubjects = selectedClass?.subjects || [];
 
   return (
     <div className="space-y-6">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <BookOpen className="w-6 h-6 text-brand-gold" />
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2.5">
+            <BookOpen className="w-6 h-6 text-teal-600" />
             Homework & Assignments Management
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-500 mt-1">
             Create class assignments with strict deadlines, inspect student answers, and assign grades.
           </p>
         </div>
 
         <button
           onClick={() => setCreateOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm text-black bg-brand-gold hover:bg-amber-400 transition-all shadow-md active:scale-95 self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-white bg-teal-600 hover:bg-teal-700 transition-all shadow-xs active:scale-95 cursor-pointer self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
           Assign New Homework
@@ -236,17 +232,19 @@ export function TeacherHomeworkView() {
 
       {/* Homework List */}
       {loading ? (
-        <div className="p-12 text-center text-slate-400">Loading assignments...</div>
+        <div className="p-12 text-center text-slate-500 bg-white border border-slate-200 rounded-2xl shadow-xs">
+          Loading assignments...
+        </div>
       ) : homeworkList.length === 0 ? (
-        <div className="p-12 text-center border border-white/10 rounded-2xl bg-white/5 backdrop-blur-sm">
-          <BookOpen className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-          <h3 className="text-base font-semibold text-white">No Homework Assigned Yet</h3>
-          <p className="text-sm text-slate-400 mt-1 max-w-sm mx-auto">
+        <div className="p-12 text-center border border-slate-200 rounded-2xl bg-white shadow-xs">
+          <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+          <h3 className="text-base font-semibold text-slate-900">No Homework Assigned Yet</h3>
+          <p className="text-sm text-slate-500 mt-1 max-w-sm mx-auto">
             Click &quot;Assign New Homework&quot; above to create assignments for your class and section.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {homeworkList.map((hw) => {
             const isOverdue = new Date() > new Date(hw.dueDate);
             const submissionsCount = hw.submissions?.length || 0;
@@ -254,49 +252,49 @@ export function TeacherHomeworkView() {
             return (
               <div
                 key={hw.id}
-                className="p-5 rounded-2xl border border-white/10 bg-white/5 flex flex-col justify-between hover:border-white/20 transition-all group"
+                className="p-6 rounded-2xl border border-slate-200 bg-white shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all group"
               >
                 <div>
                   <div className="flex items-start justify-between gap-2 mb-2">
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-gold/15 text-brand-gold border border-brand-gold/30">
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-200">
                       {hw.subject?.name || 'Subject'}
                     </span>
                     <button
                       onClick={() => handleDelete(hw.id)}
-                      className="text-slate-500 hover:text-rose-400 p-1 rounded-lg transition-colors"
+                      className="text-slate-400 hover:text-rose-600 p-1 rounded-lg transition-colors cursor-pointer"
                       title="Delete assignment"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
 
-                  <h3 className="text-base font-bold text-white line-clamp-1">{hw.title}</h3>
-                  <p className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                  <h3 className="text-base font-bold text-slate-900 line-clamp-1">{hw.title}</h3>
+                  <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
                     {hw.description}
                   </p>
 
-                  <div className="mt-4 space-y-1.5 text-xs text-slate-300">
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500">Target:</span>
-                      <span className="font-medium text-white">
+                  <div className="mt-4 space-y-1.5 text-xs">
+                    <div className="flex items-center justify-between text-slate-600">
+                      <span className="text-slate-400">Class & Section:</span>
+                      <span className="font-semibold text-slate-800">
                         {hw.class?.name} - {hw.section?.name}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500">Max Marks:</span>
-                      <span className="font-semibold text-brand-gold">{hw.maxMarks} Marks</span>
+                    <div className="flex items-center justify-between text-slate-600">
+                      <span className="text-slate-400">Maximum Marks:</span>
+                      <span className="font-bold text-teal-700">{hw.maxMarks}</span>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500">Submission Due:</span>
+                    <div className="flex items-center justify-between text-slate-600">
+                      <span className="text-slate-400">Due Deadline:</span>
                       <span
-                        className={`font-medium flex items-center gap-1 ${
-                          isOverdue ? 'text-rose-400' : 'text-emerald-400'
+                        className={`font-semibold flex items-center gap-1 ${
+                          isOverdue ? 'text-rose-600' : 'text-slate-800'
                         }`}
                       >
-                        <Clock className="w-3 h-3" />
-                        {new Date(hw.dueDate).toLocaleDateString(undefined, {
+                        <Clock className="w-3.5 h-3.5" />
+                        {new Date(hw.dueDate).toLocaleString(undefined, {
                           month: 'short',
                           day: 'numeric',
                           hour: '2-digit',
@@ -304,20 +302,25 @@ export function TeacherHomeworkView() {
                         })}
                       </span>
                     </div>
+
+                    {isOverdue && (
+                      <span className="inline-block mt-1 text-[11px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md">
+                        Submissions Locked (Deadline Passed)
+                      </span>
+                    )}
                   </div>
                 </div>
 
-                <div className="mt-5 pt-3 border-t border-white/5 flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                    <Users className="w-3.5 h-3.5" />
-                    <span>{submissionsCount} Submissions</span>
-                  </div>
+                <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
+                  <span className="text-xs text-slate-500 font-medium">
+                    {submissionsCount} Submitted
+                  </span>
 
                   <button
                     onClick={() => openSubmissions(hw)}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-brand-gold hover:text-amber-400 transition-colors"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
                   >
-                    Review Submissions
+                    Review & Grade
                     <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -327,104 +330,110 @@ export function TeacherHomeworkView() {
         </div>
       )}
 
-      {/* Review Submissions Modal */}
+      {/* Review Submissions Modal / Drawer */}
       {activeHomework && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-4xl p-6 shadow-2xl relative max-h-[90vh] flex flex-col">
-            <div className="flex items-start justify-between pb-4 border-b border-white/10">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-4xl max-h-[90vh] shadow-2xl flex flex-col overflow-hidden">
+            <div className="p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
               <div>
-                <span className="text-xs font-semibold text-brand-gold uppercase tracking-wider">
-                  {activeHomework.subject?.name} • {activeHomework.class?.name} - {activeHomework.section?.name}
-                </span>
-                <h2 className="text-xl font-bold text-white mt-0.5">{activeHomework.title}</h2>
-                <p className="text-xs text-slate-400 mt-1">
-                  Due: {new Date(activeHomework.dueDate).toLocaleString()} • Max Marks: {activeHomework.maxMarks}
+                <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <Award className="w-5 h-5 text-teal-600" />
+                  Review Submissions: {activeHomework.title}
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Class: {activeHomework.class?.name} - {activeHomework.section?.name} | Max Points: {activeHomework.maxMarks}
                 </p>
               </div>
-
               <button
                 onClick={() => setActiveHomework(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10"
+                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto py-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
               {loadingSubmissions ? (
-                <div className="p-8 text-center text-slate-400">Loading student submissions...</div>
+                <div className="p-8 text-center text-slate-500">Loading student solutions...</div>
               ) : submissions.length === 0 ? (
-                <div className="p-8 text-center text-slate-400">
-                  No students have submitted solutions yet for this assignment.
+                <div className="p-8 text-center text-slate-500 border border-dashed border-slate-200 rounded-xl">
+                  No students have submitted solutions yet.
                 </div>
               ) : (
                 submissions.map((sub) => {
                   const isGraded = sub.status === 'GRADED';
+                  const isMissed = sub.status === 'MISSED';
 
                   return (
                     <div
                       key={sub.id}
-                      className="p-4 rounded-xl border border-white/10 bg-white/5 space-y-3"
+                      className="p-4 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-all space-y-3"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>
-                          <h4 className="font-semibold text-white text-sm">
+                          <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                             {sub.student?.fullName}
-                            <span className="text-xs text-slate-400 font-normal ml-2">
-                              (Roll: {sub.student?.rollNumber || sub.student?.admissionNumber || 'N/A'})
+                            <span className="text-xs text-slate-500 font-normal">
+                              (Roll: {sub.student?.rollNumber || 'N/A'})
                             </span>
                           </h4>
-                          <span className="text-xs text-slate-400">
-                            Submitted: {new Date(sub.submittedAt).toLocaleString()}
+                          <span className="text-[11px] text-slate-400">
+                            Submitted:{' '}
+                            {new Date(sub.submittedAt).toLocaleString(undefined, {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
                           </span>
                         </div>
 
                         <div className="flex items-center gap-2">
                           {sub.isLate && (
-                            <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/30">
-                              Overdue / Late (0 Marks)
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                              Late Submission
                             </span>
                           )}
-                          <span
-                            className={`px-2 py-0.5 rounded-md text-xs font-semibold ${
-                              isGraded
-                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                            }`}
-                          >
-                            {isGraded ? `Graded: ${sub.marksObtained} / ${activeHomework.maxMarks}` : 'Pending Grading'}
-                          </span>
+                          {isMissed ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                              Locked (0 Marks)
+                            </span>
+                          ) : isGraded ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              Graded: {sub.marksObtained}/{activeHomework.maxMarks}
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                              Pending Grade
+                            </span>
+                          )}
                         </div>
                       </div>
 
-                      {/* Content or Document link */}
+                      {/* Content or link */}
                       {sub.content && (
-                        <div className="p-3 rounded-lg bg-black/40 border border-white/5 text-xs text-slate-300 whitespace-pre-wrap leading-relaxed">
-                          <span className="text-slate-500 font-medium block mb-1">Student Answer:</span>
+                        <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-800 leading-relaxed whitespace-pre-wrap">
                           {sub.content}
                         </div>
                       )}
 
                       {sub.submissionUrl && (
-                        <div className="flex items-center gap-2 text-xs">
-                          <Paperclip className="w-3.5 h-3.5 text-brand-gold" />
-                          <a
-                            href={sub.submissionUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-brand-gold hover:underline font-medium inline-flex items-center gap-1"
-                          >
-                            View Uploaded File / Solution Link
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
-                        </div>
+                        <a
+                          href={sub.submissionUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-700 hover:underline"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          View Uploaded Homework Document / Image
+                        </a>
                       )}
 
-                      {/* Grading Controls */}
-                      <div className="pt-2 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div className="flex flex-1 items-center gap-3">
-                          <div className="w-28">
-                            <label className="block text-[10px] text-slate-400 uppercase font-semibold">Marks</label>
+                      {/* Grading inputs */}
+                      <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div className="flex flex-1 items-center gap-3 w-full sm:w-auto">
+                          <div className="w-28 shrink-0">
+                            <label className="block text-[10px] text-slate-500 uppercase font-semibold">Marks</label>
                             <input
                               type="number"
                               min={0}
@@ -433,13 +442,13 @@ export function TeacherHomeworkView() {
                               onChange={(e) =>
                                 setMarksInput({ ...marksInput, [sub.id]: Number(e.target.value) })
                               }
-                              placeholder={`0 - ${activeHomework.maxMarks}`}
-                              className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-white/10 text-xs text-white focus:outline-none focus:border-brand-gold"
+                              placeholder="0"
+                              className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 font-bold"
                             />
                           </div>
 
                           <div className="flex-1">
-                            <label className="block text-[10px] text-slate-400 uppercase font-semibold">Teacher Feedback</label>
+                            <label className="block text-[10px] text-slate-500 uppercase font-semibold">Teacher Feedback</label>
                             <input
                               type="text"
                               value={feedbackInput[sub.id] ?? ''}
@@ -447,7 +456,7 @@ export function TeacherHomeworkView() {
                                 setFeedbackInput({ ...feedbackInput, [sub.id]: e.target.value })
                               }
                               placeholder="e.g. Well written, clear explanation."
-                              className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-white/10 text-xs text-white focus:outline-none focus:border-brand-gold"
+                              className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                             />
                           </div>
                         </div>
@@ -455,7 +464,7 @@ export function TeacherHomeworkView() {
                         <button
                           onClick={() => handleGrade(sub.id)}
                           disabled={savingGrade}
-                          className="px-3.5 py-2 rounded-lg text-xs font-semibold text-black bg-brand-gold hover:bg-amber-400 transition-all self-end sm:self-center shrink-0 disabled:opacity-50"
+                          className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-teal-600 hover:bg-teal-700 transition-all self-end sm:self-center shrink-0 disabled:opacity-50 cursor-pointer shadow-xs active:scale-95"
                         >
                           {isGraded ? 'Update Grade' : 'Save Grade'}
                         </button>
@@ -471,17 +480,17 @@ export function TeacherHomeworkView() {
 
       {/* Create Homework Modal */}
       {createOpen && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-lg p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2 mb-4">
-              <BookOpen className="w-5 h-5 text-brand-gold" />
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-lg p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 mb-4">
+              <BookOpen className="w-5 h-5 text-teal-600" />
               Assign New Homework
             </h2>
 
             <form onSubmit={handleCreate} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Class *</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Class *</label>
                   <select
                     required
                     value={selectedClassId}
@@ -490,7 +499,7 @@ export function TeacherHomeworkView() {
                       setSelectedSectionId('');
                       setSelectedSubjectId('');
                     }}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-white/10 text-sm text-white focus:outline-none focus:border-brand-gold"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                   >
                     <option value="">-- Select Class --</option>
                     {classes.map((cls) => (
@@ -502,13 +511,13 @@ export function TeacherHomeworkView() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Section *</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Section *</label>
                   <select
                     required
                     disabled={!selectedClassId}
                     value={selectedSectionId}
                     onChange={(e) => setSelectedSectionId(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-white/10 text-sm text-white focus:outline-none focus:border-brand-gold disabled:opacity-50"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 disabled:opacity-50"
                   >
                     <option value="">-- Select Section --</option>
                     {availableSections.map((sec: any) => (
@@ -521,96 +530,95 @@ export function TeacherHomeworkView() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Subject *</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Subject *</label>
                 <select
                   required
                   disabled={!selectedClassId}
                   value={selectedSubjectId}
                   onChange={(e) => setSelectedSubjectId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-white/10 text-sm text-white focus:outline-none focus:border-brand-gold disabled:opacity-50"
+                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 disabled:opacity-50"
                 >
                   <option value="">-- Select Subject --</option>
                   {availableSubjects.map((sub: any) => (
                     <option key={sub.id} value={sub.id}>
-                      {sub.name} ({sub.code || 'SUB'})
+                      {sub.name} ({sub.code})
                     </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Assignment Title *</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Homework Title *</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Quadratic Equations Practice Exercises 4.1"
+                  placeholder="e.g. Chapter 4: Linear Equations Practice Set"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:border-brand-gold"
+                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Questions & Instructions *</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Questions & Instructions *</label>
                 <textarea
                   required
-                  rows={4}
-                  placeholder="Type the homework questions, exercise numbers, or guidelines for students..."
+                  rows={3}
+                  placeholder="Enter assignment questions, textbook page numbers, and solution guidelines..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:border-brand-gold"
+                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Strict Deadline *</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Deadline Date & Time *</label>
                   <input
                     type="datetime-local"
                     required
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-white/10 text-xs text-white focus:outline-none focus:border-brand-gold"
-                  >
-                  </input>
+                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                  />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Max Marks *</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Max Marks *</label>
                   <input
                     type="number"
                     min={1}
                     required
                     value={maxMarks}
                     onChange={(e) => setMaxMarks(Number(e.target.value))}
-                    className="w-full px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:border-brand-gold"
+                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Question Sheet Attachment Link (Optional)</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Question Sheet Attachment Link (Optional)</label>
                 <input
                   type="url"
                   placeholder="https://..."
                   value={attachmentUrl}
                   onChange={(e) => setAttachmentUrl(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:border-brand-gold"
+                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setCreateOpen(false)}
-                  className="px-4 py-2 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all"
+                  className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-300 shadow-xs transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2 rounded-xl text-sm font-medium text-black bg-brand-gold hover:bg-amber-400 transition-all shadow-md disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 shadow-xs transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
                 >
                   {submitting ? 'Assigning...' : 'Assign Homework'}
                 </button>

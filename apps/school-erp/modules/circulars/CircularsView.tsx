@@ -6,7 +6,6 @@ import {
   Plus,
   Pin,
   Calendar,
-  AlertCircle,
   Trash2,
   Paperclip,
   Users,
@@ -105,6 +104,8 @@ export function CircularsView({ mode = 'auto' }: { mode?: 'admin' | 'teacher' | 
       setAttachmentUrl('');
       setIsPinned(false);
       setModalOpen(false);
+
+      // Reload
       await loadData();
     } catch (err: any) {
       alert(err.message || 'Failed to publish circular');
@@ -114,7 +115,7 @@ export function CircularsView({ mode = 'auto' }: { mode?: 'admin' | 'teacher' | 
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this circular?')) return;
+    if (!confirm('Are you sure you want to delete this circular announcement?')) return;
     try {
       await circularsRestApi.delete(id);
       setCirculars((prev) => prev.filter((c) => c.id !== id));
@@ -154,11 +155,11 @@ export function CircularsView({ mode = 'auto' }: { mode?: 'admin' | 'teacher' | 
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <Megaphone className="w-6 h-6 text-brand-gold" />
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2.5">
+            <Megaphone className="w-6 h-6 text-teal-600" />
             Official Circulars & Announcements
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-500 mt-1">
             School-wide and targeted class/section notices, circulars, and official updates.
           </p>
         </div>
@@ -166,7 +167,7 @@ export function CircularsView({ mode = 'auto' }: { mode?: 'admin' | 'teacher' | 
         {canCreate && (
           <button
             onClick={() => setModalOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm text-black bg-brand-gold hover:bg-amber-400 transition-all shadow-md active:scale-95"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-white bg-teal-600 hover:bg-teal-700 transition-all shadow-xs active:scale-95 cursor-pointer self-start sm:self-auto"
           >
             <Plus className="w-4 h-4" />
             Publish Circular
@@ -176,43 +177,49 @@ export function CircularsView({ mode = 'auto' }: { mode?: 'admin' | 'teacher' | 
 
       {/* Filter Tabs & Search */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2 border border-white/10 p-1 rounded-xl bg-white/5 backdrop-blur-sm self-start">
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 border border-slate-200 self-start">
           <button
             onClick={() => setActiveTab('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              activeTab === 'all' ? 'bg-brand-gold text-black shadow-sm' : 'text-slate-400 hover:text-white'
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              activeTab === 'all'
+                ? 'bg-teal-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             All Notices ({circulars.length})
           </button>
           <button
             onClick={() => setActiveTab('pinned')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1 ${
-              activeTab === 'pinned' ? 'bg-brand-gold text-black shadow-sm' : 'text-slate-400 hover:text-white'
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+              activeTab === 'pinned'
+                ? 'bg-teal-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Pin className="w-3 h-3" />
+            <Pin className="w-3.5 h-3.5" />
             Pinned ({circulars.filter((c) => c.isPinned).length})
           </button>
         </div>
 
         <input
           type="text"
-          placeholder="Search circulars by title, class..."
+          placeholder="Search circulars by title, content, class..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-brand-gold/50 w-full sm:w-64"
+          className="px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 w-full sm:w-72 shadow-2xs"
         />
       </div>
 
       {/* Circulars List */}
       {loading ? (
-        <div className="p-12 text-center text-slate-400">Loading circulars...</div>
+        <div className="p-12 text-center text-slate-500 bg-white border border-slate-200 rounded-2xl shadow-xs">
+          Loading circulars...
+        </div>
       ) : filtered.length === 0 ? (
-        <div className="p-12 text-center border border-white/10 rounded-2xl bg-white/5 backdrop-blur-sm">
-          <Megaphone className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-          <h3 className="text-base font-semibold text-white">No Circulars Found</h3>
-          <p className="text-sm text-slate-400 mt-1 max-w-sm mx-auto">
+        <div className="p-12 text-center border border-slate-200 rounded-2xl bg-white shadow-xs">
+          <Megaphone className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+          <h3 className="text-base font-semibold text-slate-900">No Circulars Found</h3>
+          <p className="text-sm text-slate-500 mt-1 max-w-sm mx-auto">
             There are currently no circulars or announcements matching your filter.
           </p>
         </div>
@@ -228,31 +235,31 @@ export function CircularsView({ mode = 'auto' }: { mode?: 'admin' | 'teacher' | 
             return (
               <div
                 key={item.id}
-                className={`p-5 rounded-2xl border transition-all ${
+                className={`p-6 rounded-2xl border transition-all ${
                   item.isPinned
-                    ? 'border-brand-gold/40 bg-brand-gold/5 shadow-lg shadow-brand-gold/5'
-                    : 'border-white/10 bg-white/5 hover:border-white/20'
+                    ? 'border-amber-300 bg-amber-50/40 shadow-xs'
+                    : 'border-slate-200 bg-white hover:border-slate-300 shadow-xs'
                 }`}
               >
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                  <div className="space-y-1">
+                  <div className="space-y-1.5 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       {item.isPinned && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-gold/20 text-brand-gold border border-brand-gold/40">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">
                           <Pin className="w-3 h-3 fill-current" />
-                          Pinned
+                          Pinned Notice
                         </span>
                       )}
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-50 text-teal-700 border border-teal-200">
                         <Users className="w-3 h-3" />
                         {getTargetLabel(item)}
                       </span>
                     </div>
 
-                    <h2 className="text-lg font-bold text-white pt-1">{item.title}</h2>
-                    <div className="flex items-center gap-3 text-xs text-slate-400">
+                    <h2 className="text-lg font-bold text-slate-900 pt-1">{item.title}</h2>
+                    <div className="flex items-center gap-3 text-xs text-slate-500">
                       <span className="flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5" />
+                        <Calendar className="w-3.5 h-3.5 text-slate-400" />
                         {new Date(item.createdAt).toLocaleDateString(undefined, {
                           year: 'numeric',
                           month: 'short',
@@ -260,14 +267,14 @@ export function CircularsView({ mode = 'auto' }: { mode?: 'admin' | 'teacher' | 
                         })}
                       </span>
                       <span>•</span>
-                      <span>By {item.publishedBy || item.authorRole}</span>
+                      <span>By <strong className="text-slate-700">{item.publishedBy || item.authorRole}</strong></span>
                     </div>
                   </div>
 
                   {isAuthorOrAdmin && (
                     <button
                       onClick={() => handleDelete(item.id)}
-                      className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all self-end sm:self-start"
+                      className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all self-end sm:self-start cursor-pointer"
                       title="Delete Circular"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -275,18 +282,18 @@ export function CircularsView({ mode = 'auto' }: { mode?: 'admin' | 'teacher' | 
                   )}
                 </div>
 
-                <div className="mt-3 text-sm text-slate-300 whitespace-pre-line leading-relaxed">
+                <div className="mt-4 text-sm text-slate-700 whitespace-pre-line leading-relaxed">
                   {item.content}
                 </div>
 
                 {item.attachmentUrl && (
-                  <div className="mt-4 pt-3 border-t border-white/5 flex items-center gap-2">
-                    <Paperclip className="w-4 h-4 text-brand-gold" />
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2">
+                    <Paperclip className="w-4 h-4 text-teal-600" />
                     <a
                       href={item.attachmentUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-brand-gold hover:underline font-medium truncate"
+                      className="text-xs text-teal-600 hover:text-teal-700 hover:underline font-semibold truncate"
                     >
                       View Attachment / Document Link
                     </a>
@@ -300,32 +307,32 @@ export function CircularsView({ mode = 'auto' }: { mode?: 'admin' | 'teacher' | 
 
       {/* Publish Circular Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-lg p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2 mb-4">
-              <Megaphone className="w-5 h-5 text-brand-gold" />
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-lg p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 mb-4">
+              <Megaphone className="w-5 h-5 text-teal-600" />
               Publish Circular / Announcement
             </h2>
 
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Title *</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Title *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Mid-term Exam Schedule & Preparation Guidelines"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:border-brand-gold"
+                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Target Audience *</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Target Audience *</label>
                 <select
                   value={targetType}
                   onChange={(e) => setTargetType(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-800 border border-white/10 text-sm text-white focus:outline-none focus:border-brand-gold"
+                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                 >
                   <option value="ALL">Entire School (All Students, Parents & Staff)</option>
                   {user?.role !== 'STUDENT' && user?.role !== 'PARENT' && (
@@ -341,7 +348,7 @@ export function CircularsView({ mode = 'auto' }: { mode?: 'admin' | 'teacher' | 
               {/* Class Selector */}
               {(targetType === 'CLASS' || targetType === 'SECTION') && (
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Select Class *</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Select Class *</label>
                   <select
                     required
                     value={selectedClassId}
@@ -349,7 +356,7 @@ export function CircularsView({ mode = 'auto' }: { mode?: 'admin' | 'teacher' | 
                       setSelectedClassId(e.target.value);
                       setSelectedSectionId('');
                     }}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-800 border border-white/10 text-sm text-white focus:outline-none focus:border-brand-gold"
+                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                   >
                     <option value="">-- Choose Class --</option>
                     {classes.map((cls) => (
@@ -364,12 +371,12 @@ export function CircularsView({ mode = 'auto' }: { mode?: 'admin' | 'teacher' | 
               {/* Section Selector */}
               {targetType === 'SECTION' && selectedClassId && (
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Select Section *</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Select Section *</label>
                   <select
                     required
                     value={selectedSectionId}
                     onChange={(e) => setSelectedSectionId(e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-800 border border-white/10 text-sm text-white focus:outline-none focus:border-brand-gold"
+                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                   >
                     <option value="">-- Choose Section --</option>
                     {activeClass?.sections?.map((sec) => (
@@ -381,53 +388,53 @@ export function CircularsView({ mode = 'auto' }: { mode?: 'admin' | 'teacher' | 
                 </div>
               )}
 
-              <div className="flex items-center pt-2">
-                <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-300 select-none">
+              <div className="flex items-center pt-1">
+                <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700 select-none">
                   <input
                     type="checkbox"
                     checked={isPinned}
                     onChange={(e) => setIsPinned(e.target.checked)}
-                    className="w-4 h-4 rounded text-brand-gold focus:ring-0 bg-white/10 border-white/20"
+                    className="w-4 h-4 rounded text-teal-600 focus:ring-teal-500 border-slate-300"
                   />
                   Pin Notice to Top
                 </label>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Announcement Body *</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Announcement Body *</label>
                 <textarea
                   required
                   rows={4}
                   placeholder="Enter full announcement details here..."
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:border-brand-gold"
+                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Attachment or Drive Link (Optional)</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Attachment or Drive Link (Optional)</label>
                 <input
                   type="url"
                   placeholder="https://..."
                   value={attachmentUrl}
                   onChange={(e) => setAttachmentUrl(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:border-brand-gold"
+                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all"
+                  className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-300 transition-all cursor-pointer shadow-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2 rounded-xl text-sm font-medium text-black bg-brand-gold hover:bg-amber-400 transition-all shadow-md disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 transition-all shadow-xs disabled:opacity-50 cursor-pointer active:scale-95"
                 >
                   {submitting ? 'Publishing...' : 'Publish Announcement'}
                 </button>
