@@ -17,6 +17,8 @@ import {
   ReviewTeacherLeaveDto,
   CreateQrSessionDto,
   SubmitQrSessionDto,
+  ApplyStudentLeaveDto,
+  ReviewStudentLeaveDto,
 } from './dto/attendance.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -197,5 +199,40 @@ export class AttendanceController {
     @Query('month') month?: string,
   ) {
     return this.attendanceService.getStudentAttendance(user.schoolId!, studentId, month);
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // Student Leave Management (Parent Application -> Teacher/Admin Review)
+  // ───────────────────────────────────────────────────────────────────────────
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.PARENT, Role.ADMIN)
+  @Post('student/leaves')
+  async applyStudentLeave(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: ApplyStudentLeaveDto,
+  ) {
+    return this.attendanceService.applyStudentLeave(user.schoolId!, user.userId, user.role as Role, dto);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.PARENT, Role.TEACHER, Role.ADMIN)
+  @Get('student/leaves')
+  async listStudentLeaves(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query('status') status?: string,
+  ) {
+    return this.attendanceService.listStudentLeaves(user.schoolId!, user.userId, user.role as Role, status);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.TEACHER, Role.ADMIN)
+  @Patch('student/leaves/:id/review')
+  async reviewStudentLeave(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() dto: ReviewStudentLeaveDto,
+  ) {
+    return this.attendanceService.reviewStudentLeave(user.schoolId!, user.userId, id, dto);
   }
 }

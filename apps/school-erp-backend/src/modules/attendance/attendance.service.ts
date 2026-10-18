@@ -15,6 +15,8 @@ import {
   UpdateSchoolLocationDto,
   ApplyTeacherLeaveDto,
   ReviewTeacherLeaveDto,
+  ApplyStudentLeaveDto,
+  ReviewStudentLeaveDto,
 } from './dto/attendance.dto';
 import { AttendanceStatus, RequestStatus, Role } from '@prisma/client';
 
@@ -164,6 +166,30 @@ export class AttendanceService implements OnModuleInit {
       sectionId: dto.sectionId,
       date: dto.date,
     });
+
+    // Real-time parent notification when student is marked ABSENT
+    const absentRecords = dto.records.filter((r) => r.status === AttendanceStatus.ABSENT);
+    if (absentRecords.length > 0 && this.notificationsService) {
+      for (const rec of absentRecords) {
+        this.prisma.student
+          .findUnique({
+            where: { id: rec.studentId },
+            include: { parent: { include: { user: true } } },
+          })
+          .then((st) => {
+            if (st?.parent?.userId) {
+              this.notificationsService?.createNotification(schoolId, {
+                title: `Student Absence Alert: ${st.fullName}`,
+                message: `Dear Parent, ${st.fullName} was marked ABSENT on ${dto.date}. Please contact the school office if you have any questions.`,
+                type: 'alert',
+                targetUserId: st.parent.userId,
+                targetRole: 'PARENT',
+              });
+            }
+          })
+          .catch(() => {});
+      }
+    }
 
     return { success: true, count: results.length };
   }
@@ -917,6 +943,197 @@ export class AttendanceService implements OnModuleInit {
     this.qrSessions.set(sessionId, updatedSession);
     await this.redisService.set(`qr:session:${sessionId}`, updatedSession, 900);
     return updatedSession;
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // Student Leaves System (Parent Application -> Teacher/Admin Approval)
+  // ───────────────────────────────────────────────────────────────────────────
+
+  async applyStudentLeave(
+    schoolId: string,
+    userId: string,
+    role: Role,
+    dto: ApplyStudentLeaveDto,
+  ) {
+    let parentId: string | null = null;
+    const student = await this.prisma.student.findFirst({
+      where: { id: dto.studentId, schoolId },
+      include: { parent: true, class: true, section: true },
+    });
+
+    if (!student) {
+      throw new NotFoundException('Student not found in this school');
+    }
+
+    if (role === Role.PARENT) {
+      const parent = await this.prisma.parent.findUnique({ where: { userId } });
+      if (!parent) {
+        throw new BadRequestException('Parent profile not linked to your account');
+      }
+      parentId = parent.id;
+      if (student.parentId !== parent.id) {
+        await this.prisma.student.update({
+          where: { id: student.id },
+          data: { parentId: parent.id },
+        });
+      }
+    } else if (student.parentId) {
+      parentId = student.parentId;
+    } else {
+      const parentUser = await this.prisma.user.findFirst({ where: { schoolId, role: Role.PARENT } });
+      if (parentUser) {
+        const p = await this.prisma.parent.findUnique({ where: { userId: parentUser.id } });
+        if (p) parentId = p.id;
+      }
+    }
+
+    if (!parentId) {
+      throw new BadRequestException('Unable to resolve parent record for this leave application');
+    }
+
+    const leaveRequest = await this.prisma.studentLeaveRequest.create({
+      data: {
+        schoolId,
+        studentId: student.id,
+        parentId,
+        startDate: new Date(dto.startDate),
+        endDate: new Date(dto.endDate),
+        reason: dto.reason,
+        attachmentUrl: dto.attachmentUrl,
+        status: RequestStatus.PENDING,
+      },
+      include: {
+        student: { include: { class: true, section: true } },
+        parent: true,
+      },
+    });
+
+    // Real-time broadcast to Admin & Teachers
+    if (this.notificationsService) {
+      await this.notificationsService.createNotification(schoolId, {
+        title: `New Student Leave Request: ${student.fullName}`,
+        message: `Leave application received for ${student.fullName} (${student.class?.name || ''} - ${student.section?.name || ''}) from ${dto.startDate} to ${dto.endDate}. Reason: ${dto.reason}`,
+        type: 'info',
+        targetRole: 'TEACHER',
+      });
+    }
+
+    return leaveRequest;
+  }
+
+  async listStudentLeaves(
+    schoolId: string,
+    userId: string,
+    role: Role,
+    status?: string,
+  ) {
+    const where: any = { schoolId };
+    if (status && Object.values(RequestStatus).includes(status as RequestStatus)) {
+      where.status = status as RequestStatus;
+    }
+
+    if (role === Role.PARENT) {
+      const parent = await this.prisma.parent.findUnique({ where: { userId } });
+      if (!parent) return [];
+      where.parentId = parent.id;
+    }
+
+    return this.prisma.studentLeaveRequest.findMany({
+      where,
+      include: {
+        student: {
+          include: { class: true, section: true },
+        },
+        parent: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async reviewStudentLeave(
+    schoolId: string,
+    reviewerUserId: string,
+    leaveId: string,
+    dto: ReviewStudentLeaveDto,
+  ) {
+    const leave = await this.prisma.studentLeaveRequest.findFirst({
+      where: { id: leaveId, schoolId },
+      include: {
+        student: { include: { class: true, section: true } },
+        parent: { include: { user: true } },
+      },
+    });
+
+    if (!leave) {
+      throw new NotFoundException('Student leave request not found');
+    }
+
+    const reviewer = await this.prisma.user.findUnique({
+      where: { id: reviewerUserId },
+      select: { name: true },
+    });
+
+    const updated = await this.prisma.studentLeaveRequest.update({
+      where: { id: leaveId },
+      data: {
+        status: dto.status,
+        reviewedBy: reviewer?.name || reviewerUserId,
+        reviewRemarks: dto.reviewRemarks,
+      },
+      include: {
+        student: { include: { class: true, section: true } },
+        parent: true,
+      },
+    });
+
+    // If APPROVED, auto-mark student attendance as LEAVE for the specified date range
+    if (dto.status === RequestStatus.APPROVED) {
+      const start = new Date(leave.startDate);
+      const end = new Date(leave.endDate);
+      const current = new Date(start);
+
+      while (current <= end) {
+        const dateStr = current.toISOString().split('T')[0];
+        await this.prisma.attendance.upsert({
+          where: {
+            studentId_date: {
+              studentId: leave.studentId,
+              date: dateStr,
+            },
+          },
+          create: {
+            schoolId,
+            sectionId: leave.student.sectionId,
+            studentId: leave.studentId,
+            date: dateStr,
+            status: AttendanceStatus.LEAVE,
+            remarks: `Approved Leave: ${leave.reason}`,
+            markedBy: reviewer?.name || reviewerUserId,
+          },
+          update: {
+            status: AttendanceStatus.LEAVE,
+            remarks: `Approved Leave: ${leave.reason}`,
+            markedBy: reviewer?.name || reviewerUserId,
+          },
+        });
+        current.setDate(current.getDate() + 1);
+      }
+
+      await this.redisService.del(`dashboard:stats:${schoolId}`);
+    }
+
+    // Notify parent in real time
+    if (leave.parent?.userId && this.notificationsService) {
+      await this.notificationsService.createNotification(schoolId, {
+        title: `Student Leave ${dto.status === RequestStatus.APPROVED ? 'Approved' : 'Rejected'}`,
+        message: `The leave application for ${leave.student.fullName} (${leave.startDate.toISOString().split('T')[0]} to ${leave.endDate.toISOString().split('T')[0]}) has been ${dto.status.toLowerCase()} by ${reviewer?.name || 'Faculty'}.${dto.reviewRemarks ? ` Notes: ${dto.reviewRemarks}` : ''}`,
+        type: dto.status === RequestStatus.APPROVED ? 'success' : 'warning',
+        targetUserId: leave.parent.userId,
+        targetRole: 'PARENT',
+      });
+    }
+
+    return updated;
   }
 }
 

@@ -151,3 +151,34 @@ export class SubmitQrSessionDto {
   remarks?: string;
 }
 
+export class ApplyStudentLeaveDto {
+  @IsString()
+  @IsNotEmpty()
+  studentId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  startDate: string; // YYYY-MM-DD
+
+  @IsString()
+  @IsNotEmpty()
+  endDate: string; // YYYY-MM-DD
+
+  @IsString()
+  @IsNotEmpty()
+  reason: string;
+
+  @IsOptional()
+  @IsString()
+  attachmentUrl?: string;
+}
+
+export class ReviewStudentLeaveDto {
+  @IsEnum(RequestStatus)
+  status: RequestStatus; // APPROVED or REJECTED
+
+  @IsOptional()
+  @IsString()
+  reviewRemarks?: string;
+}
+

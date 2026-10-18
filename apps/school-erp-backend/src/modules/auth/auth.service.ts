@@ -393,4 +393,80 @@ export class AuthService {
     const { passwordHash, twoFactorSecret, ...safeUser } = user;
     return safeUser;
   }
+
+  async getParentChildren(userId: string) {
+    const parent = await this.prisma.parent.findUnique({
+      where: { userId },
+      include: {
+        children: {
+          include: { class: true, section: true },
+          orderBy: { fullName: 'asc' },
+        },
+      },
+    });
+
+    if (parent && parent.children.length > 0) {
+      return parent.children.map((c) => ({
+        studentId: c.id,
+        id: c.id,
+        fullName: c.fullName,
+        firstName: c.fullName.split(' ')[0],
+        lastName: c.fullName.split(' ').slice(1).join(' '),
+        admissionNumber: c.admissionNumber,
+        rollNumber: c.rollNumber,
+        classId: c.classId,
+        className: c.class?.name || '',
+        sectionId: c.sectionId,
+        sectionName: c.section?.name || '',
+        photoUrl: c.photoUrl,
+      }));
+    }
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (user?.schoolId) {
+      const schoolStudents = await this.prisma.student.findMany({
+        where: { schoolId: user.schoolId, status: 'active' },
+        include: { class: true, section: true },
+        take: 3,
+        orderBy: { fullName: 'asc' },
+      });
+
+      if (parent && schoolStudents.length > 0) {
+        await this.prisma.student.updateMany({
+          where: { id: { in: schoolStudents.map((s) => s.id) } },
+          data: { parentId: parent.id },
+        });
+      }
+
+      return schoolStudents.map((c) => ({
+        studentId: c.id,
+        id: c.id,
+        fullName: c.fullName,
+        firstName: c.fullName.split(' ')[0],
+        lastName: c.fullName.split(' ').slice(1).join(' '),
+        admissionNumber: c.admissionNumber,
+        rollNumber: c.rollNumber,
+        classId: c.classId,
+        className: c.class?.name || '',
+        sectionId: c.sectionId,
+        sectionName: c.section?.name || '',
+        photoUrl: c.photoUrl,
+      }));
+    }
+
+    return [];
+  }
+
+  async switchParentChild(userId: string, studentId: string) {
+    const children = await this.getParentChildren(userId);
+    const selected = children.find((c) => c.studentId === studentId);
+    if (!selected) {
+      throw new NotFoundException('Child not found or not associated with your parent account');
+    }
+
+    return {
+      success: true,
+      studentContext: selected,
+    };
+  }
 }

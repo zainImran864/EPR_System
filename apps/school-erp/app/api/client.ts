@@ -373,6 +373,22 @@ export const attendanceRestApi = {
       remarks?: string;
     },
   ) => apiClient.post<any>(`/attendance/teacher/qr-session/${sessionId}/submit`, data),
+  applyStudentLeave: (data: {
+    studentId: string;
+    startDate: string;
+    endDate: string;
+    reason: string;
+    attachmentUrl?: string;
+  }) => apiClient.post<any>('/attendance/student/leaves', data),
+  listStudentLeaves: (status?: string) =>
+    apiClient.get<any[]>('/attendance/student/leaves', status ? { status } : undefined),
+  reviewStudentLeave: (id: string, data: { status: 'APPROVED' | 'REJECTED'; reviewRemarks?: string }) =>
+    apiClient.patch<any>(`/attendance/student/leaves/${id}/review`, data),
+};
+
+export const parentRestApi = {
+  getChildren: () => apiClient.get<any[]>('/auth/parent/children'),
+  switchChild: (studentId: string) => apiClient.post<any>(`/auth/parent/switch-child/${studentId}`),
 };
 
 export const marksRestApi = {

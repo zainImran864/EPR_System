@@ -13,6 +13,7 @@ import {
   MessageCircle,
   MapPin,
   Receipt,
+  CalendarPlus,
 } from "lucide-react";
 
 export interface NavLink {
@@ -32,6 +33,7 @@ export const ADMIN_NAV: NavLink[] = [
   { href: "/admin/teachers", label: "Faculty & Staff", icon: ico(Users), group: "Academics", description: "Teacher profiles, specializations & subject assignments" },
   { href: "/admin/timetable", label: "Timetable", icon: ico(CalendarDays), group: "Academics", description: "Weekly class schedules & period builder" },
   { href: "/admin/attendance", label: "Student Attendance", icon: ico(CalendarCheck), group: "Operations", description: "Daily student attendance roster & analytics" },
+  { href: "/admin/student-leaves", label: "Student Leaves", icon: ico(CalendarPlus), group: "Operations", description: "Review and approve/reject student leave requests" },
   { href: "/admin/teacher-attendance", label: "Teacher Attendance", icon: ico(MapPin), group: "Operations", description: "Live GPS & photo teacher attendance + leave approvals" },
   { href: "/admin/marks", label: "Marks & Exams", icon: ico(Award), group: "Operations", description: "Exam schedules, question papers & mark entry" },
   { href: "/admin/fees", label: "Fees & Challans", icon: ico(Wallet), group: "Finance & Accounts", description: "Fee billing, discounts, payments & printable challans" },
@@ -44,6 +46,7 @@ export const ADMIN_NAV: NavLink[] = [
 export const TEACHER_NAV: NavLink[] = [
   { href: "/teacher/dashboard", label: "Dashboard", icon: ico(LayoutDashboard), group: "Overview", description: "Teaching overview & quick actions" },
   { href: "/teacher/my-attendance", label: "My Attendance & Leave", icon: ico(MapPin), group: "Operations", description: "Mark daily school attendance with photo & live GPS + apply leave" },
+  { href: "/teacher/student-leaves", label: "Student Leaves", icon: ico(CalendarPlus), group: "Operations", description: "Review & approve parent leave applications to auto-mark attendance" },
   { href: "/teacher/marks", label: "Marks Upload", icon: ico(Award), group: "Academics", description: "Enter & publish subject examination scores" },
   { href: "/teacher/attendance", label: "Class Attendance", icon: ico(CalendarCheck), group: "Academics", description: "Record daily class & section attendance" },
   { href: "/teacher/timetable", label: "Timetable", icon: ico(CalendarDays), group: "Academics", description: "View assigned teaching schedule" },
@@ -64,6 +67,7 @@ export const STUDENT_NAV: NavLink[] = [
 
 export const PARENT_NAV: NavLink[] = [
   { href: "/parent/dashboard", label: "Dashboard", icon: ico(LayoutDashboard), group: "Overview", description: "Parent portal overview & child progress" },
+  { href: "/parent/leaves", label: "Apply Leave", icon: ico(CalendarPlus), group: "Academics", description: "Apply for child leave and track approval" },
   { href: "/parent/results", label: "Results", icon: ico(Award), group: "Academics", description: "Child exam marks & report cards" },
   { href: "/parent/attendance", label: "Attendance", icon: ico(CalendarCheck), group: "Academics", description: "Child attendance history & alerts" },
   { href: "/parent/timetable", label: "Timetable", icon: ico(CalendarDays), group: "Academics", description: "Weekly class schedule" },

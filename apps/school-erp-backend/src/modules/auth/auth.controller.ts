@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, UseGuards, Patch, Headers } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Patch, Headers, Param } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   LoginDto,
@@ -84,5 +84,20 @@ export class AuthController {
     @Body() dto: UpdateThemeDto,
   ) {
     return this.authService.updateTheme(user.userId, dto.themeColor);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('parent/children')
+  async getParentChildren(@CurrentUser() user: CurrentUserPayload) {
+    return this.authService.getParentChildren(user.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('parent/switch-child/:studentId')
+  async switchChild(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('studentId') studentId: string,
+  ) {
+    return this.authService.switchParentChild(user.userId, studentId);
   }
 }
